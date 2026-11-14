@@ -1,0 +1,407 @@
+import { useState, useMemo } from 'react';
+import type { CartCalculation, CartItem, RecommendationProduct, StoreGroup } from './types';
+import { StorefrontLayout } from '@/layouts/storefront-layout';
+import { CartBreadcrumbBar } from './components/cart-breadcrumb-bar';
+import { StoreCartGroup } from './components/store-cart-group';
+import { ShippingProgressBanner } from './components/shipping-progress-banner';
+import { CartRecommendations } from './components/cart-recommendations';
+import { OrderSummaryCard } from './components/order-summary-card';
+import { OrderConfirmationModal } from './components/order-confirmation-modal';
+import { ShoppingBag } from 'lucide-react';
+
+const INITIAL_STORES: StoreGroup[] = [
+    {
+        id: 'store-1',
+        name: 'Dapur Ummi Salma — Tanah Sareal',
+        district: 'Tanah Sareal',
+        city: 'Kota Bogor',
+        badge: '✓ UMKM Binaan',
+        notePlaceholder: 'Tulis catatan untuk Ummi (misal: minta kirim frozen beku, pisahkan saus sambal)...',
+        note: '',
+    },
+    {
+        id: 'store-2',
+        name: 'Pawon Ibu Fatimah — Bogor Barat',
+        district: 'Semplak',
+        city: 'Bogor Barat',
+        badge: '✓ UMKM Binaan',
+        notePlaceholder: 'Tulis catatan untuk Bu Fatimah (misal: sambal bawang ekstra pedas)...',
+        note: '',
+    },
+];
+
+const INITIAL_ITEMS: CartItem[] = [
+    {
+        id: 'item-1',
+        storeId: 'store-1',
+        name: 'Risol Mayo Smoked Beef & Telur Keju Lumer',
+        variant: 'Varian: 450 gr (Isi 10 pcs)',
+        stockInfo: 'Sisa 8 pack',
+        isStockAvailable: true,
+        price: 35000,
+        originalPrice: 38000,
+        imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuBH4SLFupZUas83fXH56aGwJAFWJokI8Dhsn9iYfVGw8sZ4R3WEANBvBWLyUDAEbjEYz-tzPlSOM1TQnHzci4G6fxERSGiDYXvP2RvOP8bPi80L1tRdTX5Lh3lbQLEBvurMITRf5gs0esMcTVYc3Bek1g4F_22auxtCmCEuqvAQXbxgl5yjVE9Eum11FhKoV6J-jrERC8R62tHxw9EyVYzMwedCKkOV-mzzuPxJYu6z',
+        imageAlt: 'Warm golden crispy indonesian mayo risoles',
+        quantity: 1,
+        isSelected: true,
+    },
+    {
+        id: 'item-2',
+        storeId: 'store-2',
+        name: 'Ayam Ungkep Bumbu Kuning Lengkuas Siap Goreng',
+        variant: 'Varian: 850 gr (1 Ekor Potong 8)',
+        stockInfo: 'Stok Tersedia',
+        isStockAvailable: true,
+        price: 65000,
+        originalPrice: 72000,
+        discountPercent: 10,
+        imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuBGjBC2cKRLDiRfw4MgPVcytY7hOnsNmNnDBEqR47HkwF1_794MiNlURED4L7ctOjumxMI9AgqFBYs2pt7Jw-Q1m-8HUuzpNIGdjnIe90N3QyFcBgGZbu55l2ScqgEyz1RHWSnk6jaS5joefv6x3fsnrLqIA2_xZiWQnAvR8QsHPsoTMslOCEhYX8xAtqu44osBUeNX3pN110TL2JxhKjaFQll71CBEfKYINSd9GC6g',
+        imageAlt: 'Traditional Indonesian spiced yellow chicken Ayam Ungkep Bumbu Kuning',
+        quantity: 1,
+        isSelected: false,
+    },
+];
+
+const INITIAL_RECOMMENDATIONS: RecommendationProduct[] = [
+    {
+        id: 'rec-1',
+        storeId: 'store-1',
+        storeName: 'Dapur Ummi Salma',
+        name: 'Sambal Cumi Judes',
+        price: 28000,
+        imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuAEQylW3VK3jFOz8pSl2UtofEfZML9sf5OLsh1zcHyVgZYDR_j5gre2SisO2D72HHmODXhrmMbiGnea_pWGJbASPSbH1WNVDpjbG-Q7V3L39qh1_uFZgv0oAkAjETcAloLIGbAgZSM8FtyGslpdzN8iN77sQ-zJbRuySWGaW0tXCvtsFKAk3H_GwpmrXuONge-i9V7stX-q3iXXaJvUbottyYUzVrYr_XEp9aUe0Xp9',
+        imageAlt: 'Traditional Indonesian sambal cumi pedas glass jar',
+        variant: 'Botol 150 gr',
+        stockInfo: 'Stok Tersedia',
+    },
+    {
+        id: 'rec-2',
+        storeId: 'store-2',
+        storeName: 'Pawon Ibu Fatimah',
+        name: 'Pastel Sayur Telur (5 Pcs)',
+        price: 22500,
+        imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuByRiIZQ5fS2RjxIaMjul8OKhVfPFQMRBvZWUqKbvauhvX4kA9FiMk9EyibWX4_AnMRjVY7c35Q4mFvoeVZZGqc-mqZ0qOxQ7Kolbq-e6qA0N4lJZKjUo2weLXouUmFj86ZpccQcX-cFtwfXWc1X55eajH7f0cogEMHyt-wZmxlyL2gfLWyvhv8m1bckQ-f27nrkkHUoML6-d_qDB5uaVArBfKtH1b47EYrIxQTB0Jr',
+        imageAlt: 'Indonesian fresh pastel sayur telor golden brown pastry',
+        variant: 'Isi 5 pcs',
+        stockInfo: 'Stok Tersedia',
+    },
+    {
+        id: 'rec-3',
+        storeId: 'store-3',
+        storeName: 'Herbal Barokah',
+        name: 'Sirup Jahe Merah Rempah',
+        price: 32000,
+        imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuDtPnTYw3V9W7VXh85jfiMXXr66jfoVPu76cH_7kQXIEKrpU-WLkfKipgB-wyhSvpA_uR6I2pP5oHbxO6aQsF6wTKdWev3TCjBykDaK5LL56skcN5Y41JoFc8xGBLydCgI2qrqIxlyFblAB4R7LGlfQ9mPXsUygEZKgKSJ7m0BfGG4lFQ3NQGINMtfqZhogrmpnO-KdeRVZB6BeUDxAqH99U6ZrNPjdAhmZwLSkLqnw',
+        imageAlt: 'Traditional Indonesian rempah drink wedang uwuh spiced herbal infusion',
+        variant: 'Botol 250 ml',
+        stockInfo: 'Stok Tersedia',
+    },
+    {
+        id: 'rec-4',
+        storeId: 'store-4',
+        storeName: 'Snack Berkah',
+        name: 'Kripik Pisang Cokelat',
+        price: 18000,
+        imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuB91LsEmbBk6CD6pWXL80-ntpjFq8lrNpZsccVQuIhc6qjQIEBgPhhId_FhoS5coTDbi-HiGR1O9yLA5T6DwtUu9vXKrBKL_my_qQRZNcHSZfLm4jTOJ_DxjC3Gi92FiT2H4-M3zdfrnvzVIXXf83k47QaAWdQWQXc1gKY2Xm-0p-qFBDcppiWGYA2EkofgrVdIlMf3MDSPFncfcSDjYjjdj3e_cH0p8uFgUH3f_TaP',
+        imageAlt: 'Crunchy Indonesian keripik pisang lumer chocolate coated banana chips',
+        variant: 'Pouch 200 gr',
+        stockInfo: 'Stok Tersedia',
+    },
+];
+
+export function CustomerCartPage() {
+    const [stores, setStores] = useState<StoreGroup[]>(INITIAL_STORES);
+    const [items, setItems] = useState<CartItem[]>(INITIAL_ITEMS);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+    // Selected Calculations
+    const selectedItems = useMemo(() => items.filter((i) => i.isSelected), [items]);
+    const selectedCount = selectedItems.length;
+    const isAllSelected = items.length > 0 && items.every((i) => i.isSelected);
+
+    const calculation: CartCalculation = useMemo(() => {
+        const itemsTotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+        const discountTotal = selectedItems.reduce(
+            (acc, i) => acc + (i.originalPrice ? i.originalPrice - i.price : 0) * i.quantity,
+            0,
+        );
+
+        const freeShippingThreshold = 50000;
+        const shippingFee = selectedCount > 0 ? 10000 : 0;
+        const shippingDiscount = selectedCount > 0 ? 10000 : 0; // Free promo
+        const serviceFee = selectedCount > 0 ? 1000 : 0; // Layanan & Infaq Rp1.000
+        const grandTotal = itemsTotal + serviceFee;
+
+        const freeShippingRemaining = Math.max(0, freeShippingThreshold - itemsTotal);
+        const freeShippingProgress = Math.min(
+            100,
+            Math.round((itemsTotal / freeShippingThreshold) * 100),
+        );
+
+        return {
+            selectedCount,
+            itemsTotal,
+            discountTotal,
+            shippingFee,
+            shippingDiscount,
+            serviceFee,
+            grandTotal,
+            freeShippingThreshold,
+            freeShippingRemaining,
+            freeShippingProgress,
+        };
+    }, [selectedItems, selectedCount]);
+
+    // Handlers
+    const handleToggleSelectAll = (checked: boolean) => {
+        setItems((prev) => prev.map((item) => ({ ...item, isSelected: checked })));
+    };
+
+    const handleToggleStore = (storeId: string, checked: boolean) => {
+        setItems((prev) =>
+            prev.map((item) =>
+                item.storeId === storeId ? { ...item, isSelected: checked } : item,
+            ),
+        );
+    };
+
+    const handleToggleItem = (itemId: string) => {
+        setItems((prev) =>
+            prev.map((item) =>
+                item.id === itemId ? { ...item, isSelected: !item.isSelected } : item,
+            ),
+        );
+    };
+
+    const handleUpdateQuantity = (itemId: string, delta: number) => {
+        setItems((prev) =>
+            prev.map((item) => {
+                if (item.id === itemId) {
+                    const newQty = Math.max(1, item.quantity + delta);
+                    return { ...item, quantity: newQty };
+                }
+                return item;
+            }),
+        );
+    };
+
+    const handleRemoveItem = (itemId: string) => {
+        setItems((prev) => prev.filter((item) => item.id !== itemId));
+    };
+
+    const handleDeleteSelected = () => {
+        setItems((prev) => prev.filter((item) => !item.isSelected));
+    };
+
+    const handleUpdateNote = (storeId: string, note: string) => {
+        setStores((prev) =>
+            prev.map((store) => (store.id === storeId ? { ...store, note } : store)),
+        );
+    };
+
+    const handleAddToCart = (recProduct: RecommendationProduct) => {
+        setItems((prev) => {
+            const existing = prev.find((item) => item.name === recProduct.name);
+            if (existing) {
+                return prev.map((item) =>
+                    item.id === existing.id
+                        ? { ...item, quantity: item.quantity + 1, isSelected: true }
+                        : item,
+                );
+            }
+
+            // Ensure store exists
+            setStores((prevStores) => {
+                if (!prevStores.some((s) => s.id === recProduct.storeId)) {
+                    return [
+                        ...prevStores,
+                        {
+                            id: recProduct.storeId,
+                            name: `${recProduct.storeName} — Kota Bogor`,
+                            district: 'Bogor',
+                            city: 'Kota Bogor',
+                            badge: '✓ UMKM Binaan',
+                            notePlaceholder: `Tulis catatan untuk ${recProduct.storeName}...`,
+                            note: '',
+                        },
+                    ];
+                }
+                return prevStores;
+            });
+
+            const newItem: CartItem = {
+                id: `cart-${Date.now()}`,
+                storeId: recProduct.storeId,
+                name: recProduct.name,
+                variant: recProduct.variant,
+                stockInfo: recProduct.stockInfo,
+                isStockAvailable: true,
+                price: recProduct.price,
+                imageUrl: recProduct.imageUrl,
+                imageAlt: recProduct.imageAlt,
+                quantity: 1,
+                isSelected: true,
+            };
+
+            return [...prev, newItem];
+        });
+    };
+
+    const formatRupiah = (val: number) => 'Rp' + val.toLocaleString('id-ID');
+
+    // Filter items per store
+    const filteredStores = stores.filter((store) =>
+        items.some((item) => item.storeId === store.id),
+    );
+
+    return (
+        <StorefrontLayout
+            cartCount={items.length}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+        >
+            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8">
+                {/* Breadcrumbs & Bulk Selection Bar */}
+                <CartBreadcrumbBar
+                    totalItemCount={items.length}
+                    selectedCount={selectedCount}
+                    isAllSelected={isAllSelected}
+                    onToggleSelectAll={handleToggleSelectAll}
+                    onDeleteSelected={handleDeleteSelected}
+                />
+
+                {/* Shopping Cart Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Left Column: Cart Items & Store Groups (8 cols on desktop) */}
+                    <div className="lg:col-span-8 flex flex-col gap-5">
+                        {/* Global Select Bar Card */}
+                        <div className="bg-white rounded-xl p-4 shadow-2xs border border-gray-100 flex items-center justify-between gap-3">
+                            <label className="flex items-center gap-3 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={isAllSelected}
+                                    onChange={(e) => handleToggleSelectAll(e.target.checked)}
+                                    className="w-5 h-5 rounded text-[#7D3394] focus:ring-[#7D3394] accent-[#7D3394] cursor-pointer"
+                                />
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                                    <span className="text-sm sm:text-base font-bold text-gray-900">
+                                        Pilih Semua Produk
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                        ({selectedCount} item terpilih dari {filteredStores.length} toko UMKM Binaan)
+                                    </span>
+                                </div>
+                            </label>
+                            <button
+                                type="button"
+                                onClick={handleDeleteSelected}
+                                disabled={selectedCount === 0}
+                                className="text-xs sm:text-sm font-semibold text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+
+                        {/* Store Groups */}
+                        {filteredStores.length === 0 ? (
+                            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 flex flex-col items-center justify-center gap-3">
+                                <ShoppingBag className="w-12 h-12 text-gray-300" />
+                                <h3 className="text-lg font-bold text-gray-900">
+                                    Keranjang Belanja Anda Kosong
+                                </h3>
+                                <p className="text-sm text-gray-500 max-w-sm">
+                                    Yuk jelajahi produk makanan halal, camilan, dan lauk siap saji UMKM binaan Kossuma di bawah ini!
+                                </p>
+                            </div>
+                        ) : (
+                            filteredStores.map((store) => (
+                                <StoreCartGroup
+                                    key={store.id}
+                                    store={store}
+                                    items={items.filter((item) => item.storeId === store.id)}
+                                    onToggleStore={handleToggleStore}
+                                    onToggleItem={handleToggleItem}
+                                    onUpdateQuantity={handleUpdateQuantity}
+                                    onRemoveItem={handleRemoveItem}
+                                    onUpdateNote={handleUpdateNote}
+                                />
+                            ))
+                        )}
+
+                        {/* Free Shipping Incentive Progress Banner */}
+                        <ShippingProgressBanner
+                            currentTotal={calculation.itemsTotal}
+                            threshold={calculation.freeShippingThreshold}
+                        />
+
+                        {/* Recommendations Carousel Mini Strip */}
+                        <CartRecommendations
+                            items={INITIAL_RECOMMENDATIONS}
+                            onAddToCart={handleAddToCart}
+                        />
+                    </div>
+
+                    {/* Right Column: Sticky Order Summary (4 cols on desktop) */}
+                    <div className="lg:col-span-4">
+                        <OrderSummaryCard
+                            calculation={calculation}
+                            onOpenCheckoutModal={() => setIsOrderModalOpen(true)}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Fixed Bottom Checkout Bar */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+                <div className="flex items-center justify-between gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={isAllSelected}
+                            onChange={(e) => handleToggleSelectAll(e.target.checked)}
+                            className="w-4 h-4 rounded text-[#7D3394] focus:ring-[#7D3394] accent-[#7D3394] cursor-pointer"
+                        />
+                        <span className="text-xs font-semibold text-gray-800">
+                            Pilih Semua
+                        </span>
+                    </label>
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex flex-col text-right">
+                            <span className="text-[11px] text-gray-500">Total:</span>
+                            <span className="text-base font-extrabold text-[#DC2626]">
+                                {formatRupiah(calculation.grandTotal)}
+                            </span>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsOrderModalOpen(true)}
+                            disabled={selectedCount === 0}
+                            className="py-2.5 px-4 rounded-xl bg-[#7D3394] text-white disabled:opacity-40 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                        >
+                            <ShoppingBag className="w-4 h-4" />
+                            <span>Beli ({selectedCount})</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Order Confirmation Modal */}
+            <OrderConfirmationModal
+                isOpen={isOrderModalOpen}
+                onClose={() => setIsOrderModalOpen(false)}
+                selectedItems={selectedItems}
+                calculation={calculation}
+            />
+        </StorefrontLayout>
+    );
+}
+
