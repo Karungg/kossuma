@@ -1,4 +1,6 @@
 import { CheckCircle2, Clock, Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { about, blog, docs } from '@/routes';
 
 export function CartFooter() {
     return (
@@ -15,6 +17,19 @@ export function CartFooter() {
                         <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
                             Koperasi Usaha Persaudaraan Muslimah Kota Bogor menghadirkan platform digital kurasi produk halal dan kuliner khas UMKM perempuan tangguh di Kota Hujan.
                         </p>
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#7D3394] pt-1">
+                            <Link href={about()} className="cursor-pointer">
+                                Tentang Kami
+                            </Link>
+                            <span className="text-gray-300">•</span>
+                            <Link href={blog()} className="cursor-pointer">
+                                Blog &amp; Kabar
+                            </Link>
+                            <span className="text-gray-300">•</span>
+                            <Link href={docs()} className="cursor-pointer">
+                                Dokumentasi
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Commitments */}
