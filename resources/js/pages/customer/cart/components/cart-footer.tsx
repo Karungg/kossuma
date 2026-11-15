@@ -15,7 +15,7 @@ export function CartFooter() {
                             </span>
                         </div>
                         <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
-                            Koperasi Usaha Persaudaraan Muslimah Kota Bogor menghadirkan platform digital kurasi produk halal dan kuliner khas UMKM perempuan tangguh di Kota Hujan.
+                            Koperasi Usaha Persaudaraan Muslimah Kota Bogor menghadirkan platform digital belanja produk halal dan kuliner khas UMKM perempuan tangguh di Kota Hujan.
                         </p>
                         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#7D3394] pt-1">
                             <Link href={about()} className="cursor-pointer">
@@ -27,14 +27,14 @@ export function CartFooter() {
                             </Link>
                             <span className="text-gray-300">•</span>
                             <Link href={docs()} className="cursor-pointer">
-                                Dokumentasi
+                                Panduan
                             </Link>
                         </div>
                     </div>
 
                     {/* Commitments */}
                     <div className="flex flex-col gap-3">
-                        <h4 className="text-xs sm:text-sm font-bold text-gray-900 uppercase tracking-wider">
+                        <h4 className="text-xs sm:text-sm font-bold text-gray-900">
                             Jaminan &amp; Komitmen
                         </h4>
                         <ul className="flex flex-col gap-2 text-xs sm:text-sm text-gray-600">
@@ -59,7 +59,7 @@ export function CartFooter() {
 
                     {/* Address & Hours */}
                     <div className="flex flex-col gap-3">
-                        <h4 className="text-xs sm:text-sm font-bold text-gray-900 uppercase tracking-wider">
+                        <h4 className="text-xs sm:text-sm font-bold text-gray-900">
                             Sekretariat &amp; Gerai
                         </h4>
                         <div className="flex items-start gap-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
@@ -80,7 +80,7 @@ export function CartFooter() {
 
                     {/* Customer Service */}
                     <div className="flex flex-col gap-3">
-                        <h4 className="text-xs sm:text-sm font-bold text-gray-900 uppercase tracking-wider">
+                        <h4 className="text-xs sm:text-sm font-bold text-gray-900">
                             Layanan Pelanggan
                         </h4>
                         <p className="text-xs sm:text-sm text-gray-600">

@@ -15,14 +15,18 @@ export function ProductCard({ product }: ProductCardProps) {
             {/* 1:1 Aspect Ratio Clean Photo */}
             <Link
                 href={showProduct({ slug: product.slug })}
-                className="relative w-full aspect-square bg-gray-100 overflow-hidden block cursor-pointer"
+                className="relative w-full aspect-square bg-gray-100 overflow-hidden flex items-center justify-center cursor-pointer"
             >
-                <img
-                    src={product.imageUrl}
-                    alt={product.imageAlt}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                />
+                {product.imageUrl ? (
+                    <img
+                        src={product.imageUrl}
+                        alt={product.imageAlt}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                    />
+                ) : (
+                    <span className="text-gray-400 text-xs font-medium">Foto Produk</span>
+                )}
             </Link>
 
             {/* Content Details */}

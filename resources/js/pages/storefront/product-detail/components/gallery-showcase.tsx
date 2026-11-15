@@ -14,11 +14,17 @@ export function GalleryShowcase({ images }: GalleryShowcaseProps) {
         <div className="flex flex-col gap-4">
             {/* Main Primary Showcase Image (1:1 Aspect Ratio) */}
             <div className="w-full bg-white rounded-2xl overflow-hidden shadow-xs border border-gray-100 aspect-square relative flex items-center justify-center">
-                <img
-                    src={activeImage.url}
-                    alt={activeImage.alt}
-                    className="w-full h-full object-cover transition-all duration-300"
-                />
+                {activeImage?.url ? (
+                    <img
+                        src={activeImage.url}
+                        alt={activeImage.alt}
+                        className="w-full h-full object-cover transition-all duration-300"
+                    />
+                ) : (
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm font-medium">
+                        Foto Produk
+                    </div>
+                )}
             </div>
 
             {/* Thumbnail Selector Row */}
@@ -37,11 +43,17 @@ export function GalleryShowcase({ images }: GalleryShowcaseProps) {
                                     : 'border-gray-200'
                             }`}
                         >
-                            <img
-                                src={img.url}
-                                alt={img.alt}
-                                className="w-full h-full object-cover"
-                            />
+                            {img.url ? (
+                                <img
+                                    src={img.url}
+                                    alt={img.alt}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs font-medium">
+                                    Foto {idx + 1}
+                                </div>
+                            )}
                         </button>
                     );
                 })}
@@ -57,7 +69,7 @@ export function GalleryShowcase({ images }: GalleryShowcaseProps) {
                 <div className="p-3 rounded-xl bg-white border border-gray-100 flex flex-col items-center text-center gap-1 shadow-2xs">
                     <Package className="w-5 h-5 text-[#7D3394]" />
                     <span className="font-bold text-xs text-gray-900">Vakum Higienis</span>
-                    <span className="text-[10px] text-gray-500">Food Grade Sealed</span>
+                    <span className="text-[10px] text-gray-500">Kemasan Rapat &amp; Bersih</span>
                 </div>
                 <div className="p-3 rounded-xl bg-white border border-gray-100 flex flex-col items-center text-center gap-1 shadow-2xs">
                     <Leaf className="w-5 h-5 text-[#7D3394]" />

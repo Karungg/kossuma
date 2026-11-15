@@ -144,7 +144,7 @@ export function StorefrontLayout({
                                         {/* Desktop Popover Island Card */}
                                         {isOpen && item.subItems && (
                                             <div className="absolute top-full right-0 mt-2 w-80 bg-white/98 backdrop-blur-md rounded-2xl border border-gray-100 shadow-xl p-2.5 z-50 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-150">
-                                                <div className="px-2.5 py-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                                <div className="px-2.5 py-1 text-xs font-bold text-gray-500">
                                                     {item.label}
                                                 </div>
 

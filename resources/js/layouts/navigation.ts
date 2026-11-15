@@ -93,13 +93,13 @@ export const INSTITUTIONAL_NAV_ITEMS: NavigationItem[] = [
     },
     {
         id: 'docs',
-        label: 'Dokumentasi & Legalitas',
+        label: 'Panduan & Mutu',
         href: docs.url(),
         subItems: [
             {
                 id: 'docs-halal',
                 label: 'Sertifikasi Halal BPJPH',
-                description: 'Standar kepatuhan syariat dan kurasi bahan baku',
+                description: 'Standar kepatuhan syariat dan pemeriksaan bahan baku',
                 href: docs.url(),
                 icon: ShieldCheck,
                 badge: 'Wajib',

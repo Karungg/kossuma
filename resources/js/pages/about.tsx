@@ -53,12 +53,10 @@ export default function About() {
                         </p>
                     </div>
 
-                    <div className="w-full lg:w-96 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 relative shrink-0 shadow-sm border border-gray-100">
-                        <img
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg"
-                            alt="UMKM Binaan Kossuma"
-                            className="w-full h-full object-cover"
-                        />
+                    <div className="w-full lg:w-96 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 flex flex-col items-center justify-center text-gray-400 gap-2 p-6 text-center shrink-0">
+                        <Users className="w-10 h-10 text-gray-300" />
+                        <span className="text-xs font-semibold text-gray-500">Dokumentasi UMKM Kossuma</span>
+                        <span className="text-[11px] text-gray-400">Pemberdayaan kuliner halal perempuan Kota Bogor</span>
                     </div>
                 </section>
 
