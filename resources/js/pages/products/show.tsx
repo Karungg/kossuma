@@ -1,17 +1,22 @@
 import { Head } from '@inertiajs/react';
-import { ProductDetailPage } from '../storefront/product-detail';
+import { ProductDetailPage, getProductDetail } from '../storefront/product-detail';
 
-export default function Show() {
+interface ShowProps {
+    slug?: string;
+}
+
+export default function Show({ slug }: ShowProps) {
+    const product = getProductDetail(slug);
+
     return (
         <>
-            <Head title="Ayam Ungkep Bumbu Kuning Siap Goreng - Kossuma Kota Bogor">
+            <Head title={`${product.name} - Kossuma Kota Bogor`}>
                 <meta
                     name="description"
-                    content="Ayam Ungkep Bumbu Kuning Lengkuas Siap Goreng khas UMKM Muslimah Kossuma Kota Bogor. 100% Halal, higienis, bumbu meresap."
+                    content={product.description}
                 />
             </Head>
-            <ProductDetailPage />
+            <ProductDetailPage slug={slug} />
         </>
     );
 }
-

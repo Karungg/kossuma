@@ -32,9 +32,6 @@ export function CartBreadcrumbBar({
                     <h1 className="text-lg sm:text-xl font-extrabold text-gray-900 tracking-tight">
                         Keranjang Belanja
                     </h1>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#F0E6F5] text-[#7D3394] text-xs font-bold">
-                        {totalItemCount} Produk
-                    </span>
                 </div>
             </div>
 

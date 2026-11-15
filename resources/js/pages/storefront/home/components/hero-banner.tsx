@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Store } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Store } from "lucide-react";
 
 export function HeroBanner() {
     return (
@@ -11,17 +11,17 @@ export function HeroBanner() {
                             <CheckCircle2 className="w-4 h-4 text-white" />
                             <span>100% Halal, Segar &amp; Higienis</span>
                         </span>
-                        <span className="text-xs font-bold text-[#7D3394] bg-[#F0E6F5] px-2.5 py-0.5 rounded-full">
-                            Koperasi Berdaya
-                        </span>
                     </div>
 
                     <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] lg:leading-[3rem] font-extrabold text-[#1F2937] tracking-tight">
-                        Sajian Pangan Halal &amp; Praktis dari UMKM Muslimah Kota Bogor
+                        Sajian Pangan Halal &amp; Praktis dari UMKM Muslimah
+                        Kota Bogor
                     </h1>
 
                     <p className="text-sm sm:text-base text-gray-600 max-w-xl leading-relaxed">
-                        Dukung kemandirian ekonomi keluarga dan nikmati aneka olahan frozen food, lauk siap saji, dan kue khas Bogor langsung dari dapur anggota koperasi berdaya.
+                        Dukung kemandirian ekonomi keluarga dan nikmati aneka
+                        olahan frozen food, lauk siap saji, dan kue khas Bogor
+                        langsung dari dapur anggota koperasi berdaya.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
@@ -41,9 +41,12 @@ export function HeroBanner() {
                         <div className="w-16 h-16 rounded-2xl bg-white/80 shadow-xs flex items-center justify-center text-[#7D3394]">
                             <Store className="w-8 h-8" />
                         </div>
-                        <span className="text-sm font-bold text-gray-700">Pusat Belanja Halal Kossuma</span>
+                        <span className="text-sm font-bold text-gray-700">
+                            Pusat Belanja Halal Kossuma
+                        </span>
                         <span className="text-xs text-gray-500 max-w-xs">
-                            Pilihan makanan siap saji, beku, dan kue basah khas ibu-ibu pelaku UMKM se-Kota Bogor
+                            Pilihan makanan siap saji, beku, dan kue basah khas
+                            ibu-ibu pelaku UMKM se-Kota Bogor
                         </span>
                     </div>
                 </div>
@@ -51,4 +54,3 @@ export function HeroBanner() {
         </section>
     );
 }
-

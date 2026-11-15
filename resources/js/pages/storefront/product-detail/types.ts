@@ -11,6 +11,16 @@ export interface ProductSpecification {
     description: string;
 }
 
+export interface ProductReview {
+    id: string;
+    authorName: string;
+    authorLocation: string;
+    rating: number;
+    date: string;
+    variant: string;
+    comment: string;
+}
+
 export interface RelatedProduct {
     id: string;
     slug: string;
@@ -36,7 +46,11 @@ export interface ProductDetail {
     discountPercent: number;
     rating: number;
     reviewCount: number;
+    soldCount?: string;
+    stockCount?: number;
     stockStatus: string;
+    unitLabel?: string;
+    weight?: string;
     shippingFastInfo: string;
     producer: {
         name: string;
@@ -50,6 +64,6 @@ export interface ProductDetail {
     composition: string;
     cookingInstructions: string[];
     halalAudit: string;
+    reviews?: ProductReview[];
     relatedProducts: RelatedProduct[];
 }
-

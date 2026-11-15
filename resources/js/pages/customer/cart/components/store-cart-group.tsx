@@ -49,9 +49,6 @@ export function StoreCartGroup({
                         </div>
                     </div>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#F0E6F5] text-[#7D3394] text-xs font-bold">
-                    {store.badge}
-                </span>
             </div>
 
             {/* Product Items in this Store */}
@@ -88,19 +85,7 @@ export function StoreCartGroup({
 
                             {/* Product Info */}
                             <div className="flex-1 flex flex-col justify-between min-w-0">
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <span
-                                            className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
-                                                item.stockInfo.includes('Sisa')
-                                                    ? 'bg-amber-50 text-amber-700'
-                                                    : 'bg-emerald-50 text-emerald-700'
-                                            }`}
-                                        >
-                                            {item.stockInfo}
-                                        </span>
-                                    </div>
-
+                                <div className="flex flex-col gap-1.5">
                                     <h2 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2">
                                         {item.name}
                                     </h2>

@@ -1,13 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
 Route::inertia('cart', 'cart')->name('cart');
-Route::inertia('products/{slug}', 'products/show')->name('products.show');
+Route::get('products/{slug}', function (string $slug) {
+    return Inertia::render('products/show', [
+        'slug' => $slug,
+    ]);
+})->name('products.show');
 Route::inertia('about', 'about')->name('about');
 Route::inertia('blog', 'blog')->name('blog');
-Route::inertia('docs', 'docs')->name('docs');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

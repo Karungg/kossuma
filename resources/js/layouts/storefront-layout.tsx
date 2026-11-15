@@ -195,8 +195,7 @@ export function StorefrontLayout({
                                                         className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#7D3394] cursor-pointer"
                                                     >
                                                         <span>
-                                                            Buka Halaman{" "}
-                                                            {item.label}
+                                                            Lihat {item.label}
                                                         </span>
                                                         <ArrowRight className="w-3.5 h-3.5" />
                                                     </Link>
@@ -433,7 +432,7 @@ export function StorefrontLayout({
                                                     className="text-xs font-bold text-[#7D3394] py-1.5 px-2.5 flex items-center gap-1 cursor-pointer pt-2"
                                                 >
                                                     <span>
-                                                        Lihat Semua {item.label}
+                                                        Lihat {item.label}
                                                     </span>
                                                     <ArrowRight className="w-3 h-3" />
                                                 </Link>
