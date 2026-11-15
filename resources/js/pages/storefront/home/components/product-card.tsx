@@ -11,11 +11,11 @@ export function ProductCard({ product }: ProductCardProps) {
     const formatRupiah = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
     return (
-        <article className="flex flex-col bg-white rounded-xl overflow-hidden shadow-xs border border-gray-100">
+        <article className="flex flex-col bg-white rounded-xl overflow-hidden shadow-xs border border-gray-100 h-full">
             {/* 1:1 Aspect Ratio Clean Photo */}
             <Link
                 href={showProduct({ slug: product.slug })}
-                className="relative w-full aspect-square bg-gray-100 overflow-hidden flex items-center justify-center cursor-pointer"
+                className="relative w-full aspect-square bg-gray-100 overflow-hidden flex items-center justify-center cursor-pointer block"
             >
                 {product.imageUrl ? (
                     <img
@@ -30,50 +30,50 @@ export function ProductCard({ product }: ProductCardProps) {
             </Link>
 
             {/* Content Details */}
-            <div className="p-3 md:p-4 flex flex-col flex-1 justify-between gap-2.5">
+            <div className="p-2.5 sm:p-3 flex flex-col flex-1 justify-between gap-2">
                 <div className="flex flex-col gap-1">
                     <Link
                         href={showProduct({ slug: product.slug })}
-                        className="text-sm md:text-base font-bold text-[#1F2937] line-clamp-1 leading-snug cursor-pointer"
+                        className="text-xs sm:text-sm font-bold text-[#1F2937] line-clamp-2 leading-snug cursor-pointer"
                         title={product.title}
                     >
                         {product.title}
                     </Link>
                     {product.description && (
-                        <p className="text-xs text-gray-500 line-clamp-1 leading-normal">
+                        <p className="text-[11px] text-gray-500 line-clamp-1 leading-normal">
                             {product.description}
                         </p>
                     )}
                 </div>
 
-                <div className="flex flex-col gap-1.5 pt-1">
-                    {/* Price Row */}
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-base sm:text-lg font-extrabold text-[#DC2626] tracking-tight">
+                <div className="flex flex-col gap-1 pt-1">
+                    {/* Price Row (Bersebelahan) */}
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <span className="text-sm sm:text-base font-extrabold text-[#DC2626] tracking-tight">
                             {formatRupiah(product.price)}
                         </span>
-                        {product.originalPrice && (
-                            <span className="text-xs text-gray-400 line-through">
+                        {product.originalPrice && product.originalPrice > 0 && (
+                            <span className="text-[11px] text-gray-400 line-through">
                                 {formatRupiah(product.originalPrice)}
                             </span>
                         )}
                     </div>
 
                     {/* Rating & Sold Count */}
-                    <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
                         <div className="flex items-center text-amber-500">
-                            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                            <span className="font-semibold text-gray-900 ml-1">
+                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                            <span className="font-semibold text-gray-900 ml-0.5">
                                 {product.rating}
                             </span>
                         </div>
                         <span className="text-gray-300">•</span>
-                        <span>{product.soldCount}</span>
+                        <span className="truncate">{product.soldCount}</span>
                     </div>
 
                     {/* Store Name & Location */}
-                    <div className="flex items-center gap-1 text-gray-500 text-xs truncate pt-0.5 border-t border-gray-50">
-                        <Store className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <div className="flex items-center gap-1 text-gray-500 text-[11px] truncate pt-1 border-t border-gray-50">
+                        <Store className="w-3 h-3 text-gray-400 shrink-0" />
                         <span className="truncate">
                             {product.storeName} — {product.storeDistrict}
                         </span>
