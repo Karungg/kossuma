@@ -12,6 +12,8 @@ export interface CatalogProduct {
     storeDistrict: string;
     imageUrl: string;
     imageAlt: string;
+    isPreorder?: boolean;
+    preorderDays?: number;
 }
 
 export interface CategoryTab {

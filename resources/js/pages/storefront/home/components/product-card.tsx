@@ -11,11 +11,11 @@ export function ProductCard({ product }: ProductCardProps) {
     const formatRupiah = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
     return (
-        <article className="flex flex-col bg-white rounded-xl overflow-hidden shadow-xs border border-gray-100 h-full">
-            {/* 1:1 Aspect Ratio Clean Photo */}
+        <article className="flex flex-col h-full bg-transparent border-0 shadow-none">
+            {/* Foto Produk (Rasio 1:1, Rounded Halus, Menyatu dengan Latar) */}
             <Link
                 href={showProduct({ slug: product.slug })}
-                className="relative w-full aspect-square bg-gray-100 overflow-hidden flex items-center justify-center cursor-pointer block"
+                className="relative w-full aspect-square bg-gray-100/80 rounded-md sm:rounded-lg overflow-hidden flex items-center justify-center cursor-pointer block"
             >
                 {product.imageUrl ? (
                     <img
@@ -27,27 +27,29 @@ export function ProductCard({ product }: ProductCardProps) {
                 ) : (
                     <span className="text-gray-400 text-xs font-medium">Foto Produk</span>
                 )}
+
+                {/* Penanda Pre-order */}
+                {product.isPreorder && (
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#F0E6F5]/95 text-[#7D3394] border border-[#E2C9EB] text-[10px] font-bold shadow-2xs">
+                        {product.preorderDays ? `Pre-order ${product.preorderDays} hari` : 'Pre-order'}
+                    </span>
+                )}
             </Link>
 
-            {/* Content Details */}
-            <div className="p-2.5 sm:p-3 flex flex-col flex-1 justify-between gap-2">
-                <div className="flex flex-col gap-1">
-                    <Link
-                        href={showProduct({ slug: product.slug })}
-                        className="text-xs sm:text-sm font-bold text-[#1F2937] line-clamp-2 leading-snug cursor-pointer"
-                        title={product.title}
-                    >
-                        {product.title}
-                    </Link>
-                    {product.description && (
-                        <p className="text-[11px] text-gray-500 line-clamp-1 leading-normal">
-                            {product.description}
-                        </p>
-                    )}
-                </div>
+            {/* Area Teks & Informasi Produk */}
+            <div className="pt-2 sm:pt-2.5 flex flex-col flex-1 justify-between gap-1.5">
+                {/* Judul Produk */}
+                <Link
+                    href={showProduct({ slug: product.slug })}
+                    className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2 leading-snug cursor-pointer"
+                    title={product.title}
+                >
+                    {product.title}
+                </Link>
 
-                <div className="flex flex-col gap-1 pt-1">
-                    {/* Price Row (Bersebelahan) */}
+                {/* Detail Harga, Rating & Toko */}
+                <div className="flex flex-col gap-1 pt-0.5">
+                    {/* Baris Harga (Bersebelahan) */}
                     <div className="flex items-baseline gap-1.5 flex-wrap">
                         <span className="text-sm sm:text-base font-extrabold text-[#DC2626] tracking-tight">
                             {formatRupiah(product.price)}
@@ -59,11 +61,11 @@ export function ProductCard({ product }: ProductCardProps) {
                         )}
                     </div>
 
-                    {/* Rating & Sold Count */}
-                    <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                    {/* Rating & Jumlah Terjual */}
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
                         <div className="flex items-center text-amber-500">
-                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                            <span className="font-semibold text-gray-900 ml-0.5">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            <span className="font-semibold text-gray-800 ml-0.5">
                                 {product.rating}
                             </span>
                         </div>
@@ -71,11 +73,11 @@ export function ProductCard({ product }: ProductCardProps) {
                         <span className="truncate">{product.soldCount}</span>
                     </div>
 
-                    {/* Store Name & Location */}
-                    <div className="flex items-center gap-1 text-gray-500 text-[11px] truncate pt-1 border-t border-gray-50">
+                    {/* Nama Toko UMKM & Kecamatan */}
+                    <div className="flex items-center gap-1 text-[11px] text-gray-400 truncate pt-0.5">
                         <Store className="w-3 h-3 text-gray-400 shrink-0" />
                         <span className="truncate">
-                            {product.storeName} — {product.storeDistrict}
+                            {product.storeName} • {product.storeDistrict}
                         </span>
                     </div>
                 </div>

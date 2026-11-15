@@ -98,6 +98,8 @@ export const PRODUCTS: CatalogProduct[] = [
         storeDistrict: 'Pajajaran',
         imageUrl: '',
         imageAlt: 'Lapis Talas Khas Bogor Original Keju Premium',
+        isPreorder: true,
+        preorderDays: 1,
     },
     {
         id: 'prod-2',
@@ -182,6 +184,8 @@ export const PRODUCTS: CatalogProduct[] = [
         storeDistrict: 'Baranangsiang',
         imageUrl: '',
         imageAlt: 'Bolu Gulung Pandan Keju Lapis Legit Lembut Khas Bogor',
+        isPreorder: true,
+        preorderDays: 2,
     },
     {
         id: 'prod-8',
