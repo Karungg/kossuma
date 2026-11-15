@@ -1,6 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
-import { StorefrontLayout } from '@/layouts/storefront-layout';
-import { home } from '@/routes';
+import { Head, Link } from "@inertiajs/react";
+import { StorefrontLayout } from "@/layouts/storefront-layout";
+import { home } from "@/routes";
 import {
     ArrowLeft,
     Award,
@@ -11,7 +11,7 @@ import {
     ShieldCheck,
     Sparkles,
     Users,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function About() {
     return (
@@ -41,22 +41,29 @@ export default function About() {
                 {/* Editorial Hero Section */}
                 <section className="bg-white rounded-2xl p-8 sm:p-12 border border-gray-100 shadow-xs flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
                     <div className="flex-1 flex flex-col gap-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F0E6F5] text-[#7D3394] text-xs font-bold w-fit">
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>Koperasi Usaha Persaudaraan Muslimah</span>
-                        </div>
                         <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                            Mewadahi Kuliner Halal &amp; Kemandirian UMKM Muslimah Kota Bogor
+                            Mewadahi Kuliner Halal &amp; Kemandirian UMKM
+                            Muslimah Kota Bogor
                         </h1>
                         <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                            Kossuma lahir sebagai ikhtiar gotong royong para pengusaha kuliner muslimah di Kota Hujan untuk menghadirkan produk pangan halal, lezat, higienis, serta berdaya saing tinggi. Kami membina puluhan pelaku usaha rumahan mulai dari standarisasi mutu, sertifikasi halal BPJPH/MUI, hingga pemasaran digital bersama.
+                            Kossuma lahir sebagai ikhtiar gotong royong para
+                            pengusaha kuliner muslimah di Kota Hujan untuk
+                            menghadirkan produk pangan halal, lezat, higienis,
+                            serta berdaya saing tinggi. Kami membina puluhan
+                            pelaku usaha rumahan mulai dari standarisasi mutu,
+                            sertifikasi halal BPJPH/MUI, hingga pemasaran
+                            digital bersama.
                         </p>
                     </div>
 
                     <div className="w-full lg:w-96 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 flex flex-col items-center justify-center text-gray-400 gap-2 p-6 text-center shrink-0">
                         <Users className="w-10 h-10 text-gray-300" />
-                        <span className="text-xs font-semibold text-gray-500">Dokumentasi UMKM Kossuma</span>
-                        <span className="text-[11px] text-gray-400">Pemberdayaan kuliner halal perempuan Kota Bogor</span>
+                        <span className="text-xs font-semibold text-gray-500">
+                            Dokumentasi UMKM Kossuma
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                            Pemberdayaan kuliner halal perempuan Kota Bogor
+                        </span>
                     </div>
                 </section>
 
@@ -70,7 +77,8 @@ export default function About() {
                             100% Halal Terverifikasi
                         </h3>
                         <p className="text-xs text-gray-500 leading-relaxed">
-                            Seluruh bahan baku dan proses produksi dipastikan memenuhi standar syariat halal BPJPH dan MUI.
+                            Seluruh bahan baku dan proses produksi dipastikan
+                            memenuhi standar syariat halal BPJPH dan MUI.
                         </p>
                     </div>
 
@@ -82,7 +90,8 @@ export default function About() {
                             Pemberdayaan Nyata
                         </h3>
                         <p className="text-xs text-gray-500 leading-relaxed">
-                            Mendukung kemandirian finansial ibu rumah tangga dan pelaku UMKM lokal berbasis kekeluargaan koperasi.
+                            Mendukung kemandirian finansial ibu rumah tangga dan
+                            pelaku UMKM lokal berbasis kekeluargaan koperasi.
                         </p>
                     </div>
 
@@ -94,7 +103,8 @@ export default function About() {
                             Kurasi Higienis &amp; Mutu
                         </h3>
                         <p className="text-xs text-gray-500 leading-relaxed">
-                            Setiap kemasan frozen food dan kuliner melewati uji rasa, higienitas, dan daya simpan pangan aman.
+                            Setiap kemasan frozen food dan kuliner melewati uji
+                            rasa, higienitas, dan daya simpan pangan aman.
                         </p>
                     </div>
 
@@ -106,35 +116,10 @@ export default function About() {
                             Jaringan Multi-Toko
                         </h3>
                         <p className="text-xs text-gray-500 leading-relaxed">
-                            Memudahkan warga Kota &amp; Kabupaten Bogor memesan berbagai kuliner UMKM dalam satu keranjang pesanan.
+                            Memudahkan warga Kota &amp; Kabupaten Bogor memesan
+                            berbagai kuliner UMKM dalam satu keranjang pesanan.
                         </p>
                     </div>
-                </section>
-
-                {/* Office & Secretariat Info */}
-                <section className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex flex-col gap-2">
-                        <h3 className="text-lg font-bold text-gray-900">
-                            Sekretariat &amp; Gerai Layanan Kossuma
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1.5">
-                            <MapPin className="w-4 h-4 text-[#7D3394] shrink-0" />
-                            <span>Jl. Pajajaran No. 42, Kel. Baranangsiang, Kec. Bogor Timur, Kota Bogor, Jawa Barat 16143</span>
-                        </p>
-                        <p className="text-xs text-gray-500">
-                            Buka setiap Senin – Sabtu: 08.00 – 17.00 WIB
-                        </p>
-                    </div>
-
-                    <a
-                        href="https://wa.me/6281289005544"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-5 py-3 rounded-xl bg-[#7D3394] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm shrink-0 cursor-pointer"
-                    >
-                        <Phone className="w-4 h-4" />
-                        <span>Hubungi Sekretariat</span>
-                    </a>
                 </section>
             </div>
         </StorefrontLayout>

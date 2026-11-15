@@ -17,10 +17,10 @@ test('cart page renders successfully', function () {
 });
 
 test('product detail page renders successfully', function () {
-    $response = $this->get(route('products.show', ['slug' => 'ayam-ungkep-bumbu-kuning']));
+    $response = $this->get(route('products.show', ['slug' => 'kaki-naga-ayam']));
 
     $response->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('products/show'));
+        ->assertInertia(fn (Assert $page) => $page->component('products/show')->where('slug', 'kaki-naga-ayam'));
 });
 
 test('about page renders successfully', function () {
@@ -35,11 +35,4 @@ test('blog page renders successfully', function () {
 
     $response->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('blog'));
-});
-
-test('docs page renders successfully', function () {
-    $response = $this->get(route('docs'));
-
-    $response->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('docs'));
 });

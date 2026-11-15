@@ -93,7 +93,7 @@ Setiap kali membuat atau mengubah halaman, patuhi **7 Aturan Dasar** berikut tan
 ## 3. Struktur Layout & Kerangka Halaman
 
 ### 3.1 Kerangka Utama (`StorefrontLayout`)
-Semua halaman depan dan informasi (Beranda, Detail Produk, Keranjang, Tentang Kami, Blog, dan Panduan) wajib menggunakan [`StorefrontLayout`](file:///home/miftah/Code/PHP/kossuma/resources/js/layouts/storefront-layout.tsx).
+Semua halaman depan dan informasi (Beranda, Detail Produk, Keranjang, Tentang Kami, dan Kabar/Blog) wajib menggunakan [`StorefrontLayout`](file:///home/miftah/Code/PHP/kossuma/resources/js/layouts/storefront-layout.tsx).
 
 Setiap halaman publik wajib didaftarkan pada [`resources/js/app.tsx`](file:///home/miftah/Code/PHP/kossuma/resources/js/app.tsx) agar mengembalikan nilai `null` pada pengaturan layout bawaan, sehingga tidak terbungkus oleh tampilan sidebar admin/dashboard.
 
@@ -119,7 +119,7 @@ Header menggunakan desain **Two-Tier (Dua Baris)** yang bersih:
 
 1. **Baris Atas (Menu Informasi — Hanya di Tablet/Desktop `sm:block`):**
    - Tinggi `h-9` (36px) dengan latar `#F8F9FB` dan posisi rata kanan (`justify-end`).
-   - Berisi tautan halaman informasi: **Tentang Kami**, **Blog & Kabar**, **Panduan**, serta **Bantuan**.
+   - Berisi tautan halaman informasi: **Tentang Kami**, **Kabar & Tips**, serta **Bantuan**.
    - Jika menu memiliki sub-menu, klik pada menu akan membuka kotak daftar pilihan (*popover*) yang rapi tanpa judul berhuruf kapital semua.
    - Daftar menu dikelola secara terpusat di [`resources/js/layouts/navigation.ts`](file:///home/miftah/Code/PHP/kossuma/resources/js/layouts/navigation.ts).
 
@@ -157,7 +157,7 @@ Untuk gambar produk, banner, atau foto artikel yang masih berupa data contoh (*d
 ```
 
 ### 5.3 Bilah Navigasi Kembali (Sub-Header Halaman Dalam)
-Untuk halaman selain Beranda (seperti Detail Produk, Keranjang, Tentang Kami, Blog, dan Panduan), gunakan satu baris penunjuk sederhana di bagian atas:
+Untuk halaman selain Beranda (seperti Detail Produk, Keranjang, Tentang Kami, dan Kabar), gunakan satu baris penunjuk sederhana di bagian atas:
 
 ```tsx
 <div className="bg-white rounded-xl px-4 py-3 border border-gray-100 shadow-2xs flex items-center justify-between gap-3">

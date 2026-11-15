@@ -2,6 +2,7 @@ export interface CatalogProduct {
     id: string;
     slug: string;
     title: string;
+    description?: string;
     category: string;
     price: number;
     originalPrice?: number;

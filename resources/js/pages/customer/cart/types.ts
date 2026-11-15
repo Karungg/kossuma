@@ -3,8 +3,6 @@ export interface CartItem {
     storeId: string;
     name: string;
     variant: string;
-    stockInfo: string;
-    isStockAvailable: boolean;
     price: number;
     originalPrice?: number;
     discountPercent?: number;
@@ -19,7 +17,6 @@ export interface StoreGroup {
     name: string;
     district: string;
     city: string;
-    badge: string;
     notePlaceholder: string;
     note: string;
 }
@@ -33,7 +30,6 @@ export interface RecommendationProduct {
     imageUrl: string;
     imageAlt: string;
     variant: string;
-    stockInfo: string;
 }
 
 export interface CartCalculation {

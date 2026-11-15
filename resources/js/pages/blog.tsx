@@ -1,7 +1,7 @@
-import { Head, Link } from '@inertiajs/react';
-import { StorefrontLayout } from '@/layouts/storefront-layout';
-import { home } from '@/routes';
-import { ArrowLeft, BookOpen, Calendar, Clock, Sparkles } from 'lucide-react';
+import { Head, Link } from "@inertiajs/react";
+import { StorefrontLayout } from "@/layouts/storefront-layout";
+import { home } from "@/routes";
+import { ArrowLeft, BookOpen, Calendar, Clock, Sparkles } from "lucide-react";
 
 interface ArticleItem {
     id: string;
@@ -16,37 +16,37 @@ interface ArticleItem {
 
 const ARTICLES: ArticleItem[] = [
     {
-        id: '1',
-        title: 'Rahasia Ayam Ungkep Lengkuas Khas Bogor: Bumbu Rempah Meresap Hingga Tulang',
+        id: "1",
+        title: "Rahasia Ayam Ungkep Lengkuas Khas Bogor: Bumbu Rempah Meresap Hingga Tulang",
         excerpt:
-            'Mengintip dapur Pawon Ibu Fatimah di Semplak, Bogor Barat, yang mempertahankan resep turun temurun lengkuas parut segar tanpa pengawet buatan.',
-        category: 'Kisah UMKM',
-        author: 'Pawon Ibu Fatimah',
-        date: '12 Nov 2026',
-        readTime: '4 mnt baca',
-        imageUrl: '',
+            "Mengintip dapur Pawon Ibu Fatimah di Semplak, Bogor Barat, yang mempertahankan resep turun temurun lengkuas parut segar tanpa pengawet buatan.",
+        category: "Kisah UMKM",
+        author: "Pawon Ibu Fatimah",
+        date: "12 Nov 2026",
+        readTime: "4 mnt baca",
+        imageUrl: "",
     },
     {
-        id: '2',
-        title: 'Tips Menyimpan Frozen Food Halal Agar Nutrisi & Kelezatan Tetap Terjaga',
+        id: "2",
+        title: "Tips Menyimpan Frozen Food Halal Agar Nutrisi & Kelezatan Tetap Terjaga",
         excerpt:
-            'Panduan praktis menjaga suhu freezer optimal, cara mendiamkan di suhu ruang yang benar, serta cara menyajikan risol mayo agar tetap lumer dan krispi sempurna.',
-        category: 'Tips Dapur',
-        author: 'Dapur Ummi Salma',
-        date: '08 Nov 2026',
-        readTime: '3 mnt baca',
-        imageUrl: '',
+            "Panduan praktis menjaga suhu freezer optimal, cara mendiamkan di suhu ruang yang benar, serta cara menyajikan risol mayo agar tetap lumer dan krispi sempurna.",
+        category: "Tips Dapur",
+        author: "Dapur Ummi Salma",
+        date: "08 Nov 2026",
+        readTime: "3 mnt baca",
+        imageUrl: "",
     },
     {
-        id: '3',
-        title: 'Perjalanan Kossuma Mengantarkan Puluhan UMKM Muslimah Meraih Sertifikasi Halal BPJPH',
+        id: "3",
+        title: "Perjalanan Kossuma Mengantarkan Puluhan UMKM Muslimah Meraih Sertifikasi Halal BPJPH",
         excerpt:
-            'Kemandirian ekonomi berawal dari jaminan kehalalan produk. Simak bagaimana program pendampingan dan subsidi seleksi mutu koperasi Kossuma berjalan di Kota Bogor.',
-        category: 'Kabar Koperasi',
-        author: 'Pengurus Kossuma',
-        date: '01 Nov 2026',
-        readTime: '5 mnt baca',
-        imageUrl: '',
+            "Kemandirian ekonomi berawal dari jaminan kehalalan produk. Simak bagaimana program pendampingan dan subsidi seleksi mutu koperasi Kossuma berjalan di Kota Bogor.",
+        category: "Kabar Koperasi",
+        author: "Pengurus Kossuma",
+        date: "01 Nov 2026",
+        readTime: "5 mnt baca",
+        imageUrl: "",
     },
 ];
 
@@ -71,22 +71,8 @@ export default function Blog() {
                         <span>Kembali ke Katalog</span>
                     </Link>
                     <span className="text-xs font-semibold text-gray-500">
-                        Blog &amp; Kabar Kossuma
+                        Blog
                     </span>
-                </div>
-
-                {/* Header Banner */}
-                <div className="bg-white rounded-2xl p-8 sm:p-10 border border-gray-100 shadow-xs flex flex-col gap-3">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0E6F5] text-[#7D3394] text-xs font-bold w-fit">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Cerita &amp; Inspirasi Kuliner Bogor</span>
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                        Warta Koperasi &amp; Cerita Dapur Halal Muslimah
-                    </h1>
-                    <p className="text-sm text-gray-600 max-w-2xl leading-relaxed">
-                        Temukan kabar terkini kegiatan koperasi, kisah inspirasi perjuangan para ibu pelaku UMKM binaan, serta tips memasak hidangan praktis untuk keluarga.
-                    </p>
                 </div>
 
                 {/* Article Grid */}
@@ -106,7 +92,9 @@ export default function Blog() {
                                             loading="lazy"
                                         />
                                     ) : (
-                                        <span className="text-gray-400 text-xs font-medium">Foto Artikel</span>
+                                        <span className="text-gray-400 text-xs font-medium">
+                                            Foto Artikel
+                                        </span>
                                     )}
                                 </div>
                                 <div className="p-5 flex flex-col gap-2.5">

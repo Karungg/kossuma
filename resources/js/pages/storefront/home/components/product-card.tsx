@@ -31,19 +31,24 @@ export function ProductCard({ product }: ProductCardProps) {
 
             {/* Content Details */}
             <div className="p-3 md:p-4 flex flex-col flex-1 justify-between gap-2.5">
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1">
                     <Link
                         href={showProduct({ slug: product.slug })}
-                        className="text-sm md:text-base font-bold text-[#1F2937] line-clamp-2 leading-snug cursor-pointer"
+                        className="text-sm md:text-base font-bold text-[#1F2937] line-clamp-1 leading-snug cursor-pointer"
                         title={product.title}
                     >
                         {product.title}
                     </Link>
+                    {product.description && (
+                        <p className="text-xs text-gray-500 line-clamp-1 leading-normal">
+                            {product.description}
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-1.5 pt-1">
                     {/* Price Row */}
-                    <div className="flex items-baseline justify-between">
+                    <div className="flex items-baseline gap-2">
                         <span className="text-base sm:text-lg font-extrabold text-[#DC2626] tracking-tight">
                             {formatRupiah(product.price)}
                         </span>

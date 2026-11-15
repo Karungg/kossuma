@@ -1,6 +1,7 @@
 import { ChevronRight, Star, Store } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { home } from '@/routes';
+import { show as showProduct } from '@/routes/products';
 import type { RelatedProduct } from '../types';
 
 interface RelatedProductsProps {
@@ -41,7 +42,10 @@ export function RelatedProducts({ items }: RelatedProductsProps) {
                         className="bg-white rounded-xl overflow-hidden shadow-xs border border-gray-100 flex flex-col justify-between"
                     >
                         <div>
-                            <div className="w-full aspect-square overflow-hidden bg-gray-100 relative flex items-center justify-center">
+                            <Link
+                                href={showProduct({ slug: prod.slug })}
+                                className="w-full aspect-square overflow-hidden bg-gray-100 relative flex items-center justify-center cursor-pointer block"
+                            >
                                 {prod.imageUrl ? (
                                     <img
                                         src={prod.imageUrl}
@@ -52,7 +56,7 @@ export function RelatedProducts({ items }: RelatedProductsProps) {
                                 ) : (
                                     <span className="text-gray-400 text-xs font-medium">Foto Produk</span>
                                 )}
-                            </div>
+                            </Link>
 
                             <div className="p-3 sm:p-4 flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
@@ -65,9 +69,12 @@ export function RelatedProducts({ items }: RelatedProductsProps) {
                                     </div>
                                 </div>
 
-                                <h3 className="text-xs sm:text-sm text-gray-900 font-bold line-clamp-2 leading-snug">
+                                <Link
+                                    href={showProduct({ slug: prod.slug })}
+                                    className="text-xs sm:text-sm text-gray-900 font-bold line-clamp-2 leading-snug cursor-pointer"
+                                >
                                     {prod.name}
-                                </h3>
+                                </Link>
 
                                 <div className="flex items-center gap-1 text-[11px] text-gray-500 truncate">
                                     <Store className="w-3 h-3 text-gray-400 shrink-0" />
