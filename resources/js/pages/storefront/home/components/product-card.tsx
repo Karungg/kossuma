@@ -1,14 +1,14 @@
-import { Star, Store } from 'lucide-react';
-import { Link } from '@inertiajs/react';
-import { show as showProduct } from '@/routes/products';
-import type { CatalogProduct } from '../types';
+import { Star, Store } from "lucide-react";
+import { Link } from "@inertiajs/react";
+import { show as showProduct } from "@/routes/products";
+import type { CatalogProduct } from "../types";
 
 interface ProductCardProps {
     product: CatalogProduct;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-    const formatRupiah = (val: number) => 'Rp' + val.toLocaleString('id-ID');
+    const formatRupiah = (val: number) => "Rp" + val.toLocaleString("id-ID");
 
     return (
         <article className="flex flex-col h-full bg-transparent border-0 shadow-none">
@@ -25,13 +25,17 @@ export function ProductCard({ product }: ProductCardProps) {
                         loading="lazy"
                     />
                 ) : (
-                    <span className="text-gray-400 text-xs font-medium">Foto Produk</span>
+                    <span className="text-gray-400 text-xs font-medium">
+                        Foto Produk
+                    </span>
                 )}
 
                 {/* Penanda Pre-order */}
                 {product.isPreorder && (
                     <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#F0E6F5]/95 text-[#7D3394] border border-[#E2C9EB] text-[10px] font-bold shadow-2xs">
-                        {product.preorderDays ? `Pre-order ${product.preorderDays} hari` : 'Pre-order'}
+                        {product.preorderDays
+                            ? `Pre-order ${product.preorderDays} hari`
+                            : "Pre-order"}
                     </span>
                 )}
             </Link>
@@ -41,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 {/* Judul Produk */}
                 <Link
                     href={showProduct({ slug: product.slug })}
-                    className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2 leading-snug cursor-pointer"
+                    className="text-xs sm:text-sm text-gray-900 line-clamp-2 leading-snug cursor-pointer"
                     title={product.title}
                 >
                     {product.title}
