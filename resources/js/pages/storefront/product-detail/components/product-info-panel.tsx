@@ -70,7 +70,7 @@ export function ProductInfoPanel({ product }: ProductInfoPanelProps) {
                         <Store className="w-6 h-6" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[11px] font-bold text-[#7D3394] uppercase tracking-wider">
+                        <span className="text-xs font-bold text-[#7D3394]">
                             Produsen Muslimah Binaan
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -105,7 +105,7 @@ export function ProductInfoPanel({ product }: ProductInfoPanelProps) {
                         key={idx}
                         className="p-3.5 rounded-xl bg-white border border-gray-100 shadow-2xs flex flex-col gap-0.5"
                     >
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-bold text-gray-500">
                             {spec.title}
                         </span>
                         <span className="text-sm font-bold text-gray-900">

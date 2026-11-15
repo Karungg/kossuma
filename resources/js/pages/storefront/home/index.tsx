@@ -28,8 +28,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '1.2rb terjual',
         storeName: 'Dapur Ummu Hafizh',
         storeDistrict: 'Pajajaran',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Lapis Talas Khas Bogor Original Keju Premium',
     },
     {
@@ -42,8 +41,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '850 terjual',
         storeName: 'Ayam Berkah Barokah',
         storeDistrict: 'Tanah Sareal',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Ayam Ungkep Bumbu Kuning Lengkuas Siap Goreng (1 Ekor)',
     },
     {
@@ -56,8 +54,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '920 terjual',
         storeName: 'Dimsum Muslimah',
         storeDistrict: 'Bogor Barat',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Dimsum Ayam Udang Premium Halal + Saus Merah (Isi 10)',
     },
     {
@@ -70,8 +67,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '740 terjual',
         storeName: 'Snack Gurih Bunda',
         storeDistrict: 'Bogor Tengah',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Risol Mayo Smoked Beef & Telur Keju Lumer (Isi 5 Pcs)',
     },
     {
@@ -84,8 +80,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '530 terjual',
         storeName: 'Ikan Segar Mandiri',
         storeDistrict: 'Bogor Selatan',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Ikan Nila Bumbu Kuning Marinasi Segar Siap Masak 500g',
     },
     {
@@ -98,8 +93,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '610 terjual',
         storeName: 'Sambal Selera Muslimah',
         storeDistrict: 'Sukasari',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Sambal Cumi Asin Cabe Ijo Pedas Gurih Toples 200g',
     },
     {
@@ -112,8 +106,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '490 terjual',
         storeName: 'Bolu Hanifa',
         storeDistrict: 'Baranangsiang',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Bolu Gulung Pandan Keju Lapis Legit Lembut Khas Bogor',
     },
     {
@@ -126,8 +119,7 @@ const PRODUCTS: CatalogProduct[] = [
         soldCount: '680 terjual',
         storeName: 'Bakso Barokah',
         storeDistrict: 'Bogor Utara',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
         imageAlt: 'Bakso Sapi Urat Halus Kuah Kaldu Frozen Pack Isi 20',
     },
 ];

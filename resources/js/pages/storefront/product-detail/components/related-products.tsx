@@ -14,7 +14,7 @@ export function RelatedProducts({ items }: RelatedProductsProps) {
         <section className="w-full pt-8 pb-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-2">
                 <div className="flex flex-col">
-                    <span className="text-xs font-bold text-[#7D3394] uppercase tracking-wider">
+                    <span className="text-xs font-bold text-[#7D3394]">
                         Katalog Kuliner Pilihan
                     </span>
                     <h2 className="text-xl sm:text-2xl font-extrabold text-[#1F2937] tracking-tight">
@@ -41,13 +41,17 @@ export function RelatedProducts({ items }: RelatedProductsProps) {
                         className="bg-white rounded-xl overflow-hidden shadow-xs border border-gray-100 flex flex-col justify-between"
                     >
                         <div>
-                            <div className="w-full aspect-square overflow-hidden bg-gray-100 relative">
-                                <img
-                                    src={prod.imageUrl}
-                                    alt={prod.imageAlt}
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                />
+                            <div className="w-full aspect-square overflow-hidden bg-gray-100 relative flex items-center justify-center">
+                                {prod.imageUrl ? (
+                                    <img
+                                        src={prod.imageUrl}
+                                        alt={prod.imageAlt}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                    />
+                                ) : (
+                                    <span className="text-gray-400 text-xs font-medium">Foto Produk</span>
+                                )}
                             </div>
 
                             <div className="p-3 sm:p-4 flex flex-col gap-2">

@@ -33,13 +33,17 @@ export function CartRecommendations({
                         className="bg-white rounded-xl p-3 shadow-xs border border-gray-100 flex flex-col justify-between"
                     >
                         <div>
-                            <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100">
-                                <img
-                                    src={product.imageUrl}
-                                    alt={product.imageAlt}
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                />
+                            <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 flex items-center justify-center">
+                                {product.imageUrl ? (
+                                    <img
+                                        src={product.imageUrl}
+                                        alt={product.imageAlt}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                    />
+                                ) : (
+                                    <span className="text-gray-400 text-xs font-medium">Foto Produk</span>
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-1">

@@ -35,31 +35,31 @@ const PRODUCT_DATA: ProductDetail = {
     images: [
         {
             id: 'img-1',
-            url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDKv6itpyCuiTg9EeX6e4iqDtjixXEgm9GB_Cf0t8zHTcwjh-q3IKJt4beViYqyNUsGATze-oGvaOK4BDUrJo1n_208FEDK0LPSknKtvG38AgWQzQTqvgct2vjZFsIYWXmOBfbEPF3Ysimzn1VtYUYheFn9epEQHGElc9p9BQ0N878YyBLijOhQWoVo_5OF4TdeBqlUE_9Y5c2i9cYWoV8fA4Hr-OZBpZQUVNzJxrsw',
+            url: '',
             alt: 'Ayam Ungkep Bumbu Kuning Siap Goreng',
             label: 'Ayam Rempah Utuh',
         },
         {
             id: 'img-2',
-            url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAOdXxM0HZIrTs027ijLSBHE5NsIagpZycr1ZOPpCgXOJkYOhm9JmrGMJIsaBHvehuTMf_aUSwwi0yZqxeheR26U0QQUmmraBzd7LUnyQJFsKASh4xJVZwelPZjBCbQcSuxzup4fue94mFPwLr6juo2Bs3NinTYJe5zKCp5W6MpnUXqs0_WdN4XU0uO_vb0F5blwF1Ia-mZW3CuCnz3_tenmOUX0M9n4N1S7Tl1Ql9k',
+            url: '',
             alt: 'Detail Ayam Rempah',
             label: 'Detail Rempah Lengkuas',
         },
         {
             id: 'img-3',
-            url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBNrfAw4tQDCFlTJmh1YCi4dA7zAVHWcgxaYFfAM2bKUpDvDwxPNAIdFHLGH8BRCvFow_iM4t5BtPU-Ees8XRTe8x_bTMLNuTl6s6ipsU9e7TpRMAMDOXEHc3SpO_Z42ID_IyFwOz63fc7S4mo764qsW2w8HL1nWmaGNySvCHO0Glc3P-CIgbJjSFSwWjWsFkU-yqQHsuyWE3MGzIjDEsTTyjrhL9ACfBpmbabNqBf5',
+            url: '',
             alt: 'Kemasan Frozen Vakum',
             label: 'Kemasan Vakum Higienis',
         },
         {
             id: 'img-4',
-            url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDoq0oQbm5ea01NgB-t7ibZG5czN8LIBbFMhjijj2tqfyDVr5c9aYTgz1Lu2sDCxwop-uUuo1fmGXfq_40UwRbqq3cuYHNvOfZOAcP7cokO2cclMnoYQ-UmWqdXMGqd0i68qKCrwfisZGV71DeSyN7XmRPWR1oJ0atm6QTB2x0Digg0KcQySv-KQRXeb16gQv9KwmookQRDgwSB8qnrZlbjoOIhRa5_-0OHNpSqoM9M',
+            url: '',
             alt: 'Hasil Goreng Keemasan',
             label: 'Hasil Goreng Renyah',
         },
         {
             id: 'img-5',
-            url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCsHTkG2J-l-XivfjAvaIh5r2bo_2GcIx2spCWs0kgvU1BkRKBXmmtbkSpr4TbJCjBwin-RgopobRWJs9QJiPZHQKcVtRyNyUUDxAHovhWhEGHC-_E7tIzhqCgQeg1Yq0S_yTXwPBgZ01Kih9xiWcgBnao4wi_dXYJE1NRsON66FWBR5Ewg3i0pHzFtB19Jbf-iYz5Jgsp5gwpw09-lhOFkTWHhNs6BYB33OaPXMaEY',
+            url: '',
             alt: 'Sertifikat Halal',
             label: 'Sertifikasi Halal',
         },
@@ -84,13 +84,13 @@ const PRODUCT_DATA: ProductDetail = {
     composition:
         'Dibuat dari ayam pejantan segar pilihan langsung dari peternakan lokal binaan. Dibumbui dengan kunyit segar Bogor, jahe wangi, lengkuas parut berlimpah, serai segar, daun salam, ketumbar sangrai, bawang merah, bawang putih, serta garam laut alami. Diproduksi 100% alami tanpa MSG sintesis dan bebas bahan pengawet kimia.',
     cookingInstructions: [
-        '<strong>Thawing / Cairkan:</strong> Diamkan dalam suhu ruang selama 15-20 menit hingga bumbu tidak membeku.',
+        '<strong>Diamkan di suhu ruang:</strong> Diamkan selama 15-20 menit sebelum digoreng hingga bumbu tidak membeku.',
         '<strong>Goreng Cepat:</strong> Panaskan minyak goreng secukupnya pada api sedang (±170°C). Masukkan ayam dan goreng 3-4 menit hingga warna kuning keemasan.',
         '<strong>Goreng Serundeng Lengkuas:</strong> Saring bumbu rempah basah yang tersisa, goreng terpisah sebentar hingga garing keemasan lalu taburkan di atas ayam hangat.',
         '<strong>Air Fryer Friendly:</strong> Panggang pada suhu 180°C selama 10-12 menit untuk opsi lebih rendah kalori.',
     ],
     halalAudit:
-        'Produk diproduksi di bawah pengawasan berkala tim Kurasi Mutu Halal Kossuma Kota Bogor. Memenuhi sertifikasi penyembelihan syariah (RPH bersertifikat Halal) serta proses pengolahan higienis bersertifikasi BPJPH ID32110001892837.',
+        'Produk diproduksi di bawah pengawasan berkala tim Pemeriksaan Mutu Halal Kossuma Kota Bogor. Memenuhi sertifikasi penyembelihan syariah (RPH bersertifikat Halal) serta proses pengolahan higienis bersertifikasi BPJPH ID32110001892837.',
     relatedProducts: [
         {
             id: 'rel-1',
@@ -101,8 +101,7 @@ const PRODUCT_DATA: ProductDetail = {
             portion: '1 Ekor',
             badge: 'Halal BPJPH',
             rating: 4.9,
-            imageUrl:
-                'https://lh3.googleusercontent.com/aida-public/AB6AXuDLWBVerFO5EfWMAIvTfKnkW7rYMrRdH_YnbjE7v8HxyjNcyvtj-N-S-oNjhhkqHknFB0dfSCzB8ooe3BcnSmNGoSNOupSNtB1cU4-RbKPI3Qm-GBW0jLZPZo8u5Fkl4Z3bPj8KCWuLmFS_Sh4DgN5orqEw8G54XCtfoZtCDtuFNzHpjvB3UmQ4kTfVFbz57jC4rkdTeKMVO1z_kefw8zOSHQo1rYyzYJ6Jxdw0jvVz',
+            imageUrl: '',
             imageAlt: 'Bebek Ungkep Bumbu Rempah Madura',
         },
         {
@@ -114,8 +113,7 @@ const PRODUCT_DATA: ProductDetail = {
             portion: '500 gr',
             badge: 'Segar Higienis',
             rating: 4.8,
-            imageUrl:
-                'https://lh3.googleusercontent.com/aida-public/AB6AXuCoUokVVLpCbVhf3IARC0lkF7X92-XutStvAs6Z4PVBdf3xuL3ETcgP9LMS0iMoma0kiCtVpkeIzbb2RaTgf7UmXQw1mHQR4z6QLzdpYcF7o3F3tqDrXtZ6V5wSoBwU_UYFkwP1Uu_3t09RP0YgM0ZPcWk-jXyeITmi5giCsBmEKfzaohOmwuvNTBqyI2fGNfiPDxQbs2PLX6NTcXTuV6huDPdGslnz58eLYlzrndl4',
+            imageUrl: '',
             imageAlt: 'Ikan Nila Bumbu Kuning Marinasi Segar',
         },
         {
@@ -127,8 +125,7 @@ const PRODUCT_DATA: ProductDetail = {
             portion: '200 gr',
             badge: 'Pedas Nagih',
             rating: 4.9,
-            imageUrl:
-                'https://lh3.googleusercontent.com/aida-public/AB6AXuB0VSG_y6LXdx1nfVpOeGxF_9GN_9dyU8EjVZpeNnASvj8vBXUMdRRJsipSUO5ax7R-eR5e8CdevHY3ljLjWpPEX7oc2dMlLp6hVOQ6864SWrmaxO6xKEKY4VCNNdMJGOXbSv3reLEJnkLyVaBVcE85E-UBIgOtvD6PMOiKVM3EK28_U-2L2i2fpNMDhgMDIKgQsQTE5ZYdYOY9vkrMu9gMhCGSOsT_u1G8UlG-a5jH',
+            imageUrl: '',
             imageAlt: 'Sambal Cumi Asin Cabe Ijo Pedas Gurih',
         },
         {
@@ -140,8 +137,7 @@ const PRODUCT_DATA: ProductDetail = {
             portion: '350 gr',
             badge: 'Empuk Gurih',
             rating: 4.9,
-            imageUrl:
-                'https://lh3.googleusercontent.com/aida-public/AB6AXuB_kjVJzgv8FRlQtweqZsvN7O6EHzQD_uXI9Y6EbSLH_L7tDshQEH-H2P1xhi6VYAttlxoGbcO0aQa8rQtSwDSAdJuCSPxf1DBxfO2B5MtjnM7ioCUNEKBwHHKvuQuAkqMpNvBjpl_K8da4EEvOvEAkxw2m_9ECUQMY_K0KYJ2kiI8RCG0Tdba_wRDDbtFpsWArA67RDyLBLk1urxhLo47uq-myEuXvZAb8BCAMnAz8',
+            imageUrl: '',
             imageAlt: 'Paru Sapi Ungkep Gurih Empuk',
         },
     ],

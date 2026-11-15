@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Store } from 'lucide-react';
 
 export function HeroBanner() {
     return (
@@ -37,13 +37,14 @@ export function HeroBanner() {
 
                 {/* Right Visual Showcase */}
                 <div className="lg:col-span-5 relative flex justify-center items-center">
-                    <div className="relative w-full max-w-[460px] aspect-[4/3] sm:aspect-square rounded-2xl overflow-hidden shadow-xl bg-gray-100 border border-gray-100">
-                        <img
-                            alt="Hidangan Kuliner Halal Khas UMKM Kossuma Bogor"
-                            className="w-full h-full object-cover"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg"
-                            loading="eager"
-                        />
+                    <div className="w-full max-w-[460px] aspect-[4/3] sm:aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 flex flex-col items-center justify-center text-gray-400 gap-2.5 p-6 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-white/80 shadow-xs flex items-center justify-center text-[#7D3394]">
+                            <Store className="w-8 h-8" />
+                        </div>
+                        <span className="text-sm font-bold text-gray-700">Pusat Belanja Halal Kossuma</span>
+                        <span className="text-xs text-gray-500 max-w-xs">
+                            Pilihan makanan siap saji, beku, dan kue basah khas ibu-ibu pelaku UMKM se-Kota Bogor
+                        </span>
                     </div>
                 </div>
             </div>

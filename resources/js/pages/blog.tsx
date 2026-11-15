@@ -24,32 +24,29 @@ const ARTICLES: ArticleItem[] = [
         author: 'Pawon Ibu Fatimah',
         date: '12 Nov 2026',
         readTime: '4 mnt baca',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBGjBC2cKRLDiRfw4MgPVcytY7hOnsNmNnDBEqR47HkwF1_794MiNlURED4L7ctOjumxMI9AgqFBYs2pt7Jw-Q1m-8HUuzpNIGdjnIe90N3QyFcBgGZbu55l2ScqgEyz1RHWSnk6jaS5joefv6x3fsnrLqIA2_xZiWQnAvR8QsHPsoTMslOCEhYX8xAtqu44osBUeNX3pN110TL2JxhKjaFQll71CBEfKYINSd9GC6g',
+        imageUrl: '',
     },
     {
         id: '2',
         title: 'Tips Menyimpan Frozen Food Halal Agar Nutrisi & Kelezatan Tetap Terjaga',
         excerpt:
-            'Panduan praktis menjaga suhu freezer optimal, teknik defrosting yang benar, serta cara menyajikan risol mayo agar tetap lumer dan krispi sempurna.',
+            'Panduan praktis menjaga suhu freezer optimal, cara mendiamkan di suhu ruang yang benar, serta cara menyajikan risol mayo agar tetap lumer dan krispi sempurna.',
         category: 'Tips Dapur',
         author: 'Dapur Ummi Salma',
         date: '08 Nov 2026',
         readTime: '3 mnt baca',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBH4SLFupZUas83fXH56aGwJAFWJokI8Dhsn9iYfVGw8sZ4R3WEANBvBWLyUDAEbjEYz-tzPlSOM1TQnHzci4G6fxERSGiDYXvP2RvOP8bPi80L1tRdTX5Lh3lbQLEBvurMITRf5gs0esMcTVYc3Bek1g4F_22auxtCmCEuqvAQXbxgl5yjVE9Eum11FhKoV6J-jrERC8R62tHxw9EyVYzMwedCKkOV-mzzuPxJYu6z',
+        imageUrl: '',
     },
     {
         id: '3',
         title: 'Perjalanan Kossuma Mengantarkan Puluhan UMKM Muslimah Meraih Sertifikasi Halal BPJPH',
         excerpt:
-            'Kemandirian ekonomi berawal dari jaminan kehalalan produk. Simak bagaimana program pendampingan dan subsidi kurasi koperasi Kossuma berjalan di Kota Bogor.',
+            'Kemandirian ekonomi berawal dari jaminan kehalalan produk. Simak bagaimana program pendampingan dan subsidi seleksi mutu koperasi Kossuma berjalan di Kota Bogor.',
         category: 'Kabar Koperasi',
         author: 'Pengurus Kossuma',
         date: '01 Nov 2026',
         readTime: '5 mnt baca',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA4iVBmfseP1OViE1CsMLZPsctdQdGBq_EpcPWhlfqHU6xEWdaGLWe0mPLQ3us-e6mpxa_68CjULovmeB5XGHLkUG_n1W9ow2BHJ3Z8c9evBfN6pU_FHPcXD1Q9hQMi7ESi4s_ugiEbf7mWp-q-nDQMqOwyq-jnpWLCmqKgZacv2MjTGbYaN_y-W9h625pA3Wmi-XKKXJjb7iioaX8m1fQLU7Uk-A77a1JuxvQPdMhg',
+        imageUrl: '',
     },
 ];
 
@@ -100,13 +97,17 @@ export default function Blog() {
                             className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-xs flex flex-col justify-between"
                         >
                             <div>
-                                <div className="w-full aspect-[16/10] bg-gray-100 overflow-hidden relative">
-                                    <img
-                                        src={article.imageUrl}
-                                        alt={article.title}
-                                        className="w-full h-full object-cover"
-                                        loading="lazy"
-                                    />
+                                <div className="w-full aspect-[16/10] bg-gray-100 overflow-hidden relative flex items-center justify-center">
+                                    {article.imageUrl ? (
+                                        <img
+                                            src={article.imageUrl}
+                                            alt={article.title}
+                                            className="w-full h-full object-cover"
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <span className="text-gray-400 text-xs font-medium">Foto Artikel</span>
+                                    )}
                                 </div>
                                 <div className="p-5 flex flex-col gap-2.5">
                                     <div className="flex items-center justify-between text-[11px] text-gray-500">

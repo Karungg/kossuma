@@ -72,13 +72,17 @@ export function StoreCartGroup({
                                     onChange={() => onToggleItem(item.id)}
                                     className="w-4 h-4 rounded text-[#7D3394] focus:ring-[#7D3394] accent-[#7D3394] cursor-pointer"
                                 />
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
-                                    <img
-                                        src={item.imageUrl}
-                                        alt={item.imageAlt}
-                                        className="w-full h-full object-cover"
-                                        loading="lazy"
-                                    />
+                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200 flex items-center justify-center">
+                                    {item.imageUrl ? (
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.imageAlt}
+                                            className="w-full h-full object-cover"
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <span className="text-gray-400 text-[10px] font-medium text-center p-1">Foto Produk</span>
+                                    )}
                                 </div>
                             </div>
 

@@ -40,8 +40,7 @@ const INITIAL_ITEMS: CartItem[] = [
         isStockAvailable: true,
         price: 35000,
         originalPrice: 38000,
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBH4SLFupZUas83fXH56aGwJAFWJokI8Dhsn9iYfVGw8sZ4R3WEANBvBWLyUDAEbjEYz-tzPlSOM1TQnHzci4G6fxERSGiDYXvP2RvOP8bPi80L1tRdTX5Lh3lbQLEBvurMITRf5gs0esMcTVYc3Bek1g4F_22auxtCmCEuqvAQXbxgl5yjVE9Eum11FhKoV6J-jrERC8R62tHxw9EyVYzMwedCKkOV-mzzuPxJYu6z',
+        imageUrl: '',
         imageAlt: 'Warm golden crispy indonesian mayo risoles',
         quantity: 1,
         isSelected: true,
@@ -56,8 +55,7 @@ const INITIAL_ITEMS: CartItem[] = [
         price: 65000,
         originalPrice: 72000,
         discountPercent: 10,
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBGjBC2cKRLDiRfw4MgPVcytY7hOnsNmNnDBEqR47HkwF1_794MiNlURED4L7ctOjumxMI9AgqFBYs2pt7Jw-Q1m-8HUuzpNIGdjnIe90N3QyFcBgGZbu55l2ScqgEyz1RHWSnk6jaS5joefv6x3fsnrLqIA2_xZiWQnAvR8QsHPsoTMslOCEhYX8xAtqu44osBUeNX3pN110TL2JxhKjaFQll71CBEfKYINSd9GC6g',
+        imageUrl: '',
         imageAlt: 'Traditional Indonesian spiced yellow chicken Ayam Ungkep Bumbu Kuning',
         quantity: 1,
         isSelected: false,
@@ -71,8 +69,7 @@ const INITIAL_RECOMMENDATIONS: RecommendationProduct[] = [
         storeName: 'Dapur Ummi Salma',
         name: 'Sambal Cumi Judes',
         price: 28000,
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuAEQylW3VK3jFOz8pSl2UtofEfZML9sf5OLsh1zcHyVgZYDR_j5gre2SisO2D72HHmODXhrmMbiGnea_pWGJbASPSbH1WNVDpjbG-Q7V3L39qh1_uFZgv0oAkAjETcAloLIGbAgZSM8FtyGslpdzN8iN77sQ-zJbRuySWGaW0tXCvtsFKAk3H_GwpmrXuONge-i9V7stX-q3iXXaJvUbottyYUzVrYr_XEp9aUe0Xp9',
+        imageUrl: '',
         imageAlt: 'Traditional Indonesian sambal cumi pedas glass jar',
         variant: 'Botol 150 gr',
         stockInfo: 'Stok Tersedia',
@@ -83,8 +80,7 @@ const INITIAL_RECOMMENDATIONS: RecommendationProduct[] = [
         storeName: 'Pawon Ibu Fatimah',
         name: 'Pastel Sayur Telur (5 Pcs)',
         price: 22500,
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuByRiIZQ5fS2RjxIaMjul8OKhVfPFQMRBvZWUqKbvauhvX4kA9FiMk9EyibWX4_AnMRjVY7c35Q4mFvoeVZZGqc-mqZ0qOxQ7Kolbq-e6qA0N4lJZKjUo2weLXouUmFj86ZpccQcX-cFtwfXWc1X55eajH7f0cogEMHyt-wZmxlyL2gfLWyvhv8m1bckQ-f27nrkkHUoML6-d_qDB5uaVArBfKtH1b47EYrIxQTB0Jr',
+        imageUrl: '',
         imageAlt: 'Indonesian fresh pastel sayur telor golden brown pastry',
         variant: 'Isi 5 pcs',
         stockInfo: 'Stok Tersedia',
@@ -95,8 +91,7 @@ const INITIAL_RECOMMENDATIONS: RecommendationProduct[] = [
         storeName: 'Herbal Barokah',
         name: 'Sirup Jahe Merah Rempah',
         price: 32000,
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuDtPnTYw3V9W7VXh85jfiMXXr66jfoVPu76cH_7kQXIEKrpU-WLkfKipgB-wyhSvpA_uR6I2pP5oHbxO6aQsF6wTKdWev3TCjBykDaK5LL56skcN5Y41JoFc8xGBLydCgI2qrqIxlyFblAB4R7LGlfQ9mPXsUygEZKgKSJ7m0BfGG4lFQ3NQGINMtfqZhogrmpnO-KdeRVZB6BeUDxAqH99U6ZrNPjdAhmZwLSkLqnw',
+        imageUrl: '',
         imageAlt: 'Traditional Indonesian rempah drink wedang uwuh spiced herbal infusion',
         variant: 'Botol 250 ml',
         stockInfo: 'Stok Tersedia',
@@ -107,8 +102,7 @@ const INITIAL_RECOMMENDATIONS: RecommendationProduct[] = [
         storeName: 'Snack Berkah',
         name: 'Kripik Pisang Cokelat',
         price: 18000,
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuB91LsEmbBk6CD6pWXL80-ntpjFq8lrNpZsccVQuIhc6qjQIEBgPhhId_FhoS5coTDbi-HiGR1O9yLA5T6DwtUu9vXKrBKL_my_qQRZNcHSZfLm4jTOJ_DxjC3Gi92FiT2H4-M3zdfrnvzVIXXf83k47QaAWdQWQXc1gKY2Xm-0p-qFBDcppiWGYA2EkofgrVdIlMf3MDSPFncfcSDjYjjdj3e_cH0p8uFgUH3f_TaP',
+        imageUrl: '',
         imageAlt: 'Crunchy Indonesian keripik pisang lumer chocolate coated banana chips',
         variant: 'Pouch 200 gr',
         stockInfo: 'Stok Tersedia',

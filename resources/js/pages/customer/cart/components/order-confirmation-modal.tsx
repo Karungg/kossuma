@@ -66,7 +66,7 @@ export function OrderConfirmationModal({
                     </div>
 
                     <div>
-                        <span className="text-xs uppercase tracking-widest text-[#7D3394] font-extrabold">
+                        <span className="text-xs text-[#7D3394] font-extrabold">
                             Alhamdulillah
                         </span>
                         <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-0.5">

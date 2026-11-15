@@ -121,7 +121,7 @@ export function OrderSummaryCard({
                 <span>
                     {selectedCount > 0
                         ? `Beli Sekarang (${selectedCount} Item)`
-                        : 'Pilih Item untuk Checkout'}
+                        : 'Pilih Produk untuk Melanjutkan'}
                 </span>
             </button>
 

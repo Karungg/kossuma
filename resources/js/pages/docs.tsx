@@ -15,10 +15,10 @@ import {
 export default function Docs() {
     return (
         <StorefrontLayout>
-            <Head title="Dokumentasi &amp; Standar Mutu - Kossuma Kota Bogor">
+            <Head title="Panduan &amp; Standar Mutu - Kossuma Kota Bogor">
                 <meta
                     name="description"
-                    content="Panduan kurasi produk, standar sertifikasi halal BPJPH/MUI, dan prosedur kemitraan UMKM kuliner Kossuma Kota Bogor."
+                    content="Panduan standar mutu produk, standar sertifikasi halal BPJPH/MUI, dan prosedur kemitraan UMKM kuliner Kossuma Kota Bogor."
                 />
             </Head>
 
@@ -33,7 +33,7 @@ export default function Docs() {
                         <span>Kembali ke Katalog</span>
                     </Link>
                     <span className="text-xs font-semibold text-gray-500">
-                        Dokumentasi &amp; Regulasi
+                        Panduan &amp; Standar Mutu
                     </span>
                 </div>
 
@@ -44,7 +44,7 @@ export default function Docs() {
                         <span>Standar Mutu &amp; Kepatuhan Syariat</span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                        Dokumentasi Kurasi &amp; Panduan Mitra UMKM
+                        Panduan Mutu &amp; Kemitraan UMKM
                     </h1>
                     <p className="text-sm text-gray-600 max-w-2xl leading-relaxed">
                         Transparansi adalah fondasi kepercayaan kami. Pelajari standar higienitas, verifikasi halal, serta pedoman bergabung menjadi toko mitra binaan Kossuma Kota Bogor.
