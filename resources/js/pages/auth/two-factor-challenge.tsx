@@ -9,6 +9,7 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { Spinner } from '@/components/ui/spinner';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { store } from '@/routes/two-factor/login';
 
@@ -23,18 +24,18 @@ export default function TwoFactorChallenge() {
     }>(() => {
         if (showRecoveryInput) {
             return {
-                title: 'Recovery code',
+                title: 'Kode Pemulihan',
                 description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                    'Konfirmasi akses akun Anda dengan memasukkan salah satu kode pemulihan darurat Anda.',
+                toggleText: 'masuk dengan kode autentikator',
             };
         }
 
         return {
-            title: 'Authentication code',
+            title: 'Kode Autentikasi',
             description:
-                'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+                'Masukkan 6 digit kode autentikasi dari aplikasi autentikator Anda.',
+            toggleText: 'masuk dengan kode pemulihan',
         };
     }, [showRecoveryInput]);
 
@@ -51,30 +52,32 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-factor authentication" />
+            <Head title="Autentikasi Dua Langkah" />
 
             <div className="space-y-6">
                 <Form
                     {...store.form()}
-                    className="space-y-4"
+                    className="space-y-5"
                     resetOnError
                     resetOnSuccess={!showRecoveryInput}
                 >
                     {({ errors, processing, clearErrors }) => (
                         <>
                             {showRecoveryInput ? (
-                                <>
+                                <div className="space-y-2">
                                     <Input
                                         name="recovery_code"
                                         type="text"
-                                        placeholder="Enter recovery code"
+                                        placeholder="Masukkan kode pemulihan"
                                         autoFocus={showRecoveryInput}
                                         required
+                                        className="h-11 rounded-xl border-gray-200 focus-visible:border-[#7D3394] focus-visible:ring-[#7D3394]/20"
                                     />
                                     <InputError
                                         message={errors.recovery_code}
+                                        className="mt-1"
                                     />
-                                </>
+                                </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center space-y-3 text-center">
                                     <div className="flex w-full items-center justify-center">
@@ -94,29 +97,31 @@ export default function TwoFactorChallenge() {
                                                         <InputOTPSlot
                                                             key={index}
                                                             index={index}
+                                                            className="h-12 w-11 rounded-lg border-gray-300 text-base font-semibold focus:border-[#7D3394] focus:ring-[#7D3394]"
                                                         />
                                                     ),
                                                 )}
                                             </InputOTPGroup>
                                         </InputOTP>
                                     </div>
-                                    <InputError message={errors.code} />
+                                    <InputError message={errors.code} className="mt-1" />
                                 </div>
                             )}
 
                             <Button
                                 type="submit"
-                                className="w-full"
+                                className="h-11 w-full bg-[#7D3394] hover:bg-[#6c2b81] text-white font-medium rounded-xl transition-colors cursor-pointer text-sm shadow-none"
                                 disabled={processing}
                             >
-                                Continue
+                                {processing && <Spinner className="mr-2" />}
+                                Lanjutkan
                             </Button>
 
-                            <div className="text-center text-sm text-muted-foreground">
-                                <span>or you can </span>
+                            <div className="text-center text-sm text-gray-500">
+                                <span>atau Anda dapat </span>
                                 <button
                                     type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                    className="cursor-pointer font-medium text-[#7D3394] hover:text-[#6c2b81] underline underline-offset-4 transition-colors"
                                     onClick={() =>
                                         toggleRecoveryMode(clearErrors)
                                     }

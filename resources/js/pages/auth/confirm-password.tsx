@@ -14,44 +14,45 @@ import PasskeyVerify from '@/components/passkey-verify';
 export default function ConfirmPassword() {
     return (
         <>
-            <Head title="Confirm password" />
+            <Head title="Konfirmasi Kata Sandi" />
 
             <PasskeyVerify
                 routes={{
                     options: confirmOptions(),
                     submit: confirmStore(),
                 }}
-                label="Confirm with passkey"
-                loadingLabel="Confirming..."
-                separator="Or confirm with password"
+                label="Konfirmasi dengan passkey"
+                loadingLabel="Mengonfirmasi..."
+                separator="Atau konfirmasi dengan kata sandi"
             />
 
             <Form {...store.form()} resetOnSuccess={['password']}>
                 {({ processing, errors }) => (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                                Kata Sandi
+                            </Label>
                             <PasswordInput
                                 id="password"
                                 name="password"
-                                placeholder="Password"
+                                placeholder="Masukkan kata sandi"
                                 autoComplete="current-password"
                                 autoFocus
+                                className="h-11 rounded-xl border-gray-200 focus-visible:border-[#7D3394] focus-visible:ring-[#7D3394]/20"
                             />
 
-                            <InputError message={errors.password} />
+                            <InputError message={errors.password} className="mt-1" />
                         </div>
 
-                        <div className="flex items-center">
-                            <Button
-                                className="w-full"
-                                disabled={processing}
-                                data-test="confirm-password-button"
-                            >
-                                {processing && <Spinner />}
-                                Confirm password
-                            </Button>
-                        </div>
+                        <Button
+                            className="mt-2 h-11 w-full bg-[#7D3394] hover:bg-[#6c2b81] text-white font-medium rounded-xl transition-colors cursor-pointer text-sm shadow-none"
+                            disabled={processing}
+                            data-test="confirm-password-button"
+                        >
+                            {processing && <Spinner className="mr-2" />}
+                            Konfirmasi Kata Sandi
+                        </Button>
                     </div>
                 )}
             </Form>
@@ -60,7 +61,7 @@ export default function ConfirmPassword() {
 }
 
 ConfirmPassword.layout = {
-    title: 'Confirm password',
+    title: 'Konfirmasi Kata Sandi',
     description:
-        'This is a secure area of the application. Please confirm your password before continuing.',
+        'Area ini memerlukan konfirmasi keamanan. Silakan konfirmasi kata sandi Anda sebelum melanjutkan.',
 };

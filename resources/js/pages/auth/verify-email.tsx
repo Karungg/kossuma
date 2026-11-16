@@ -1,4 +1,3 @@
-// Components
 import { Form, Head } from '@inertiajs/react';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -9,29 +8,33 @@ import { send } from '@/routes/verification';
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
         <>
-            <Head title="Email verification" />
+            <Head title="Verifikasi Email" />
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                <div className="mb-5 rounded-xl bg-green-50 p-3.5 text-center text-sm font-medium text-green-700 border border-green-200">
+                    Tautan verifikasi baru telah berhasil dikirim ke alamat email yang Anda daftarkan.
                 </div>
             )}
 
-            <Form {...send.form()} className="space-y-6 text-center">
+            <Form {...send.form()} className="space-y-4 text-center">
                 {({ processing }) => (
                     <>
-                        <Button disabled={processing} variant="secondary">
-                            {processing && <Spinner />}
-                            Resend verification email
+                        <Button
+                            disabled={processing}
+                            className="h-11 w-full bg-[#7D3394] hover:bg-[#6c2b81] text-white font-medium rounded-xl transition-colors cursor-pointer text-sm shadow-none"
+                        >
+                            {processing && <Spinner className="mr-2" />}
+                            Kirim Ulang Email Verifikasi
                         </Button>
 
-                        <TextLink
-                            href={logout()}
-                            className="mx-auto block text-sm"
-                        >
-                            Log out
-                        </TextLink>
+                        <div className="pt-2">
+                            <TextLink
+                                href={logout()}
+                                className="text-sm font-medium text-gray-500 hover:text-gray-800 no-underline hover:underline cursor-pointer"
+                            >
+                                Keluar dari Akun
+                            </TextLink>
+                        </div>
                     </>
                 )}
             </Form>
@@ -40,7 +43,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
 }
 
 VerifyEmail.layout = {
-    title: 'Email verification',
+    title: 'Verifikasi Email',
     description:
-        'Please verify your email address by clicking on the link we just emailed to you.',
+        'Mohon verifikasi alamat email Anda dengan mengeklik tautan yang baru saja kami kirimkan.',
 };
