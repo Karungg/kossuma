@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { CartFooter } from '@/pages/customer/cart/components/cart-footer';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -9,28 +10,35 @@ export default function AuthSimpleLayout({
     description,
 }: AuthLayoutProps) {
     return (
-        <div className="flex min-h-screen flex-col justify-between items-center bg-[#F8F9FB] px-4 py-8 sm:px-6 sm:py-12">
-            {/* Header Brand */}
-            <div className="flex flex-col items-center">
-                <Link
-                    href={home()}
-                    className="flex flex-col items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7D3394] rounded-xl p-1 cursor-pointer"
-                >
-                    <img
-                        src="/assets/images/logo/logo.png"
-                        alt="Kossuma Kota Bogor"
-                        className="h-14 sm:h-16 w-auto object-contain cursor-pointer"
-                    />
-                    <span className="sr-only">Kossuma Kota Bogor</span>
-                </Link>
-                <p className="mt-1 text-xs text-gray-500 font-medium tracking-normal text-center">
-                    Koperasi Konsumen Syariah Mandiri Kota Bogor
-                </p>
-            </div>
+        <div className="bg-[#F8F9FB] min-h-screen text-[#1F2937] font-sans antialiased flex flex-col justify-between">
+            {/* Focused Auth Header: Navbar without storefront distractions */}
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-gray-100">
+                <div className="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+                    <Link
+                        href={home()}
+                        className="flex items-center gap-3 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7D3394] rounded-lg p-1 cursor-pointer"
+                    >
+                        <img
+                            src="/assets/images/logo/logo.png"
+                            alt="Kossuma Kota Bogor"
+                            className="h-14 w-auto object-contain cursor-pointer"
+                        />
+                        <span className="sr-only">Kossuma Kota Bogor</span>
+                    </Link>
 
-            {/* Auth Card */}
-            <div className="w-full max-w-md my-6">
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-xs p-6 sm:p-8">
+                    <Link
+                        href={home()}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-[#7D3394] transition-colors cursor-pointer"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Kembali ke Beranda</span>
+                    </Link>
+                </div>
+            </header>
+
+            {/* Main Auth Content */}
+            <main className="w-full pt-28 pb-6 px-4 sm:px-6 flex-1 flex items-center justify-center">
+                <div className="w-full max-w-md bg-white rounded-2xl border border-gray-100 shadow-xs p-6 sm:p-8">
                     <div className="mb-6 text-center">
                         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
                             {title}
@@ -43,21 +51,10 @@ export default function AuthSimpleLayout({
                     </div>
                     {children}
                 </div>
-            </div>
+            </main>
 
-            {/* Footer Navigation & Copyright */}
-            <div className="flex flex-col items-center gap-3 text-center">
-                <Link
-                    href={home()}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-[#7D3394] transition-colors cursor-pointer"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Kembali ke Beranda</span>
-                </Link>
-                <p className="text-xs text-gray-400">
-                    &copy; {new Date().getFullYear()} Kossuma Kota Bogor. Belanja berkah &amp; amanah.
-                </p>
-            </div>
+            {/* Unified Storefront Footer */}
+            <CartFooter />
         </div>
     );
 }
