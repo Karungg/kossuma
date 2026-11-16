@@ -14,11 +14,14 @@ void createInertiaApp({
         switch (true) {
             case name === 'welcome':
             case name === 'cart':
+            case name === 'checkout':
             case name === 'about':
             case name === 'blog':
+            case name.startsWith('checkout/'):
             case name.startsWith('products/'):
             case name.startsWith('storefront/'):
             case name.startsWith('information/'):
+            case name.startsWith('customer/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

@@ -3,11 +3,11 @@ import type { CartCalculation, CartItem, RecommendationProduct, StoreGroup } fro
 import { StorefrontLayout } from '@/layouts/storefront-layout';
 import { CartBreadcrumbBar } from './components/cart-breadcrumb-bar';
 import { StoreCartGroup } from './components/store-cart-group';
-import { ShippingProgressBanner } from './components/shipping-progress-banner';
 import { CartRecommendations } from './components/cart-recommendations';
 import { OrderSummaryCard } from './components/order-summary-card';
-import { OrderConfirmationModal } from './components/order-confirmation-modal';
 import { ShoppingBag } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { checkout } from '@/routes';
 
 const INITIAL_STORES: StoreGroup[] = [
     {
@@ -103,43 +103,29 @@ export function CustomerCartPage() {
     const [stores, setStores] = useState<StoreGroup[]>(INITIAL_STORES);
     const [items, setItems] = useState<CartItem[]>(INITIAL_ITEMS);
     const [searchQuery, setSearchQuery] = useState('');
-    const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
-    // Selected Calculations
+    // Selected Calculations (hanya subtotal & diskon barang yang diterapkan)
     const selectedItems = useMemo(() => items.filter((i) => i.isSelected), [items]);
     const selectedCount = selectedItems.length;
     const isAllSelected = items.length > 0 && items.every((i) => i.isSelected);
 
     const calculation: CartCalculation = useMemo(() => {
-        const itemsTotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+        const subtotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
         const discountTotal = selectedItems.reduce(
-            (acc, i) => acc + (i.originalPrice ? i.originalPrice - i.price : 0) * i.quantity,
+            (acc, i) =>
+                acc +
+                (i.originalPrice && i.originalPrice > i.price
+                    ? (i.originalPrice - i.price) * i.quantity
+                    : 0),
             0,
         );
-
-        const freeShippingThreshold = 50000;
-        const shippingFee = selectedCount > 0 ? 10000 : 0;
-        const shippingDiscount = selectedCount > 0 ? 10000 : 0; // Free promo
-        const serviceFee = selectedCount > 0 ? 1000 : 0; // Layanan & Infaq Rp1.000
-        const grandTotal = itemsTotal + serviceFee;
-
-        const freeShippingRemaining = Math.max(0, freeShippingThreshold - itemsTotal);
-        const freeShippingProgress = Math.min(
-            100,
-            Math.round((itemsTotal / freeShippingThreshold) * 100),
-        );
+        const originalItemsTotal = subtotal + discountTotal;
 
         return {
             selectedCount,
-            itemsTotal,
+            originalItemsTotal,
             discountTotal,
-            shippingFee,
-            shippingDiscount,
-            serviceFee,
-            grandTotal,
-            freeShippingThreshold,
-            freeShippingRemaining,
-            freeShippingProgress,
+            subtotal,
         };
     }, [selectedItems, selectedCount]);
 
@@ -316,12 +302,6 @@ export function CustomerCartPage() {
                             ))
                         )}
 
-                        {/* Free Shipping Incentive Progress Banner */}
-                        <ShippingProgressBanner
-                            currentTotal={calculation.itemsTotal}
-                            threshold={calculation.freeShippingThreshold}
-                        />
-
                         {/* Recommendations Carousel Mini Strip */}
                         <CartRecommendations
                             items={INITIAL_RECOMMENDATIONS}
@@ -331,10 +311,7 @@ export function CustomerCartPage() {
 
                     {/* Right Column: Sticky Order Summary (4 cols on desktop) */}
                     <div className="lg:col-span-4">
-                        <OrderSummaryCard
-                            calculation={calculation}
-                            onOpenCheckoutModal={() => setIsOrderModalOpen(true)}
-                        />
+                        <OrderSummaryCard calculation={calculation} />
                     </div>
                 </div>
             </div>
@@ -356,32 +333,28 @@ export function CustomerCartPage() {
 
                     <div className="flex items-center gap-3">
                         <div className="flex flex-col text-right">
-                            <span className="text-[11px] text-gray-500">Total:</span>
+                            <span className="text-[11px] text-gray-500">Subtotal:</span>
                             <span className="text-base font-extrabold text-[#DC2626]">
-                                {formatRupiah(calculation.grandTotal)}
+                                {formatRupiah(calculation.subtotal)}
                             </span>
                         </div>
 
                         <button
                             type="button"
-                            onClick={() => setIsOrderModalOpen(true)}
+                            onClick={() => {
+                                if (selectedCount > 0) {
+                                    router.visit(checkout());
+                                }
+                            }}
                             disabled={selectedCount === 0}
                             className="py-2.5 px-4 rounded-xl bg-[#7D3394] text-white disabled:opacity-40 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
                         >
                             <ShoppingBag className="w-4 h-4" />
-                            <span>Beli ({selectedCount})</span>
+                            <span>Checkout ({selectedCount})</span>
                         </button>
                     </div>
                 </div>
             </div>
-
-            {/* Order Confirmation Modal */}
-            <OrderConfirmationModal
-                isOpen={isOrderModalOpen}
-                onClose={() => setIsOrderModalOpen(false)}
-                selectedItems={selectedItems}
-                calculation={calculation}
-            />
         </StorefrontLayout>
     );
 }

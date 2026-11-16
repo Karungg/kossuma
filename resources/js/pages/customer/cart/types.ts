@@ -34,14 +34,8 @@ export interface RecommendationProduct {
 
 export interface CartCalculation {
     selectedCount: number;
-    itemsTotal: number;
+    originalItemsTotal: number;
     discountTotal: number;
-    shippingFee: number;
-    shippingDiscount: number;
-    serviceFee: number;
-    grandTotal: number;
-    freeShippingThreshold: number;
-    freeShippingRemaining: number;
-    freeShippingProgress: number;
+    subtotal: number;
 }
 
