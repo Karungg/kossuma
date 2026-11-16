@@ -11,13 +11,7 @@ import {
     User,
     X,
 } from "lucide-react";
-import {
-    cart,
-    dashboard,
-    home,
-    login,
-    register,
-} from "@/routes";
+import { cart, dashboard, home, login, register } from "@/routes";
 import { CartFooter } from "@/pages/customer/cart/components/cart-footer";
 import { INSTITUTIONAL_NAV_ITEMS, type NavigationItem } from "./navigation";
 
@@ -213,18 +207,6 @@ export function StorefrontLayout({
                                     </div>
                                 );
                             })}
-
-                            <span className="text-gray-300">/</span>
-
-                            <a
-                                href="https://wa.me/6281289005544"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#7D3394] font-semibold flex items-center gap-1 cursor-pointer"
-                            >
-                                <Phone className="w-3 h-3" />
-                                <span>Bantuan</span>
-                            </a>
                         </nav>
                     </div>
                 </div>
@@ -341,8 +323,9 @@ export function StorefrontLayout({
                             </Link>
 
                             {INSTITUTIONAL_NAV_ITEMS.map((item) => {
-                                const isExpanded =
-                                    Boolean(expandedMobileAccordions[item.id]);
+                                const isExpanded = Boolean(
+                                    expandedMobileAccordions[item.id],
+                                );
                                 const hasSubItems = Boolean(
                                     item.subItems && item.subItems.length > 0,
                                 );
@@ -441,16 +424,6 @@ export function StorefrontLayout({
                                     </div>
                                 );
                             })}
-
-                            <a
-                                href="https://wa.me/6281289005544"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="py-2.5 px-3 rounded-lg text-[#7D3394] font-semibold flex items-center gap-1.5 cursor-pointer mt-1"
-                            >
-                                <Phone className="w-4 h-4" />
-                                <span>Bantuan WhatsApp</span>
-                            </a>
                         </nav>
                     </div>
                 )}
