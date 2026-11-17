@@ -1,5 +1,5 @@
 import { Head, Link } from "@inertiajs/react";
-import { StorefrontLayout } from "@/layouts/storefront-layout";
+import { HomeLayout } from "@/layouts/home-layout";
 import { home } from "@/routes";
 import { ArrowLeft, BookOpen, Calendar, Clock, Sparkles } from "lucide-react";
 
@@ -52,7 +52,7 @@ const ARTICLES: ArticleItem[] = [
 
 export default function Blog() {
     return (
-        <StorefrontLayout>
+        <HomeLayout>
             <Head title="Kabar &amp; Kisah Inspirasi - Kossuma Kota Bogor">
                 <meta
                     name="description"
@@ -129,6 +129,6 @@ export default function Blog() {
                     ))}
                 </div>
             </div>
-        </StorefrontLayout>
+        </HomeLayout>
     );
 }

@@ -12,10 +12,10 @@ import {
     Ticket,
     Truck,
 } from 'lucide-react';
-import { Link, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { cart, home } from '@/routes';
 import { payment as checkoutPayment } from '@/routes/checkout';
-import { StorefrontLayout } from '@/layouts/storefront-layout';
+import { HomeLayout } from '@/layouts/home-layout';
 import type {
     BankOption,
     CheckoutAddress,
@@ -133,7 +133,7 @@ const BANKS: BankOption[] = [
     },
 ];
 
-export function CheckoutPage() {
+export default function CheckoutPage() {
     const [selectedAddressId, setSelectedAddressId] = useState(ADDRESSES[0].id);
     const [isAddressListOpen, setIsAddressListOpen] = useState(false);
     const [selectedShippingId, setSelectedShippingId] = useState(SHIPPING_OPTIONS[0].id);
@@ -209,7 +209,13 @@ export function CheckoutPage() {
     };
 
     return (
-        <StorefrontLayout cartCount={CHECKOUT_ITEMS.length}>
+        <HomeLayout cartCount={CHECKOUT_ITEMS.length}>
+            <Head title="Checkout Pesanan - Kossuma Kota Bogor">
+                <meta
+                    name="description"
+                    content="Pilih alamat pengiriman, kurir, voucher, dan metode pembayaran untuk pesanan UMKM Kossuma Kota Bogor."
+                />
+            </Head>
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
                 {/* Breadcrumbs & Kembali */}
                 <div className="bg-white rounded-xl px-4 py-3 border border-gray-100 flex flex-wrap items-center justify-between gap-3">
@@ -692,6 +698,6 @@ export function CheckoutPage() {
                     </div>
                 </div>
             </div>
-        </StorefrontLayout>
+        </HomeLayout>
     );
 }

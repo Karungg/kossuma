@@ -11,7 +11,7 @@ export default function AuthSimpleLayout({
 }: AuthLayoutProps) {
     return (
         <div className="bg-[#F8F9FB] min-h-screen text-[#1F2937] font-sans antialiased flex flex-col justify-between">
-            {/* Focused Auth Header: Navbar without storefront distractions */}
+            {/* Focused Auth Header: Navbar without home distractions */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-gray-100">
                 <div className="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
                     <Link
@@ -53,7 +53,7 @@ export default function AuthSimpleLayout({
                 </div>
             </main>
 
-            {/* Unified Storefront Footer */}
+            {/* Unified Home Footer */}
             <CartFooter />
         </div>
     );

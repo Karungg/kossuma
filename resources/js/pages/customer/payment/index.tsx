@@ -9,9 +9,9 @@ import {
     Home,
     QrCode,
 } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { checkout, home } from '@/routes';
-import { StorefrontLayout } from '@/layouts/storefront-layout';
+import { HomeLayout } from '@/layouts/home-layout';
 
 interface PaymentPageProps {
     method: 'qris' | 'bank' | 'cod' | string;
@@ -42,7 +42,7 @@ const BANK_DETAILS: Record<
     },
 };
 
-export function PaymentPage({
+export default function PaymentPage({
     method = 'qris',
     bank = 'bsi',
     total = 35000,
@@ -86,7 +86,13 @@ export function PaymentPage({
     const bankInfo = BANK_DETAILS[bank] ?? BANK_DETAILS.bsi;
 
     return (
-        <StorefrontLayout cartCount={isPaid ? 0 : 1}>
+        <HomeLayout cartCount={isPaid ? 0 : 1}>
+            <Head title="Pembayaran Pesanan - Kossuma Kota Bogor">
+                <meta
+                    name="description"
+                    content="Selesaikan pembayaran pesanan UMKM Kossuma Kota Bogor."
+                />
+            </Head>
             <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
                 {!isPaid ? (
                     <>
@@ -340,6 +346,6 @@ export function PaymentPage({
                     </div>
                 )}
             </div>
-        </StorefrontLayout>
+        </HomeLayout>
     );
 }

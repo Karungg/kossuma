@@ -15,19 +15,19 @@ import { cart, dashboard, home, login, register } from "@/routes";
 import { CartFooter } from "@/pages/customer/cart/components/cart-footer";
 import { INSTITUTIONAL_NAV_ITEMS, type NavigationItem } from "./navigation";
 
-interface StorefrontLayoutProps {
+interface HomeLayoutProps {
     children: React.ReactNode;
     cartCount?: number;
     searchQuery?: string;
     onSearchChange?: (query: string) => void;
 }
 
-export function StorefrontLayout({
+export function HomeLayout({
     children,
     cartCount = 2,
     searchQuery = "",
     onSearchChange,
-}: StorefrontLayoutProps) {
+}: HomeLayoutProps) {
     const [localSearch, setLocalSearch] = useState(searchQuery);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -440,4 +440,4 @@ export function StorefrontLayout({
     );
 }
 
-export default StorefrontLayout;
+export default HomeLayout;
