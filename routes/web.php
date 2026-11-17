@@ -4,11 +4,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::inertia('/', 'welcome')->name('home');
-Route::inertia('cart', 'cart')->name('cart');
-Route::inertia('checkout', 'checkout')->name('checkout');
+Route::inertia('/', 'home/index')->name('home');
+Route::inertia('cart', 'customer/cart/index')->name('cart');
+Route::inertia('checkout', 'customer/checkout/index')->name('checkout');
 Route::get('checkout/payment', function (Request $request) {
-    return Inertia::render('checkout/payment', [
+    return Inertia::render('customer/payment/index', [
         'method' => $request->query('method', 'qris'),
         'bank' => $request->query('bank', 'bsi'),
         'total' => (int) $request->query('total', 35000),
@@ -20,8 +20,8 @@ Route::get('products/{slug}', function (string $slug) {
         'slug' => $slug,
     ]);
 })->name('products.show');
-Route::inertia('about', 'about')->name('about');
-Route::inertia('blog', 'blog')->name('blog');
+Route::inertia('about', 'home/about')->name('about');
+Route::inertia('blog', 'home/blog')->name('blog');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

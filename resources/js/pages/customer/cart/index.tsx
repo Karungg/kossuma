@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import type { CartCalculation, CartItem, RecommendationProduct, StoreGroup } from './types';
-import { StorefrontLayout } from '@/layouts/storefront-layout';
+import { HomeLayout } from '@/layouts/home-layout';
 import { CartBreadcrumbBar } from './components/cart-breadcrumb-bar';
 import { StoreCartGroup } from './components/store-cart-group';
 import { CartRecommendations } from './components/cart-recommendations';
 import { OrderSummaryCard } from './components/order-summary-card';
 import { ShoppingBag } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { checkout } from '@/routes';
 
 const INITIAL_STORES: StoreGroup[] = [
@@ -99,7 +99,7 @@ const INITIAL_RECOMMENDATIONS: RecommendationProduct[] = [
     },
 ];
 
-export function CustomerCartPage() {
+export default function CartPage() {
     const [stores, setStores] = useState<StoreGroup[]>(INITIAL_STORES);
     const [items, setItems] = useState<CartItem[]>(INITIAL_ITEMS);
     const [searchQuery, setSearchQuery] = useState('');
@@ -229,11 +229,17 @@ export function CustomerCartPage() {
     );
 
     return (
-        <StorefrontLayout
+        <HomeLayout
             cartCount={items.length}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
         >
+            <Head title="Keranjang Belanja - Kossuma Kota Bogor">
+                <meta
+                    name="description"
+                    content="Keranjang Belanja Multi-Toko UMKM Kossuma Kota Bogor — Halal Food & Local UMKM E-Commerce"
+                />
+            </Head>
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8">
                 {/* Breadcrumbs & Bulk Selection Bar */}
                 <CartBreadcrumbBar
@@ -355,7 +361,7 @@ export function CustomerCartPage() {
                     </div>
                 </div>
             </div>
-        </StorefrontLayout>
+        </HomeLayout>
     );
 }
 

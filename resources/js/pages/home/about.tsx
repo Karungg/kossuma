@@ -1,5 +1,5 @@
 import { Head, Link } from "@inertiajs/react";
-import { StorefrontLayout } from "@/layouts/storefront-layout";
+import { HomeLayout } from "@/layouts/home-layout";
 import { home } from "@/routes";
 import {
     ArrowLeft,
@@ -15,7 +15,7 @@ import {
 
 export default function About() {
     return (
-        <StorefrontLayout>
+        <HomeLayout>
             <Head title="Tentang Kami - Kossuma Kota Bogor">
                 <meta
                     name="description"
@@ -122,6 +122,6 @@ export default function About() {
                     </div>
                 </section>
             </div>
-        </StorefrontLayout>
+        </HomeLayout>
     );
 }

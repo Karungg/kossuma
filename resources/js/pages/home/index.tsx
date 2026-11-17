@@ -1,14 +1,15 @@
+import { Head } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
 import { HeroBanner } from './components/hero-banner';
 import { CategoryTabs } from './components/category-tabs';
 import { ProductCard } from './components/product-card';
-import { StorefrontLayout } from '@/layouts/storefront-layout';
+import { HomeLayout } from '@/layouts/home-layout';
 import { Search } from 'lucide-react';
 import { CATEGORIES, PRODUCTS } from './data';
 
 const INITIAL_PAGE_SIZE = 18;
 
-export function StorefrontHomePage() {
+export default function HomePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('all');
     const [visibleCount, setVisibleCount] = useState(INITIAL_PAGE_SIZE);
@@ -49,11 +50,17 @@ export function StorefrontHomePage() {
     };
 
     return (
-        <StorefrontLayout
+        <HomeLayout
             cartCount={2}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
         >
+            <Head title="Kossuma Kota Bogor — Sajian Pangan Halal & Praktis UMKM Muslimah">
+                <meta
+                    name="description"
+                    content="Koperasi Usaha Persaudaraan Muslimah Kota Bogor — Platform kurasi produk pangan halal, frozen food, dan kuliner khas UMKM perempuan tangguh di Kota Bogor."
+                />
+            </Head>
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8">
                 {/* Hero Banner */}
                 <HeroBanner />
@@ -116,6 +123,6 @@ export function StorefrontHomePage() {
                     )}
                 </section>
             </div>
-        </StorefrontLayout>
+        </HomeLayout>
     );
 }
