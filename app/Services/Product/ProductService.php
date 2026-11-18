@@ -10,11 +10,6 @@ use Illuminate\Database\Eloquent\Collection;
 
 class ProductService implements ProductServiceInterface
 {
-    /**
-     * Retrieve a single active product detail payload by its slug.
-     *
-     * @return array<string, mixed>
-     */
     public function getProductDetailBySlug(string $slug): array
     {
         $product = Product::query()
@@ -100,9 +95,6 @@ class ProductService implements ProductServiceInterface
         ];
     }
 
-    /**
-     * @return Collection<int, Product>
-     */
     private function getRelatedProducts(Product $product): Collection
     {
         return Product::query()
@@ -118,9 +110,6 @@ class ProductService implements ProductServiceInterface
             ->get();
     }
 
-    /**
-     * @return array{0: string, 1: string}
-     */
     private function parseStoreLocation(string $location): array
     {
         $parts = array_map('trim', explode(',', $location, 2));

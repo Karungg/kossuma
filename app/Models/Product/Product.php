@@ -35,7 +35,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 ])]
 class Product extends Model
 {
-    /** @use HasFactory<ProductFactory> */
     use HasFactory;
 
     protected static function newFactory(): ProductFactory
@@ -43,9 +42,6 @@ class Product extends Model
         return ProductFactory::new();
     }
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -64,41 +60,26 @@ class Product extends Model
         ];
     }
 
-    /**
-     * @return BelongsTo<Category, $this>
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * @return BelongsTo<Store, $this>
-     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
-    /**
-     * @return HasMany<ProductImage, $this>
-     */
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
-    /**
-     * @return HasOne<ProductImage, $this>
-     */
     public function primaryImage(): HasOne
     {
         return $this->hasOne(ProductImage::class)->where('is_primary', true)->orderBy('sort_order');
     }
 
-    /**
-     * @return HasMany<ProductReview, $this>
-     */
     public function reviews(): HasMany
     {
         return $this->hasMany(ProductReview::class)->latest();

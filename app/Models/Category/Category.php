@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['name', 'slug', 'description'])]
 class Category extends Model
 {
-    /** @use HasFactory<CategoryFactory> */
     use HasFactory;
 
     protected static function newFactory(): CategoryFactory
@@ -20,9 +19,6 @@ class Category extends Model
         return CategoryFactory::new();
     }
 
-    /**
-     * @return HasMany<Product, $this>
-     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

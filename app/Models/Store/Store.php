@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['user_id', 'name', 'slug', 'description', 'location', 'is_verified'])]
 class Store extends Model
 {
-    /** @use HasFactory<StoreFactory> */
     use HasFactory;
 
     protected static function newFactory(): StoreFactory
@@ -22,9 +21,6 @@ class Store extends Model
         return StoreFactory::new();
     }
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -32,17 +28,11 @@ class Store extends Model
         ];
     }
 
-    /**
-     * @return BelongsTo<User, $this>
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * @return HasMany<Product, $this>
-     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

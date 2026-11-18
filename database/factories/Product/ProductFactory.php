@@ -8,16 +8,10 @@ use App\Models\Store\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<Product>
- */
 class ProductFactory extends Factory
 {
     protected $model = Product::class;
 
-    /**
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $name = Str::title(fake()->unique()->words(3, true));

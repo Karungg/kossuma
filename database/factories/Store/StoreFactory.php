@@ -6,16 +6,10 @@ use App\Models\Store\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<Store>
- */
 class StoreFactory extends Factory
 {
     protected $model = Store::class;
 
-    /**
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $name = 'Dapur '.fake()->unique()->firstNameFemale();
