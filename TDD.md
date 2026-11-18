@@ -18,7 +18,7 @@ Aplikasi ini menggunakan struktur folder standar Laravel (`app/`, `database/`, `
 
 - **Backend (`app/`):** Controllers, Models, Enums, Contracts, Services, Policies, Observers, dan Requests dikelompokkan langsung dalam subfolder Modul Fitur (misal: `app/Models/Store/Store.php`, `app/Models/Product/Product.php`, `app/Contracts/Order/OrderServiceInterface.php`, `app/Services/Order/OrderService.php`, `app/Http/Controllers/Product/ProductController.php`, `app/Services/Payment/MidtransService.php`, `app/Services/Shipping/ShippingAggregatorService.php`, dll.).
 - **Database (`database/`):** Factories dan Seeders dikelompokkan dalam subfolder Modul Fitur (`User/`, `Store/`, `Category/`, `Product/`, `Promotion/`, `Order/`, `ReturnOrder/`, `Review/`, `Chat/`, `Finance/`).
-- **Frontend (`resources/js/`):** Halaman Inertia v3 (`resources/js/pages/`) dan komponen UI lokal dikelompokkan berdasarkan gerbang peran dan Modul Fitur (`resources/js/pages/storefront/`, `resources/js/pages/customer/`, `resources/js/pages/seller/`, `resources/js/pages/admin/`, `resources/js/pages/dashboard/`).
+- **Frontend (`resources/js/`):** Halaman Inertia v3 (`resources/js/pages/`) dan komponen UI lokal dikelompokkan berdasarkan gerbang peran dan Modul Fitur (`resources/js/pages/home/`, `resources/js/pages/products/`, `resources/js/pages/customer/`, `resources/js/pages/seller/`, `resources/js/pages/admin/`, `resources/js/pages/dashboard/`).
 
 ---
 
@@ -34,47 +34,47 @@ Aplikasi ini menggunakan struktur folder standar Laravel (`app/`, `database/`, `
 #### A. Skema Rute Tiga Gerbang Utama (Multi-Gate Routing)
 Sistem memisahkan seluruh alur navigasi dan hak akses menjadi tiga gerbang rute utama sesuai peran pengguna di [PRD.md](PRD.md):
 
-1. **Gerbang Head of Office / Management Kossuma (`/admin/*`):**
+1. **Gerbang Pengelola Pusat / Management Kossuma (`/admin/*`):**
    - Diperuntukkan bagi peran pengelola pusat: `HeadOffice`.
    - Rute terdaftar di `routes/admin.php`:
-     - Dashboard Executive & KPI Toko: `admin/dashboard` (`admin.dashboard`).
+     - Dashboard Ringkasan & Kinerja Toko: `admin/dashboard` (`admin.dashboard`).
      - Manajemen Toko UMKM Binaan: `admin/stores` (`admin.stores.*`).
      - Manajemen Kategori Global: `admin/categories` (`admin.categories.*`).
      - Moderasi Katalog Produk UMKM: `admin/products` (`admin.products.*`).
      - Manajemen Diskon Hari Tertentu: `admin/scheduled-discounts` (`admin.scheduled-discounts.*`).
      - Manajemen Voucher Global: `admin/vouchers` (`admin.vouchers.*`).
-     - Monitoring Transaksi & Pengiriman: `admin/orders` (`admin.orders.*`).
-     - Resolusi & Eskalasi Return Barang: `admin/returns` (`admin.returns.*`).
-     - Laporan Keuangan Komprehensif & Payout: `admin/finance` (`admin.finance.*`), `admin/payouts` (`admin.payouts.*`).
+     - Pemantauan Transaksi & Pengiriman: `admin/orders` (`admin.orders.*`).
+     - Penyelesaian & Mediasi Pengembalian Barang (Retur): `admin/returns` (`admin.returns.*`).
+     - Laporan Keuangan Lengkap & Pencairan Dana: `admin/finance` (`admin.finance.*`), `admin/payouts` (`admin.payouts.*`).
      - Manajemen Pengguna: `admin/users` (`admin.users.*`).
-     - Pusat Komunikasi UMKM: `admin/chat` (`admin.chat.*`).
+     - Pesan & Komunikasi UMKM: `admin/chat` (`admin.chat.*`).
 
-2. **Gerbang Toko UMKM / Seller (`/store-panel/*`):**
+2. **Gerbang Toko UMKM / Penjual (`/store-panel/*`):**
    - Diperuntukkan bagi mitra penjual UMKM Kossuma: `Seller`.
    - Rute terdaftar di `routes/seller.php`:
      - Dashboard Operasional Toko: `store-panel/dashboard` (`seller.dashboard`).
      - Profil & Lokasi Toko UMKM: `store-panel/profile` (`seller.profile.*`).
-     - Manajemen Produk, Stok, Ready/PO, Best Seller, Diskon: `store-panel/products` (`seller.products.*`).
-     - Voucher & Partisipasi Promo Toko: `store-panel/promotions` (`seller.promotions.*`).
-     - Pesanan Masuk & Request Pickup Ekspedisi: `store-panel/orders` (`seller.orders.*`).
-     - Penanganan Return Barang: `store-panel/returns` (`seller.returns.*`).
+     - Manajemen Produk, Stok Tersedia / Pre-order, Produk Terlaris, & Diskon: `store-panel/products` (`seller.products.*`).
+     - Voucher & Promo Toko: `store-panel/promotions` (`seller.promotions.*`).
+     - Pesanan Masuk & Panggil Kurir: `store-panel/orders` (`seller.orders.*`).
+     - Penanganan Pengembalian Barang (Retur): `store-panel/returns` (`seller.returns.*`).
      - Ulasan & Balasan Penilaian: `store-panel/reviews` (`seller.reviews.*`).
      - Laporan Keuangan Toko & Pencairan Dana: `store-panel/finance` (`seller.finance.*`).
-     - Inbox Chat (Customer <-> Toko & Toko <-> Head of Office): `store-panel/chat` (`seller.chat.*`).
+     - Pesan Masuk (Pelanggan <-> Toko & Toko <-> Pengelola Pusat): `store-panel/chat` (`seller.chat.*`).
 
-3. **Gerbang Publik Storefront & Customer (`/`, `/customer/*`):**
+3. **Gerbang Publik & Pelanggan (`/`, `/customer/*`):**
    - Diperuntukkan bagi pengunjung publik dan pembeli terdaftar: `Customer`.
    - Rute terdaftar di `routes/web.php` & `routes/customer.php`:
-     - Beranda & Promo Hari Ini: `/` (`storefront.home`).
-     - Katalog, Pencarian & Filter Lengkap: `/catalog` (`storefront.catalog`).
-     - Detail Produk & Etalase Toko UMKM: `/products/{slug}` (`storefront.products.show`), `/stores/{slug}` (`storefront.stores.show`).
+     - Beranda & Pilihan Kami: `/` (`home`).
+     - Katalog, Pencarian & Filter Lengkap: `/catalog` (`catalog`).
+     - Detail Produk & Etalase Toko UMKM: `/products/{slug}` (`products.show`), `/stores/{slug}` (`stores.show`).
      - Keranjang Belanja Multi-Toko: `/cart` (`customer.cart.*`).
-     - Checkout, Pilih Alamat, Ongkir Kurir, & Voucher: `/checkout` (`customer.checkout.*`).
-     - Histori Pesanan & Live Tracking Ekspedisi: `/orders` (`customer.orders.*`).
-     - Pengajuan Return Barang Bermasalah: `/orders/{storeOrder}/returns` (`customer.returns.*`).
+     - Checkout, Pilih Alamat, Kurir Pengiriman, & Voucher: `/checkout` (`customer.checkout.*`).
+     - Riwayat Pesanan & Lacak Pengiriman: `/orders` (`customer.orders.*`).
+     - Pengajuan Pengembalian Barang (Retur): `/orders/{storeOrder}/returns` (`customer.returns.*`).
      - Penilaian & Ulasan Pesanan Selesai: `/orders/{storeOrder}/reviews` (`customer.reviews.*`).
      - Chat dengan Toko UMKM: `/chat` (`customer.chat.*`).
-     - Profil, Nomor Telepon, & Buku Alamat Berkoordinat: `/settings/profile`, `/settings/addresses` (`customer.addresses.*`).
+     - Profil, Nomor Telepon, & Daftar Alamat: `/settings/profile`, `/settings/addresses` (`customer.addresses.*`).
 
 4. **Gerbang Webhook Eksternal (`/api/webhooks/*`):**
    - Bebas dari proteksi CSRF session browser namun wajib divalidasi dengan *cryptographic signature*:
@@ -84,8 +84,8 @@ Sistem memisahkan seluruh alur navigasi dan hak akses menjadi tiga gerbang rute 
 #### B. Pembagian Komponen Global vs Lokal Modul
 - **Komponen Global Shared (`resources/js/components/` & `resources/js/hooks/`):** Digunakan murni untuk elemen UI universal lintas fitur:
   - UI Primitives (`resources/js/components/ui/`): Button (dengan warna utama `#7D3394`), Input, Select, Checkbox, Dialog, Label, Badge, Card, Tooltip, DropdownMenu, Tabs, Avatar, Separator.
-  - App Layout Shell (`resources/js/layouts/` & `resources/js/components/`): `storefront-layout.tsx`, `seller-layout.tsx`, `admin-layout.tsx`, `app-header.tsx`, `app-sidebar.tsx`, `breadcrumbs.tsx`.
-  - Generic Utility Components (`resources/js/components/`): `data-table/` (`DataTableHeader`, `DataTablePagination`, `ColumnVisibilityDropdown`), `delete-confirm-modal.tsx`, `price-display.tsx` (formatter Rupiah), `coordinate-picker.tsx`, `input-error.tsx`.
+  - App Layout Shell (`resources/js/layouts/` & `resources/js/components/`): `home-layout.tsx`, `auth/auth-simple-layout.tsx`, `seller-layout.tsx`, `admin-layout.tsx`, `app-header.tsx`, `app-sidebar.tsx`, `breadcrumbs.tsx`.
+  - Generic Utility Components (`resources/js/components/`): `data-table/` (`DataTableHeader`, `DataTablePagination`, `ColumnVisibilityDropdown`), `delete-confirm-modal.tsx`, `price-display.tsx` (formatter Rupiah `'Rp' + nilai.toLocaleString('id-ID')`), `coordinate-picker.tsx`, `input-error.tsx`.
   - Custom Shared Hooks (`resources/js/hooks/`): `use-table-filters.ts`, `use-row-selection.ts`, `use-column-visibility.ts`, `use-delete-confirm.ts`, `use-mobile.ts`, `use-currency.ts`.
 - **Komponen Lokal Modul (`resources/js/pages/{gate}/{module}/components/`):** Digunakan secara spesifik HANYA untuk modul fitur terkait:
   - Component khusus modul: `{module}-form.tsx`, `{module}-table.tsx`, `{module}-stat-cards.tsx`, `{module}-detail-modal.tsx`, `{module}-index-toolbar.tsx`.
@@ -95,7 +95,7 @@ Sistem memisahkan seluruh alur navigasi dan hak akses menjadi tiga gerbang rute 
 - **Typed Routing (Wayfinder):** **DILARANG KERAS** melakukan hardcode string URL pada kode React frontend. Selalu impor fungsi rute yang ter-generate otomatis dari `@/actions/` (Controllers) atau `@/routes/` (Named Routes):
   ```tsx
   import { index as sellerProductsIndex } from '@/routes/seller/products';
-  import { show as productDetail } from '@/routes/storefront/products';
+  import { show as showProduct } from '@/routes/products';
   import { Link } from '@inertiajs/react';
   ```
 - **Inertia v3 Features:** Manfaatkan `useHttp` hook untuk kalkulasi ongkir XHR mandiri, `Inertia::defer()` dengan animasi skeleton untuk analitik KPI dan laporan keuangan, `usePoll` pada ruang chat, instant visits, prefetching pada kartu produk katalog, dan `router.cancelAll()`.
@@ -133,9 +133,9 @@ Mengacu pada [PRD.md](PRD.md) Section 4 & Section 5:
 
 | Role (`UserRole`) | Domain & Scope | Wewenang & Batas Akses Bisnis |
 | :--- | :--- | :--- |
-| **HeadOffice** (`HeadOffice`) | Tata Kelola Ekosistem Kossuma, Keuangan Terpusat, & KPI UMKM | Mengelola seluruh toko UMKM binaan (`admin/stores`), kategori global (`admin/categories`), moderasi seluruh produk, pembuatan program **Diskon Hari Tertentu** (`scheduled_discounts`) & voucher global, mediasi/keputusan final atas **Return Barang** yang dieskalasi, persetujuan pencairan dana (*payout*), **Laporan Keuangan Komprehensif** lintas toko, **Dashboard KPI Keramaian Toko** (toko paling ramai vs. sepi), serta chat langsung ke setiap toko UMKM. |
-| **Seller / Toko UMKM** (`Seller`) | Operasional Toko UMKM Mandiri | Hanya dapat mengakses dan mengelola data milik tokonya sendiri (`stores.user_id = $user->id`). Menginput produk beserta foto, stok, harga, lokasi, serta menentukan status **Ready Stock**, **Pre-Order (PO)**, **Best Seller**, dan **Diskon**. Memproses pesanan masuk (`StoreOrder`), melakukan *Request Pickup* kurir (Paxel/Lalamove/GoSend), merespons komplain/retur pelanggan, membalas ulasan, melihat **Laporan Keuangan Khusus Tokonya**, serta berkomunikasi via chat dengan **Customer** maupun **Head of Office Kossuma**. |
-| **Customer** (`Customer`) | Pembeli & Pelanggan Kossuma | Mengelola profil (nomor telepon & multi-alamat pengiriman berkoordinat), menjelajahi katalog produk UMKM berdasarkan kategori/pencarian/filter lengkap, menambahkan produk ke keranjang, menggunakan voucher & menikmati diskon hari tertentu, memilih kurir & melihat ongkir real-time, membayar aman via **Midtrans**, melacak status pesanan (*live tracking*), melihat histori pesanan, menghubungi toko via chat, mengajukan **Return Barang** ketika bermasalah, dan memberikan rating/ulasan saat pesanan selesai. |
+| **HeadOffice** (`HeadOffice`) | Tata Kelola Ekosistem Kossuma, Keuangan Terpusat, & Kinerja UMKM | Mengelola seluruh toko UMKM binaan (`admin/stores`), kategori global (`admin/categories`), moderasi seluruh produk, pembuatan program **Diskon Hari Tertentu** (`scheduled_discounts`) & voucher global, mediasi/keputusan akhir atas **Pengembalian Barang (Retur)** yang dieskalasi, persetujuan pencairan dana, **Laporan Keuangan Lengkap** lintas toko, **Ringkasan Kinerja Keramaian Toko** (toko paling ramai vs. toko sepi), serta chat langsung ke setiap toko UMKM. |
+| **Seller / Toko UMKM** (`Seller`) | Operasional Toko UMKM Mandiri | Hanya dapat mengakses dan mengelola data milik tokonya sendiri (`stores.user_id = $user->id`). Menginput produk beserta foto, stok, harga, lokasi, serta menentukan status **Stok Tersedia**, **Pre-order** (beserta estimasi hari, misal `Pre-order 3 hari`), **Produk Terlaris**, dan **Diskon**. Memproses pesanan masuk (`StoreOrder`), menekan tombol **Panggil Kurir** (Paxel/Lalamove/GoSend), merespons pengajuan pengembalian barang (retur) pelanggan, membalas ulasan, melihat **Laporan Keuangan Toko**, serta berkomunikasi via chat dengan **Pelanggan** maupun **Pengelola Pusat Kossuma**. |
+| **Customer / Pelanggan** (`Customer`) | Pembeli & Pelanggan Kossuma | Mengelola profil (nomor telepon & daftar alamat pengiriman berkoordinat), menjelajahi katalog produk UMKM berdasarkan kategori/pencarian/filter lengkap, menambahkan produk ke keranjang, menggunakan voucher & menikmati diskon hari tertentu, memilih kurir (termasuk **Kirim Hari yang Sama**) & melihat ongkir langsung, membayar aman via **Midtrans**, menggunakan fitur **Lacak Pengiriman**, melihat riwayat pesanan, menghubungi toko via chat, mengajukan **Pengembalian Barang (Retur)** ketika pesanan bermasalah, dan memberikan penilaian/ulasan saat pesanan selesai. |
 
 ---
 
@@ -235,10 +235,10 @@ Mengacu pada [PRD.md](PRD.md) Section 4 & Section 5:
 | `discount_price` | `bigint unsigned` | Nullable, Index | Harga setelah diskon langsung dari toko |
 | `discount_starts_at` | `timestamp` | Nullable | Waktu mulai diskon produk toko |
 | `discount_ends_at` | `timestamp` | Nullable | Waktu berakhir diskon produk toko |
-| `stock` | `integer unsigned` | Default: `0`, Index | Jumlah stok tersedia (atau kuota PO) |
-| `availability_type` | `enum` | `Ready`, `PreOrder` | Status ketersediaan barang (Default: `Ready`) |
-| `preorder_duration_days`| `smallint unsigned`| Nullable | Estimasi hari pengerjaan jika `PreOrder` (misal: 3 hari) |
-| `is_best_seller` | `boolean` | Default: `false`, Index | Penanda produk Best Seller pilihan toko |
+| `stock` | `integer unsigned` | Default: `0`, Index | Jumlah stok tersedia (atau kuota Pre-order) |
+| `availability_type` | `enum` | `Ready`, `PreOrder` | Status ketersediaan barang (Default: `Ready`, ditampilkan di UI sebagai `Stok Tersedia` atau `Pre-order`) |
+| `preorder_duration_days`| `smallint unsigned`| Nullable | Estimasi hari pengerjaan jika `PreOrder` (ditampilkan di UI sebagai `Pre-order [X] hari`, misal: `Pre-order 3 hari`) |
+| `is_best_seller` | `boolean` | Default: `false`, Index | Penanda produk terlaris pilihan toko (ditampilkan di tabel toko sebagai `Produk Terlaris`) |
 | `location_city` | `string(100)` | Not Null, Index | Kota lokasi produk dikirim (sinkron/override dari toko) |
 | `weight_grams` | `integer unsigned` | Not Null | Berat satuan (gram) untuk kalkulasi ekspedisi |
 | `length_cm` | `smallint unsigned`| Default: `10` | Panjang paket (cm) untuk volumetrik Paxel/Lalamove |
@@ -339,11 +339,11 @@ Mengacu pada [PRD.md](PRD.md) Section 4 & Section 5:
 | `user_id` | `bigint unsigned` | FK (`users.id`), Index | Customer pemilik pesanan |
 | `store_order_number` | `string(50)` | Unique, Not Null | Nomor pesanan toko (`SO/20261112/UMKM-00001`) |
 | `status` | `enum` | `AwaitingPayment`, `Processing`, `ReadyToShip`, `Shipped`, `Delivered`, `Completed`, `ReturnRequested`, `Returned`, `Cancelled` | Siklus hidup pesanan per toko |
-| `contains_preorder` | `boolean` | Default: `false` | Penanda apakah sub-order berisi item Pre-Order |
-| `estimated_ship_date` | `date` | Nullable | Batas tanggal pengiriman (dihitung dari durasi PO) |
+| `contains_preorder` | `boolean` | Default: `false` | Penanda apakah sub-order berisi item Pre-order |
+| `estimated_ship_date` | `date` | Nullable | Batas tanggal pengiriman (dihitung dari durasi Pre-order) |
 | `courier_provider` | `enum` | `Paxel`, `Lalamove`, `GoSend` | Mitra ekspedisi yang dipilih customer |
-| `courier_service_code` | `string(60)` | Not Null | Jenis layanan (misal: `SAMEDAY`, `INSTANT`, `MOTORCYCLE`) |
-| `courier_service_name` | `string(100)` | Not Null | Nama tampilan layanan kurir |
+| `courier_service_code` | `string(60)` | Not Null | Kode layanan internal API (misal: `SAMEDAY`, `INSTANT`, `MOTORCYCLE`) |
+| `courier_service_name` | `string(100)` | Not Null | Nama tampilan layanan kurir berbahasa Indonesia ramah (misal: **Kirim Hari yang Sama**, **Kirim Instan**) |
 | `shipping_cost` | `bigint unsigned` | Not Null | Tarif ongkir untuk toko ini (Rupiah) |
 | `shipping_booking_id` | `string(100)` | Nullable, Index | Order ID / Booking ID dari API Paxel/Lalamove/GoSend |
 | `tracking_number` | `string(100)` | Nullable, Index | Nomor resi / AWB pengiriman |
@@ -474,23 +474,23 @@ Setiap modul mengikuti pola penamaan konsisten di seluruh layer aplikasi:
 ### 4.3. Multi-Courier Shipping Aggregator: Paxel, Lalamove, & GoSend (Modul Shipping)
 - **Unified Adapter Pattern:**
   - `ShippingAggregatorService` mengelola 3 driver kurir yang mengimplementasikan `ShippingProviderInterface`:
-    1. `PaxelShippingDriver`: Mengirim titik koordinat/kode pos asal toko (`stores.postal_code`, `latitude`, `longitude`), tujuan customer (`user_addresses`), serta berat (`weight_grams`) dan dimensi volumetrik (`length_cm`, `width_cm`, `height_cm`) untuk mendapatkan tarif *Sameday / Nextday / Frozen*.
+    1. `PaxelShippingDriver`: Mengirim titik koordinat/kode pos asal toko (`stores.postal_code`, `latitude`, `longitude`), tujuan customer (`user_addresses`), serta berat (`weight_grams`) dan dimensi volumetrik (`length_cm`, `width_cm`, `height_cm`) untuk mendapatkan tarif layanan **Kirim Hari yang Sama**, **Kirim Besok**, atau **Khusus Frozen** (dengan saran penyajian pada produk frozen: *"Diamkan di suhu ruang sebelum digoreng/dimasak"*).
     2. `LalamoveShippingDriver`: Menggunakan HMAC-SHA256 signature untuk meminta *Quotation* dari koordinat toko ke koordinat customer dengan armada `MOTORCYCLE`, `SEDAN`, atau `VAN`.
-    3. `GoSendShippingDriver`: Menghitung jarak koordinat titik jemput toko ke alamat customer untuk layanan `Instant` dan `SameDay`.
-- **Pickup Booking & Tracking Synchronization:**
-  - Ketika Toko UMKM mengklik **"Request Pickup"** pada halaman `store-panel/orders`, `ShippingAggregatorService::bookPickup($storeOrder)` memanggil API ekspedisi terkait, menyimpan `tracking_number` dan `tracking_url`, serta mengubah status menjadi `ReadyToShip`.
+    3. `GoSendShippingDriver`: Menghitung jarak koordinat titik jemput toko ke alamat customer untuk layanan **Kirim Instan** dan **Kirim Hari yang Sama**.
+- **Penjemputan Paket (Panggil Kurir) & Sinkronisasi Pelacakan:**
+  - Ketika Toko UMKM mengklik tombol **"Panggil Kurir"** pada halaman `store-panel/orders`, `ShippingAggregatorService::bookPickup($storeOrder)` memanggil API ekspedisi terkait, menyimpan `tracking_number` dan `tracking_url`, serta mengubah status menjadi `ReadyToShip`.
   - Webhook ekspedisi (`POST /api/webhooks/shipping/{provider}`) memetakan status kurir ke `order_tracking_logs` dan mengupdate status `StoreOrder` otomatis (`Shipped` saat kurir mengambil barang, `Delivered` saat tiba di tujuan).
 - **Implementasi:** `app/Services/Shipping/ShippingAggregatorService.php`, `app/Services/Shipping/Drivers/{PaxelDriver,LalamoveDriver,GoSendDriver}.php`.
 
 ### 4.4. Escrow Protection, Return Resolution, & Financial Settlement (Modul ReturnOrder & Finance)
 - **Penahanan Dana Escrow:**
-  - Selama pesanan berstatus `Processing`, `Shipped`, atau `Delivered`, dana bersih milik toko (`net_seller_amount`) berada di `stores.escrow_balance` dan belum bisa ditarik (*withdraw*).
-- **Alur Return Barang Bermasalah:**
-  - Ketika status `Delivered`, Customer memiliki jendela waktu sebelum `auto_complete_at` untuk mengajukan Return (`ReturnRequest`) beserta foto/video bukti (`evidence_files`).
+  - Selama pesanan berstatus `Processing`, `Shipped`, atau `Delivered`, dana bersih milik toko (`net_seller_amount`) berada di `stores.escrow_balance` dan belum bisa dicairkan.
+- **Alur Pengembalian Barang (Retur) Bermasalah:**
+  - Ketika status `Delivered`, Pelanggan memiliki jendela waktu sebelum `auto_complete_at` untuk mengajukan **Pengembalian Barang (Retur)** (`ReturnRequest`) beserta foto/video bukti (`evidence_files`).
   - Saat retur diajukan, status `StoreOrder` berubah menjadi `ReturnRequested`, membekukan timer penyelesaian otomatis.
   - Toko UMKM dapat menyetujui (`ApprovedBySeller`) atau menolak/mengajukan mediasi (`EscalatedToAdmin`).
-  - **Head of Office** memiliki otoritas resolusi final:
-    - Jika diputuskan **Refund ke Customer**, dana ditarik dari `stores.escrow_balance`, dicatat sebagai `RefundReversed` di `financial_ledgers`, dan dikembalikan ke Customer.
+  - **Pengelola Pusat (Head Office)** memiliki wewenang keputusan akhir:
+    - Jika diputuskan **Pengembalian Dana ke Pelanggan**, dana ditarik dari `stores.escrow_balance`, dicatat sebagai `RefundReversed` di `financial_ledgers`, dan dikembalikan ke Pelanggan.
     - Jika klaim retur ditolak atau selesai ditukar (`Exchanged`/`Completed`), dana dilepas dari `escrow_balance` ke `wallet_balance` toko (`EscrowRelease`).
 - **Implementasi:** `app/Services/ReturnOrder/ReturnResolutionService.php`, `app/Services/Finance/LedgerService.php`.
 
@@ -585,16 +585,19 @@ Strategi pengujian mengikuti panduan **Pest v5** di [AGENTS.md](AGENTS.md):
 ## 7. Frontend Conventions, Theme Tokens (`#7D3394`), & Component File Naming
 
 1. **Brand Color `#7D3394` & Theme Tokens (`resources/css/app.css`):**
-   - Konfigurasikan variabel CSS utama Tailwind v4 agar warna aksen `#7D3394` digunakan secara konsisten pada komponen utama (`bg-primary`, `text-primary`, `border-primary`, `ring-primary`):
-     - Primary Base: `#7D3394`
-     - Primary Hover: `#632676`
-     - Primary Soft Surface: `#F9F5FB`
-     - Primary Border Accent: `#E5CEF0`
+   - Konfigurasikan variabel CSS utama Tailwind v4 pada blok `@theme` di `resources/css/app.css` agar identitas warna Kossuma digunakan secara konsisten sesuai [DESIGN.md](DESIGN.md) dan [.agents/rules/design-system.md](.agents/rules/design-system.md):
+     - Page Canvas: `#F8F9FB`
+     - Primary Base (`--color-brand-600`): `#7D3394`
+     - Primary Hover (`--color-brand-700`): `#632676`
+     - Primary Soft Surface (`--color-brand-100`): `#F0E6F5`
+     - Primary Border Accent (`--color-brand-200`): `#E2C9EB`
+     - Price Highlight: `#DC2626` (khusus nominal harga produk & total belanja)
 2. **Lowercase / Kebab-case Filenames for Components, Pages, & Hooks:**
    - Seluruh berkas komponen pembantu (`resources/js/components/**/*.tsx` dan `resources/js/pages/**/components/*.tsx`), halaman Inertia (`resources/js/pages/**/*.tsx`), dan custom hooks (`resources/js/hooks/*.ts`) **WAJIB menggunakan format lowercase / kebab-case**.
    - Contoh: `product-card.tsx`, `scheduled-discount-banner.tsx`, `store-kpi-leaderboard.tsx`, `order-tracking-stepper.tsx`, `use-shipping-rates.ts`.
-3. **UI Component Variants:**
-   - Komponen `Badge` mendukung varian status semantik marketplace: `default` (ungu `#7D3394`), `secondary`, `destructive`, `outline`, `success` (Ready Stock / Lunas), dan `warning` (Pre-Order / Menunggu Bayar / Retur).
+3. **UI Component Variants & Aturan Anti-TMI pada Katalog:**
+   - Komponen `Badge` mendukung varian status semantik pada tabel internal: `default` (ungu `#7D3394`), `secondary`, `destructive`, `outline`, `success` (`Stok Tersedia` / `Lunas`), dan `warning` (`Pre-order` / `Menunggu Pembayaran` / `Retur`).
+   - Pada kartu produk katalog pelanggan (`ProductCard`), **hanya** penanda `Pre-order [X] hari` / `Pre-order` yang diizinkan tampil di sudut kiri atas foto produk jika `isPreorder` bernilai `true` (dilarang menempelkan stiker diskon atau badge lain di atas foto).
 4. **Inertia Empty Array Serialization (SSR Bug Prevention):**
    - Di PHP/Laravel, array asosiatif kosong (`[]`) di-serialize menjadi JSON array (`[]`), bukan JSON object (`{}`).
    - Selalu normalisasi prop filter pada halaman katalog, pesanan, dan laporan keuangan:
@@ -659,59 +662,59 @@ Seluruh modul fitur pada **Kossuma Marketplace** (`Store`, `Product`, `Promotion
 1. **Wayfinder Typed Routing:**
    - Seluruh navigasi `<Link>`, pemanggilan aksi form, dan redirect wajib mengimpor fungsi route/action dari `@/actions/...` atau `@/routes/...`. Dilarang keras menggunakan string URL hardcoded.
 2. **Modular Component Architecture:**
-   Setiap modul halaman pengelolaan (`seller/*` dan `admin/*`) maupun katalog (`storefront/*`) dipecah menjadi sub-komponen terisolasi di dalam folder `components/` modul terkait:
+   Setiap modul halaman pengelolaan (`seller/*` dan `admin/*`) maupun katalog (`home/*`, `products/*`, `customer/*`) dipecah menjadi sub-komponen terisolasi di dalam folder `components/` modul terkait:
    - `[module]-index-toolbar.tsx`: Toolbar pencarian, filter kategori/status/tanggal, dan tombol ekspor laporan.
    - `[module]-stat-cards.tsx`: Kartu ringkasan metrik dengan aksen `#7D3394`.
-   - `[module]-table.tsx`: Tabel data interaktif dengan sorting kolom, badge status (`Ready`, `Pre-Order`, `Best Seller`, `Diskon`), dan menu aksi.
-   - `[module]-form.tsx`: Form input modular untuk mode create dan edit.
-   - `[module]-detail-view.tsx`: Tampilan detail lengkap (misal: rincian sub-order, bukti retur, dan log tracking kurir).
+   - `[module]-table.tsx`: Tabel data interaktif dengan sorting kolom, badge status berbahasa Indonesia ramah (`Stok Tersedia`, `Pre-order`, `Produk Terlaris`, `Diskon`), dan menu aksi.
+   - `[module]-form.tsx`: Form input modular untuk mode tambah dan ubah data.
+   - `[module]-detail-view.tsx`: Tampilan detail lengkap (misal: rincian pesanan toko, bukti pengembalian barang, dan riwayat perjalanan kurir).
 
 ---
 
-### 8.3. Standar Arsitektur Dashboard & Portal: Pemisahan 3 Peran Utama
+### 8.3. Pembagian Halaman Berdasarkan 3 Peran Pengguna
 
-Berdasarkan batasan hak akses resmi pada [PRD.md](PRD.md), arsitektur pusat kendali dipisahkan menjadi 3 portal tersendiri:
+Berdasarkan batasan hak akses resmi pada [PRD.md](PRD.md), halaman aplikasi dipisahkan menjadi 3 area utama sesuai peran pengguna:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-│                     PUSAT KOMANDO KOSSUMA MARKETPLACE BERBASIS PERAN                     │
+│                     Pembagian Area Aplikasi Berdasarkan Peran Pengguna                   │
 ├────────────────────────────┬─────────────────────────────┬───────────────────────────────┤
-│ 1. HEAD OF OFFICE (ADMIN)  │ 2. TOKO UMKM (SELLER)       │ 3. CUSTOMER (BUYER)           │
-│    (Ecosystem & KPI Hub)   │    (Store Operations)       │    (Storefront & Order Hub)   │
+│ 1. Pengelola Pusat (Admin) │ 2. Toko UMKM (Penjual)      │ 3. Pelanggan (Pembeli)        │
+│    (Kelola UMKM & Laporan) │    (Kelola Toko & Pesanan)  │    (Belanja & Pesanan)        │
 ├────────────────────────────┼─────────────────────────────┼───────────────────────────────┤
-│ • Total GMV & Net Komisi   │ • Pesanan Baru & Pre-Order  │ • Katalog Kategori & Filter   │
-│ • KPI Toko Paling Ramai    │ • Manajemen Produk & Stok   │ • Promo Diskon Hari Tertentu  │
-│ • Deteksi Toko Sepi/Pasif  │ • Toggle Ready/PO/BestSeller│ • Keranjang & Multi-Alamat    │
-│ • Laporan Keuangan Lengkap │ • Request Pickup Ekspedisi  │ • Ongkir Paxel/Lalamove/GoSend│
-│ • Eskalasi Return & Payout │ • Laporan Keuangan Toko     │ • Pembayaran Aman Midtrans    │
-│ • Chat ke Seluruh UMKM     │ • Chat Customer & HeadOffice│ • Live Tracking, Retur, Ulasan│
+│ • Total Penjualan & Komisi │ • Pesanan Baru & Pre-order  │ • Katalog Kategori & Filter   │
+│ • Daftar Toko Paling Ramai │ • Kelola Produk & Stok      │ • Promo Diskon Hari Tertentu  │
+│ • Deteksi Toko Sepi/Pasif  │ • Atur Pre-order & Terlaris │ • Keranjang & Daftar Alamat   │
+│ • Laporan Keuangan Lengkap │ • Panggil Kurir Pengiriman  │ • Ongkir Paxel/Lalamove/GoSend│
+│ • Mediasi Retur & Pencairan│ • Laporan Keuangan Toko     │ • Pembayaran Aman Midtrans    │
+│ • Chat ke Seluruh UMKM     │ • Chat Pelanggan & Pengelola│ • Lacak Kiriman, Retur, Ulasan│
 └────────────────────────────┴─────────────────────────────┴───────────────────────────────┘
 ```
 
-#### 1. Dashboard Head of Office (`admin/dashboard` -> `HeadOfficeDashboardService`)
-Head of Office Kossuma bertindak sebagai pengelola utama ekosistem UMKM:
+#### 1. Dashboard Pengelola Pusat (`admin/dashboard` -> `HeadOfficeDashboardService`)
+Pengelola Pusat Kossuma bertindak sebagai pembina dan pengelola utama ekosistem UMKM:
 - **`HeadOfficeDashboardService`:**
-  - `calculateExecutiveSummary(array $dateRange)`: Kartu metrik utama:
-    1. **Total GMV Ekosistem Kossuma** (`admin.finance.index`)
-    2. **Pendapatan Komisi / Net Revenue Kossuma** (`admin.finance.index`)
+  - `calculateExecutiveSummary(array $dateRange)`: Kartu ringkasan utama:
+    1. **Total Penjualan Kotor (GMV) Kossuma** (`admin.finance.index`)
+    2. **Pendapatan Bagi Hasil / Biaya Layanan Kossuma** (`admin.finance.index`)
     3. **Total Toko UMKM Aktif vs. Toko Pasif** (`admin.stores.index`)
-    4. **Komplain / Return Menunggu Mediasi & Payout Pending** (`admin.returns.index`, `admin.payouts.index`)
-  - `getStoreKpiLeaderboard(array $filters)`: Daftar peringkat **Toko Paling Ramai (*Top Performing*)** dan **Toko Paling Sepi (*Underperforming*)** lengkap dengan metrik jumlah pesanan, omzet, tingkat konversi, kecepatan pengiriman, dan rasio retur.
-  - `getComprehensiveFinancialChart(array $dateRange)`: Grafik arus kas harian/bulanan (GMV, Ongkir, Subsidi Diskon Hari Tertentu, Subsidi Voucher, dan Refund).
+    4. **Pengajuan Retur Menunggu Mediasi & Pencairan Dana Menunggu Persetujuan** (`admin.returns.index`, `admin.payouts.index`)
+  - `getStoreKpiLeaderboard(array $filters)`: Daftar peringkat **Toko Paling Ramai** dan **Toko Paling Sepi** lengkap dengan informasi jumlah pesanan, omzet, tingkat konversi, kecepatan pengiriman, dan rasio pengembalian barang.
+  - `getComprehensiveFinancialChart(array $dateRange)`: Grafik arus kas harian/bulanan (Total Penjualan, Ongkos Kirim, Subsidi Diskon Hari Tertentu, Subsidi Voucher, dan Pengembalian Dana).
 - **Frontend Components (`resources/js/pages/admin/dashboard/components/`):**
   - `executive-kpi-stat-cards.tsx`: Kartu metrik utama dengan aksen `#7D3394`.
-  - `store-crowd-leaderboard.tsx`: Tabel & visualisasi perbandingan toko UMKM teramai vs. toko sepi.
-  - `financial-overview-chart.tsx`: Grafik keuangan komprehensif manajemen Kossuma.
+  - `store-crowd-leaderboard.tsx`: Tabel & visualisasi perbandingan toko UMKM paling ramai vs. toko sepi.
+  - `financial-overview-chart.tsx`: Grafik keuangan lengkap pengelola Kossuma.
   - `pending-escalations-widget.tsx`: Daftar pengajuan retur bermasalah dan permintaan pencairan dana toko yang memerlukan tindakan segera.
 
 #### 2. Dashboard Toko UMKM (`store-panel/dashboard` -> `SellerDashboardService`)
 Mitra Toko UMKM fokus pada kecepatan pelayanan pesanan, keakuratan stok, dan pertumbuhan penjualan tokonya:
 - **`SellerDashboardService`:**
-  - **Metrik Operasional Harian:** Pesanan Perlu Dikemas (`Processing`), Pesanan Pre-Order Berjalan, Pengajuan Retur Pelanggan, serta Saldo Siap Cair (`wallet_balance`) & Dana Ditahan (`escrow_balance`).
-  - **Katalog Cepat:** Pintasan untuk mengubah stok, menandai produk **Best Seller**, mengubah status **Ready / Pre-Order**, dan mengatur harga diskon.
-  - **Komunikasi Terpadu:** Notifikasi pesan belum dibaca dari **Customer** (terkait pesanan/produk) dan instruksi langsung dari **Head of Office Kossuma**.
+  - **Ringkasan Operasional Harian:** Pesanan Perlu Dikemas (`Processing`), Pesanan Pre-order Berjalan, Pengajuan Retur Pelanggan, serta Saldo Siap Dicairkan (`wallet_balance`) & Dana Ditahan (`escrow_balance`).
+  - **Kelola Katalog Cepat:** Pintasan untuk mengubah stok, menandai **Produk Terlaris**, mengubah status **Stok Tersedia / Pre-order**, dan mengatur harga diskon.
+  - **Pesan Terpadu:** Pemberitahuan pesan belum dibaca dari **Pelanggan** (terkait pesanan/produk) dan pesan langsung dari **Pengelola Pusat Kossuma**.
 
-#### 3. Storefront & Area Customer (`/` & `/orders` -> `StorefrontCatalogService` & `CustomerOrderService`)
-Customer mendapatkan pengalaman belanja produk UMKM Kossuma yang cepat dan terpercaya:
-- **Eksplorasi & Promo Otomatis:** Banner **Diskon Hari Tertentu** yang sedang berlangsung, navigasi kategori terurut, serta filter instan berdasarkan status *Ready Stock*, *Pre-Order*, *Best Seller*, rentang harga, dan lokasi toko.
-- **Transparansi Logistik & Pembayaran:** Kalkulasi ongkir akurat dari lokasi toko UMKM ke koordinat alamat customer menggunakan **Paxel, Lalamove, dan GoSend**, pembayaran instan via **Midtrans**, timeline pelacakan kurir, kemudahan pengajuan retur jika barang bermasalah, dan pemberian ulasan saat pesanan selesai.
+#### 3. Beranda & Area Pelanggan (`/` & `/orders` -> `StorefrontCatalogService` & `CustomerOrderService`)
+Pelanggan mendapatkan pengalaman belanja produk UMKM Kossuma yang mudah, ramah, dan terpercaya:
+- **Belanja Mudah & Promo Otomatis:** Banner promo **Diskon Hari Tertentu** dan **Pilihan Kami**, navigasi kategori terurut, serta filter berdasarkan status *Stok Tersedia*, *Pre-order*, *Produk Terlaris*, rentang harga, dan lokasi kecamatan toko.
+- **Kejelasan Pengiriman & Pembayaran:** Perhitungan ongkos kirim akurat dari lokasi toko UMKM ke titik alamat pelanggan menggunakan **Paxel, Lalamove, dan GoSend** (termasuk layanan **Kirim Hari yang Sama**), pembayaran aman via **Midtrans**, fitur **Lacak Pengiriman**, kemudahan pengajuan **Pengembalian Barang (Retur)** jika pesanan bermasalah, dan pemberian ulasan saat pesanan selesai.
