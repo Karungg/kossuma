@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Product\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -15,11 +16,7 @@ Route::get('checkout/payment', function (Request $request) {
         'orderId' => $request->query('order_id', 'KSM-'.date('Ymd').'-0842'),
     ]);
 })->name('checkout.payment');
-Route::get('products/{slug}', function (string $slug) {
-    return Inertia::render('products/show', [
-        'slug' => $slug,
-    ]);
-})->name('products.show');
+Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::inertia('about', 'home/about')->name('about');
 Route::inertia('blog', 'home/blog')->name('blog');
 

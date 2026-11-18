@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Head, Link } from '@inertiajs/react';
 import { home } from '@/routes';
-import { getProductDetail } from './data';
 import { GalleryShowcase } from './components/gallery-showcase';
 import { ProductInfoPanel } from './components/product-info-panel';
 import { ProductAccordions } from './components/product-accordions';
@@ -10,13 +9,13 @@ import { PurchaseActionPod } from './components/purchase-action-pod';
 import { ProductReviews } from './components/product-reviews';
 import { RelatedProducts } from './components/related-products';
 import { HomeLayout } from '@/layouts/home-layout';
+import type { ProductDetail } from './types';
 
 interface ProductShowPageProps {
-    slug?: string;
+    product: ProductDetail;
 }
 
-export default function ProductShowPage({ slug }: ProductShowPageProps) {
-    const product = getProductDetail(slug);
+export default function ProductShowPage({ product }: ProductShowPageProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [cartCount, setCartCount] = useState(2);
 
