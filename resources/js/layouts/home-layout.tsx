@@ -4,6 +4,7 @@ import {
     ArrowRight,
     CheckCircle2,
     ChevronDown,
+    LogOut,
     Menu,
     Phone,
     Search,
@@ -11,7 +12,7 @@ import {
     User,
     X,
 } from "lucide-react";
-import { cart, dashboard, home, login, register } from "@/routes";
+import { cart, dashboard, home, login, logout, register } from "@/routes";
 import { CartFooter } from "@/pages/customer/cart/components/cart-footer";
 import { INSTITUTIONAL_NAV_ITEMS, type NavigationItem } from "./navigation";
 
@@ -38,8 +39,13 @@ export function HomeLayout({
     const navRef = useRef<HTMLDivElement>(null);
 
     const { auth } = usePage().props as unknown as {
-        auth?: { user?: { name: string } | null };
+        auth?: {
+            user?: { name: string } | null;
+            roles?: string[];
+        };
     };
+
+    const isAdmin = auth?.roles?.includes("Admin") ?? false;
 
     const handleSearch = (val: string) => {
         setLocalSearch(val);
@@ -281,15 +287,32 @@ export function HomeLayout({
                             <div className="h-6 w-px bg-gray-200 hidden sm:block" />
 
                             {auth?.user ? (
-                                <Link
-                                    href={dashboard()}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-[#E2C9EB] text-sm font-semibold text-[#7D3394] cursor-pointer"
-                                >
-                                    <User className="w-4 h-4" />
-                                    <span className="hidden sm:inline">
-                                        Dashboard
-                                    </span>
-                                </Link>
+                                isAdmin ? (
+                                    <Link
+                                        href={dashboard()}
+                                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-[#E2C9EB] text-sm font-semibold text-[#7D3394] cursor-pointer"
+                                    >
+                                        <User className="w-4 h-4" />
+                                        <span className="hidden sm:inline">
+                                            Dashboard
+                                        </span>
+                                    </Link>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <span className="hidden sm:inline text-sm font-medium text-gray-700">
+                                            {auth.user.name}
+                                        </span>
+                                        <Link
+                                            href={logout()}
+                                            method="post"
+                                            as="button"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 cursor-pointer"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            <span>Keluar</span>
+                                        </Link>
+                                    </div>
+                                )
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <Link
