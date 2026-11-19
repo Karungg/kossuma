@@ -16,7 +16,8 @@ Following the curated **Laravel Boost Guidelines** ([AGENTS.md](AGENTS.md)), all
 ### 1.1. Application Structure (Modul Spesifik Per Fitur)
 Aplikasi ini menggunakan struktur folder standar Laravel (`app/`, `database/`, `resources/js/`), namun diorganisir secara spesifik langsung berdasarkan **Nama Modul Fitur** pada domain Kossuma Marketplace (`User`, `Store`, `Category`, `Product`, `Promotion`, `Cart`, `Order`, `Payment`, `Shipping`, `ReturnOrder`, `Review`, `Chat`, `Finance`, `Dashboard`):
 
-- **Backend (`app/`):** Controllers, Models, Enums, Contracts, Services, Policies, Observers, dan Requests dikelompokkan langsung dalam subfolder Modul Fitur (misal: `app/Models/Store/Store.php`, `app/Models/Product/Product.php`, `app/Contracts/Order/OrderServiceInterface.php`, `app/Services/Order/OrderService.php`, `app/Http/Controllers/Product/ProductController.php`, `app/Services/Payment/MidtransService.php`, `app/Services/Shipping/ShippingAggregatorService.php`, dll.).
+- **Backend (`app/`):** Controllers, Models, Enums, Contracts, Services, Policies, Observers, dan Requests dikelompokkan langsung dalam subfolder Modul Fitur tanpa membawa nama peran (`Admin`/`Seller`) pada nama Controller (misal: `app/Models/Store/Store.php`, `app/Models/Product/Product.php`, `app/Contracts/Order/OrderServiceInterface.php`, `app/Services/Order/OrderService.php`, `app/Http/Controllers/Category/CategoryController.php`, `app/Http/Controllers/Product/ProductController.php`, `app/Services/Payment/MidtransService.php`, `app/Services/Shipping/ShippingAggregatorService.php`, dll.).
+- **Routes (`routes/`):** File rute per modul disimpan di dalam subfolder modul `routes/{module}/{module}.php` (misal: `routes/category/category.php`, `routes/product/product.php`) dan dimuat dari `routes/web.php`.
 - **Database (`database/`):** Factories dan Seeders dikelompokkan dalam subfolder Modul Fitur (`User/`, `Store/`, `Category/`, `Product/`, `Promotion/`, `Order/`, `ReturnOrder/`, `Review/`, `Chat/`, `Finance/`).
 - **Frontend (`resources/js/`):** Halaman Inertia v3 (`resources/js/pages/`) dan komponen UI lokal dikelompokkan berdasarkan gerbang peran dan Modul Fitur (`resources/js/pages/home/`, `resources/js/pages/products/`, `resources/js/pages/customer/`, `resources/js/pages/seller/`, `resources/js/pages/admin/`, `resources/js/pages/dashboard/`).
 
@@ -35,8 +36,27 @@ Aplikasi ini menggunakan struktur folder standar Laravel (`app/`, `database/`, `
 Sistem memisahkan seluruh alur navigasi dan hak akses menjadi tiga gerbang rute utama sesuai peran pengguna di [PRD.md](PRD.md):
 
 1. **Gerbang Pengelola Pusat / Management Kossuma (`/admin/*`):**
-   - Diperuntukkan bagi peran pengelola pusat: `HeadOffice`.
-   - Rute terdaftar di `routes/admin.php`:
+   - Diperuntukkan bagi peran pengelola pusat (`Admin` / `HeadOffice`).
+   - Middleware `auth` dan `verified` dipanggil sekali di `routes/web.php` (sebagai pembungkus grup rute terautentikasi), sedangkan file rute modul di `routes/{module}/{module}.php` (contoh: `routes/category/category.php`) **WAJIB** mendefinisikan setiap endpoint satu per satu di dalam blok `Route::controller(...)->prefix(...)->name(...)->group(...)` (hindari `Route::resource` serta jangan membawa nama `Admin` pada nama Controller):
+     ```php
+     Route::middleware('role:Admin')
+         ->prefix('admin')
+         ->name('admin.')
+         ->group(function () {
+             Route::controller(CategoryController::class)
+                 ->prefix('categories')
+                 ->name('categories.')
+                 ->group(function () {
+                     Route::get('/', 'index')->name('index');
+                     Route::get('/create', 'create')->name('create');
+                     Route::post('/', 'store')->name('store');
+                     Route::get('/{category}/edit', 'edit')->name('edit');
+                     Route::put('/{category}', 'update')->name('update');
+                     Route::delete('/{category}', 'destroy')->name('destroy');
+                 });
+         });
+     ```
+   - Daftar rute gerbang pengelola pusat:
      - Dashboard Ringkasan & Kinerja Toko: `admin/dashboard` (`admin.dashboard`).
      - Manajemen Toko UMKM Binaan: `admin/stores` (`admin.stores.*`).
      - Manajemen Kategori Global: `admin/categories` (`admin.categories.*`).
@@ -51,7 +71,7 @@ Sistem memisahkan seluruh alur navigasi dan hak akses menjadi tiga gerbang rute 
 
 2. **Gerbang Toko UMKM / Penjual (`/store-panel/*`):**
    - Diperuntukkan bagi mitra penjual UMKM Kossuma: `Seller`.
-   - Rute terdaftar di `routes/seller.php`:
+   - Rute terdaftar per modul di `routes/{module}/{module}.php` (dimuat via `routes/web.php`):
      - Dashboard Operasional Toko: `store-panel/dashboard` (`seller.dashboard`).
      - Profil & Lokasi Toko UMKM: `store-panel/profile` (`seller.profile.*`).
      - Manajemen Produk, Stok Tersedia / Pre-order, Produk Terlaris, & Diskon: `store-panel/products` (`seller.products.*`).
@@ -64,7 +84,7 @@ Sistem memisahkan seluruh alur navigasi dan hak akses menjadi tiga gerbang rute 
 
 3. **Gerbang Publik & Pelanggan (`/`, `/customer/*`):**
    - Diperuntukkan bagi pengunjung publik dan pembeli terdaftar: `Customer`.
-   - Rute terdaftar di `routes/web.php` & `routes/customer.php`:
+   - Rute terdaftar di `routes/web.php` & `routes/{module}/{module}.php`:
      - Beranda & Pilihan Kami: `/` (`home`).
      - Katalog, Pencarian & Filter Lengkap: `/catalog` (`catalog`).
      - Detail Produk & Etalase Toko UMKM: `/products/{slug}` (`products.show`), `/stores/{slug}` (`stores.show`).
@@ -212,13 +232,9 @@ Mengacu pada [PRD.md](PRD.md) Section 4 & Section 5:
 | Nama Kolom | Tipe Data | Constraint | Keterangan |
 | :--- | :--- | :--- | :--- |
 | `id` | `bigint unsigned` | PK, Auto Increment | Primary Key kategori |
-| `parent_id` | `bigint unsigned` | FK (`categories.id`), Nullable | Kategori induk (opsional sub-kategori) |
 | `name` | `string(120)` | Not Null | Nama kategori UMKM |
 | `slug` | `string(140)` | Unique, Not Null | URL slug kategori |
-| `icon` | `string(60)` | Nullable | Nama ikon Lucide / SVG |
-| `image_path` | `string(255)` | Nullable | Thumbnail kategori |
-| `sort_order` | `integer` | Default: `0`, Index | Urutan tampil kategori di katalog |
-| `is_active` | `boolean` | Default: `true` | Status visibilitas kategori |
+| `description` | `text` | Nullable | Deskripsi singkat kategori |
 | `timestamps` | `timestamp` | `created_at`, `updated_at` | Waktu audit |
 
 ##### 2. `products` & `product_images` (Modul Product)
@@ -429,7 +445,8 @@ Setiap modul mengikuti pola penamaan konsisten di seluruh layer aplikasi:
 
 | Layer | Path Pattern | Contoh (Modul Product / Order / Finance) |
 | :--- | :--- | :--- |
-| Controller | `app/Http/Controllers/{Module}/` | `ProductController.php`, `SellerOrderController.php`, `AdminFinanceController.php` |
+| Controller | `app/Http/Controllers/{Module}/` | `CategoryController.php`, `ProductController.php`, `OrderController.php`, `FinanceController.php` |
+| Route | `routes/{module}/` | `category/category.php`, `product/product.php`, `order/order.php` |
 | Model | `app/Models/{Module}/` | `Product.php`, `StoreOrder.php`, `FinancialLedger.php` |
 | Enum | `app/Enums/{Module}/` | `AvailabilityType.php`, `StoreOrderStatus.php`, `CourierProvider.php` |
 | Service Interface | `app/Contracts/{Module}/` | `ProductServiceInterface.php`, `CheckoutServiceInterface.php`, `ShippingProviderInterface.php` |
