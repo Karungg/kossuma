@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Role;
 use App\Models\User;
 
 test('guests are redirected to the login page', function () {
@@ -7,10 +8,24 @@ test('guests are redirected to the login page', function () {
     $response->assertRedirect(route('login'));
 });
 
-test('authenticated users can visit the dashboard', function () {
+test('admin users can visit the dashboard', function () {
+    $role = Role::firstOrCreate(['name' => 'Admin']);
     $user = User::factory()->create();
+    $user->assignRole($role);
+
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));
     $response->assertOk();
+});
+
+test('customer users cannot visit the dashboard', function () {
+    $role = Role::firstOrCreate(['name' => 'Customer']);
+    $user = User::factory()->create();
+    $user->assignRole($role);
+
+    $this->actingAs($user);
+
+    $response = $this->get(route('dashboard'));
+    $response->assertForbidden();
 });

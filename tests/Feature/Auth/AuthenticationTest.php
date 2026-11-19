@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
@@ -10,8 +11,10 @@ test('login screen can be rendered', function () {
     $response->assertOk();
 });
 
-test('users can authenticate using the login screen', function () {
+test('admin users are redirected to dashboard after login', function () {
+    $role = Role::firstOrCreate(['name' => 'Admin']);
     $user = User::factory()->create();
+    $user->assignRole($role);
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,
@@ -20,6 +23,36 @@ test('users can authenticate using the login screen', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+});
+
+test('customer users are redirected to home after login', function () {
+    $role = Role::firstOrCreate(['name' => 'Customer']);
+    $user = User::factory()->create();
+    $user->assignRole($role);
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('home', absolute: false));
+});
+
+test('users are redirected to intended url after login when available', function () {
+    $role = Role::firstOrCreate(['name' => 'Customer']);
+    $user = User::factory()->create();
+    $user->assignRole($role);
+
+    $this->get(route('profile.edit'));
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('profile.edit'));
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {
