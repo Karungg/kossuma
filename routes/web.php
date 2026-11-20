@@ -28,4 +28,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/category/category.php';
 });
 
+require __DIR__.'/notification/notification.php';
 require __DIR__.'/settings.php';
