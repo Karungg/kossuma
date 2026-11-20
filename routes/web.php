@@ -20,8 +20,12 @@ Route::get('products/{slug}', [ProductController::class, 'show'])->name('product
 Route::inertia('about', 'home/about')->name('about');
 Route::inertia('blog', 'home/blog')->name('blog');
 
-Route::middleware(['auth', 'verified', 'role:Admin'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::inertia('dashboard', 'dashboard')
+        ->middleware('role:Admin')
+        ->name('dashboard');
+
+    require __DIR__.'/category/category.php';
 });
 
 require __DIR__.'/settings.php';
