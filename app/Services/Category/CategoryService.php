@@ -2,16 +2,20 @@
 
 namespace App\Services\Category;
 
+use App\Concerns\AppliesTableQuery;
+use App\Concerns\GeneratesUniqueSlug;
 use App\Contracts\Category\CategoryServiceInterface;
 use App\Models\Category\Category;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class CategoryService implements CategoryServiceInterface
 {
+    use AppliesTableQuery;
+    use GeneratesUniqueSlug;
+
     public function getPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         return $this->buildQuery($filters)
@@ -21,9 +25,7 @@ class CategoryService implements CategoryServiceInterface
 
     public function getForExport(array $filters = [], array $ids = []): Collection
     {
-        return $this->buildQuery($filters)
-            ->when($ids !== [], fn (Builder $query): Builder => $query->whereIn('id', $ids))
-            ->get();
+        return $this->applyExportIds($this->buildQuery($filters), $ids)->get();
     }
 
     public function getStats(): array
@@ -36,7 +38,12 @@ class CategoryService implements CategoryServiceInterface
     public function create(array $data): Category
     {
         return DB::transaction(function () use ($data): Category {
-            $slug = $this->resolveUniqueSlug($data['slug'] ?? null, $data['name']);
+            $slug = $this->resolveUniqueSlug(
+                modelClass: Category::class,
+                slug: $data['slug'] ?? null,
+                fallbackSource: $data['name'],
+                defaultSlug: 'kategori',
+            );
 
             return Category::query()->create([
                 'name' => $data['name'],
@@ -49,7 +56,13 @@ class CategoryService implements CategoryServiceInterface
     public function update(Category $category, array $data): Category
     {
         return DB::transaction(function () use ($category, $data): Category {
-            $slug = $this->resolveUniqueSlug($data['slug'] ?? null, $data['name'], $category->id);
+            $slug = $this->resolveUniqueSlug(
+                modelClass: Category::class,
+                slug: $data['slug'] ?? null,
+                fallbackSource: $data['name'],
+                defaultSlug: 'kategori',
+                ignoreId: $category->id,
+            );
 
             $category->update([
                 'name' => $data['name'],
@@ -112,16 +125,7 @@ class CategoryService implements CategoryServiceInterface
     {
         $query = Category::query()->withCount('products');
 
-        $search = trim((string) ($filters['search'] ?? ''));
-
-        if ($search !== '') {
-            $query->where(function (Builder $builder) use ($search): void {
-                $builder
-                    ->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
+        $this->applySearch($query, $filters['search'] ?? null, ['name', 'slug', 'description']);
 
         $productStatus = $filters['product_status'] ?? null;
 
@@ -141,40 +145,13 @@ class CategoryService implements CategoryServiceInterface
             });
         }
 
-        $allowedSorts = ['name', 'slug', 'products_count', 'created_at', 'updated_at'];
-        $sort = in_array($filters['sort'] ?? null, $allowedSorts, true)
-            ? (string) $filters['sort']
-            : 'name';
-
-        $direction = ($filters['direction'] ?? null) === 'desc' ? 'desc' : 'asc';
-
-        return $query->orderBy($sort, $direction);
-    }
-
-    private function resolveUniqueSlug(?string $slug, string $name, ?int $ignoreId = null): string
-    {
-        $baseSlug = Str::slug($slug !== null && trim($slug) !== '' ? $slug : $name);
-
-        if ($baseSlug === '') {
-            $baseSlug = 'kategori';
-        }
-
-        $candidate = $baseSlug;
-        $counter = 2;
-
-        while ($this->slugExists($candidate, $ignoreId)) {
-            $candidate = "{$baseSlug}-{$counter}";
-            $counter++;
-        }
-
-        return $candidate;
-    }
-
-    private function slugExists(string $slug, ?int $ignoreId = null): bool
-    {
-        return Category::query()
-            ->where('slug', $slug)
-            ->when($ignoreId !== null, fn (Builder $query): Builder => $query->where('id', '!=', $ignoreId))
-            ->exists();
+        return $this->applySort(
+            query: $query,
+            sort: $filters['sort'] ?? null,
+            direction: $filters['direction'] ?? null,
+            allowedSorts: ['name', 'slug', 'products_count', 'created_at', 'updated_at'],
+            defaultSort: 'name',
+            defaultDirection: 'asc',
+        );
     }
 }

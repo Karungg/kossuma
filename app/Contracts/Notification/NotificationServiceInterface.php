@@ -3,11 +3,22 @@
 namespace App\Contracts\Notification;
 
 use App\Models\User;
+use App\Notifications\BaseAppNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
 
 interface NotificationServiceInterface
 {
+    public function notifyUser(User $user, BaseAppNotification $notification): void;
+
+    /**
+     * @param  Collection<int, User>  $users
+     */
+    public function notifyUsers(Collection $users, BaseAppNotification $notification): void;
+
+    public function notifyRole(string $roleName, BaseAppNotification $notification): void;
+
     public function getUnreadCount(User $user): int;
 
     public function getReadCount(User $user): int;
