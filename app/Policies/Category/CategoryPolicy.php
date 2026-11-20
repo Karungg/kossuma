@@ -31,4 +31,9 @@ class CategoryPolicy
     {
         return $user->hasRole('Admin');
     }
+
+    public function deleteAny(User $user): bool
+    {
+        return $user->hasRole('Admin');
+    }
 }

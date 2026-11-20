@@ -12,6 +12,8 @@ Route::middleware('role:Admin')
             ->name('categories.')
             ->group(function () {
                 Route::get('/', 'index')->name('index');
+                Route::get('/export', 'export')->name('export');
+                Route::delete('/bulk', 'bulkDestroy')->name('bulk-destroy');
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
                 Route::get('/{category}/edit', 'edit')->name('edit');

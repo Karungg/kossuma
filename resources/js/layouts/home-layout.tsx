@@ -13,6 +13,7 @@ import {
     X,
 } from "lucide-react";
 import { cart, dashboard, home, login, logout, register } from "@/routes";
+import { NotificationBellSheet } from "@/components/notifications/notification-bell-sheet";
 import { CartFooter } from "@/pages/customer/cart/components/cart-footer";
 import { INSTITUTIONAL_NAV_ITEMS, type NavigationItem } from "./navigation";
 
@@ -269,7 +270,7 @@ export function HomeLayout({
                             </div>
                         </div>
 
-                        {/* Right Actions: Cart & Auth Navigation */}
+                        {/* Right Actions: Cart, Notifications & Auth Navigation */}
                         <div className="flex items-center gap-3 shrink-0">
                             <Link
                                 href={cart()}
@@ -283,6 +284,8 @@ export function HomeLayout({
                                     </span>
                                 )}
                             </Link>
+
+                            {auth?.user && <NotificationBellSheet />}
 
                             <div className="h-6 w-px bg-gray-200 hidden sm:block" />
 

@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Contracts\Category\CategoryServiceInterface;
+use App\Contracts\Notification\NotificationServiceInterface;
 use App\Contracts\Product\ProductServiceInterface;
 use App\Services\Category\CategoryService;
+use App\Services\Notification\NotificationService;
 use App\Services\Product\ProductService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -20,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
+        $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
         $this->app->bind(ProductServiceInterface::class, ProductService::class);
     }
 

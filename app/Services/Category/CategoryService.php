@@ -6,6 +6,7 @@ use App\Contracts\Category\CategoryServiceInterface;
 use App\Models\Category\Category;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -16,6 +17,13 @@ class CategoryService implements CategoryServiceInterface
         return $this->buildQuery($filters)
             ->paginate($perPage)
             ->withQueryString();
+    }
+
+    public function getForExport(array $filters = [], array $ids = []): Collection
+    {
+        return $this->buildQuery($filters)
+            ->when($ids !== [], fn (Builder $query): Builder => $query->whereIn('id', $ids))
+            ->get();
     }
 
     public function getStats(): array
@@ -62,8 +70,43 @@ class CategoryService implements CategoryServiceInterface
         return DB::transaction(fn (): bool => (bool) $category->delete());
     }
 
+    public function bulkDelete(array $ids): array
+    {
+        return DB::transaction(function () use ($ids): array {
+            $categories = Category::query()
+                ->whereIn('id', $ids)
+                ->withCount('products')
+                ->get();
+
+            $deletableIds = $categories
+                ->filter(fn (Category $category): bool => (int) ($category->products_count ?? 0) === 0)
+                ->pluck('id')
+                ->all();
+
+            $deleted = 0;
+
+            if ($deletableIds !== []) {
+                $deleted = (int) Category::query()->whereIn('id', $deletableIds)->delete();
+            }
+
+            $skipped = $categories->count() - $deleted;
+
+            return [
+                'deleted' => $deleted,
+                'skipped' => $skipped > 0 ? $skipped : 0,
+            ];
+        });
+    }
+
     /**
-     * @param  array{search?: string|null, sort?: string|null, direction?: string|null}  $filters
+     * @param  array{
+     *     search?: string|null,
+     *     product_status?: string|null,
+     *     description_status?: string|null,
+     *     sort?: string|null,
+     *     direction?: string|null
+     * }  $filters
+     * @return Builder<Category>
      */
     private function buildQuery(array $filters = []): Builder
     {
@@ -80,7 +123,25 @@ class CategoryService implements CategoryServiceInterface
             });
         }
 
-        $allowedSorts = ['name', 'products_count', 'created_at'];
+        $productStatus = $filters['product_status'] ?? null;
+
+        if ($productStatus === 'with_products') {
+            $query->has('products');
+        } elseif ($productStatus === 'without_products') {
+            $query->doesntHave('products');
+        }
+
+        $descriptionStatus = $filters['description_status'] ?? null;
+
+        if ($descriptionStatus === 'filled') {
+            $query->whereNotNull('description')->where('description', '!=', '');
+        } elseif ($descriptionStatus === 'empty') {
+            $query->where(function (Builder $builder): void {
+                $builder->whereNull('description')->orWhere('description', '');
+            });
+        }
+
+        $allowedSorts = ['name', 'slug', 'products_count', 'created_at', 'updated_at'];
         $sort = in_array($filters['sort'] ?? null, $allowedSorts, true)
             ? (string) $filters['sort']
             : 'name';
