@@ -46,7 +46,7 @@ export function DataTableFilterDropdown({
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="w-72 rounded-xl border-gray-100 bg-white p-3.5 shadow-md"
+                className="max-h-[70vh] w-72 overflow-y-auto rounded-xl border-gray-100 bg-white p-3.5 shadow-md"
             >
                 <div className="flex flex-col gap-4">
                     {groups.map((group, idx) => (

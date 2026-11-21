@@ -4,8 +4,10 @@ namespace App\Models\Product;
 
 use App\Models\Category\Category;
 use App\Models\Store\Store;
+use App\Policies\Product\ProductPolicy;
 use Database\Factories\Product\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'reviews_count',
     'is_active',
 ])]
+#[UsePolicy(ProductPolicy::class)]
 class Product extends Model
 {
     use HasFactory;
