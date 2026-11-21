@@ -8,9 +8,6 @@ use Illuminate\Notifications\Notification;
 
 abstract class BaseAppNotification extends Notification
 {
-    /**
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return ['database'];
@@ -40,25 +37,11 @@ abstract class BaseAppNotification extends Notification
         return null;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     protected function meta(): array
     {
         return [];
     }
 
-    /**
-     * @return array{
-     *     title: string,
-     *     message: string,
-     *     category: string,
-     *     level: string,
-     *     action_url: string|null,
-     *     action_label: string|null,
-     *     meta: array<string, mixed>
-     * }
-     */
     public function toDatabase(object $notifiable): array
     {
         return [
@@ -72,17 +55,6 @@ abstract class BaseAppNotification extends Notification
         ];
     }
 
-    /**
-     * @return array{
-     *     title: string,
-     *     message: string,
-     *     category: string,
-     *     level: string,
-     *     action_url: string|null,
-     *     action_label: string|null,
-     *     meta: array<string, mixed>
-     * }
-     */
     public function toArray(object $notifiable): array
     {
         return $this->toDatabase($notifiable);

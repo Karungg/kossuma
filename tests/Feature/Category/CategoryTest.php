@@ -1,10 +1,14 @@
 <?php
 
+use App\Jobs\Export\GenerateTabularExportJob;
 use App\Models\Category\Category;
 use App\Models\Product\Product;
 use App\Models\Role;
 use App\Models\Store\Store;
 use App\Models\User;
+use App\Services\Category\CategoryQueuedExportProvider;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function createCategoryAdmin(): User
@@ -29,7 +33,7 @@ test('guests are redirected to login for category management routes', function (
     $category = Category::factory()->create();
 
     $this->get(route('admin.categories.index'))->assertRedirect(route('login'));
-    $this->get(route('admin.categories.export', ['format' => 'csv']))->assertRedirect(route('login'));
+    $this->post(route('admin.categories.export'), ['format' => 'csv'])->assertRedirect(route('login'));
     $this->delete(route('admin.categories.bulk-destroy'), ['ids' => [$category->id]])->assertRedirect(route('login'));
     $this->get(route('admin.categories.create'))->assertRedirect(route('login'));
     $this->post(route('admin.categories.store'), [])->assertRedirect(route('login'));
@@ -45,7 +49,7 @@ test('customer users cannot access category management routes', function () {
     $this->actingAs($customer);
 
     $this->get(route('admin.categories.index'))->assertForbidden();
-    $this->get(route('admin.categories.export', ['format' => 'csv']))->assertForbidden();
+    $this->post(route('admin.categories.export'), ['format' => 'csv'])->assertForbidden();
     $this->delete(route('admin.categories.bulk-destroy'), ['ids' => [$category->id]])->assertForbidden();
     $this->get(route('admin.categories.create'))->assertForbidden();
     $this->post(route('admin.categories.store'), ['name' => 'Baru'])->assertForbidden();
@@ -298,8 +302,37 @@ test('bulk delete validation rejects empty or nonexistent category ids', functio
         ->assertSessionHasErrors(['ids.0']);
 });
 
-test('admin can export selected or filtered categories to csv, xlsx, and pdf', function () {
+test('admin export request dispatches background job and redirects back immediately', function () {
+    Queue::fake();
+
     $admin = createCategoryAdmin();
+    $category = Category::factory()->create(['name' => 'Frozen Food']);
+
+    $this->actingAs($admin)
+        ->from(route('admin.categories.index'))
+        ->post(route('admin.categories.export'), [
+            'format' => 'xlsx',
+            'ids' => [$category->id],
+            'columns' => ['name', 'created_at'],
+            'search' => 'Frozen',
+        ])
+        ->assertRedirect(route('admin.categories.index'));
+
+    Queue::assertPushed(GenerateTabularExportJob::class, function (GenerateTabularExportJob $job) use ($admin, $category): bool {
+        return $job->userId === (string) $admin->id
+            && $job->providerClass === CategoryQueuedExportProvider::class
+            && $job->format === 'xlsx'
+            && $job->ids === [$category->id]
+            && $job->columns === ['name', 'created_at']
+            && ($job->filters['search'] ?? null) === 'Frozen';
+    });
+});
+
+test('background export job generates csv, xlsx, and pdf files with notification download and auto-delete cleanup', function () {
+    Storage::fake('local');
+
+    $admin = createCategoryAdmin();
+    $otherAdmin = createCategoryAdmin();
 
     $first = Category::factory()->create([
         'name' => 'Frozen Food',
@@ -312,54 +345,76 @@ test('admin can export selected or filtered categories to csv, xlsx, and pdf', f
         'description' => 'Aneka kue tradisional',
     ]);
 
-    $csvResponse = $this->actingAs($admin)
-        ->get(route('admin.categories.export', [
-            'format' => 'csv',
-            'ids' => [$first->id],
-        ]))
-        ->assertOk();
+    $csvJob = new GenerateTabularExportJob(
+        userId: (string) $admin->id,
+        providerClass: CategoryQueuedExportProvider::class,
+        format: 'csv',
+        ids: [$first->id],
+        columns: ['name', 'created_at', 'updated_at'],
+    );
+    app()->call([$csvJob, 'handle']);
 
-    $csvContent = $csvResponse->streamedContent();
+    $csvNotification = $admin->notifications()->latest()->firstOrFail();
+    $csvPath = (string) ($csvNotification->data['meta']['export_path'] ?? '');
+    Storage::disk('local')->assertExists($csvPath);
+
+    $csvContent = (string) Storage::disk('local')->get($csvPath);
     expect($csvContent)->toContain('Nama Kategori')
-        ->toContain('Frozen Food')
-        ->not->toContain('Dibuat')
-        ->not->toContain('Diperbarui')
-        ->not->toContain('Kue Basah');
-
-    $customColumnsCsvResponse = $this->actingAs($admin)
-        ->get(route('admin.categories.export', [
-            'format' => 'csv',
-            'columns' => ['name', 'created_at', 'updated_at'],
-        ]))
-        ->assertOk();
-
-    $customCsvContent = $customColumnsCsvResponse->streamedContent();
-    expect($customCsvContent)->toContain('Nama Kategori')
         ->toContain('Dibuat')
         ->toContain('Diperbarui')
-        ->not->toContain('Slug')
-        ->not->toContain('Deskripsi');
+        ->toContain('Frozen Food')
+        ->not->toContain('Kue Basah')
+        ->not->toContain('Slug');
 
-    $xlsxResponse = $this->actingAs($admin)
-        ->get(route('admin.categories.export', [
-            'format' => 'xlsx',
-            'search' => 'Frozen',
-            'columns' => ['name', 'products_count', 'created_at'],
-        ]))
+    $this->actingAs($admin)
+        ->getJson(route('notifications.index'))
+        ->assertOk()
+        ->assertJsonPath('data.0.download_url', route('notifications.download', $csvNotification->id));
+
+    $this->actingAs($otherAdmin)
+        ->get(route('notifications.download', $csvNotification->id))
+        ->assertNotFound();
+
+    $this->actingAs($admin)
+        ->get(route('notifications.download', $csvNotification->id))
         ->assertOk();
 
-    expect($xlsxResponse->headers->get('content-disposition'))->toContain('.xlsx');
-    expect(substr($xlsxResponse->streamedContent(), 0, 2))->toBe('PK');
+    expect($csvNotification->fresh()?->read_at)->not->toBeNull();
 
-    $pdfResponse = $this->actingAs($admin)
-        ->get(route('admin.categories.export', [
-            'format' => 'pdf',
-            'columns' => ['name', 'slug', 'updated_at'],
-        ]))
+    $this->actingAs($admin)
+        ->deleteJson(route('notifications.destroy', $csvNotification->id))
         ->assertOk();
 
-    expect($pdfResponse->headers->get('content-type'))->toContain('application/pdf');
-    expect(substr((string) $pdfResponse->getContent(), 0, 5))->toBe('%PDF-');
+    Storage::disk('local')->assertMissing($csvPath);
+
+    $xlsxJob = new GenerateTabularExportJob(
+        userId: (string) $admin->id,
+        providerClass: CategoryQueuedExportProvider::class,
+        format: 'xlsx',
+        filters: ['search' => 'Frozen'],
+        columns: ['name', 'products_count'],
+    );
+    app()->call([$xlsxJob, 'handle']);
+
+    $xlsxNotification = $admin->notifications()->latest()->firstOrFail();
+    $xlsxPath = (string) ($xlsxNotification->data['meta']['export_path'] ?? '');
+    Storage::disk('local')->assertExists($xlsxPath);
+    expect(substr((string) Storage::disk('local')->get($xlsxPath), 0, 2))->toBe('PK');
+
+    $pdfJob = new GenerateTabularExportJob(
+        userId: (string) $admin->id,
+        providerClass: CategoryQueuedExportProvider::class,
+        format: 'pdf',
+        columns: ['name', 'slug', 'updated_at'],
+    );
+    app()->call([$pdfJob, 'handle']);
+
+    $pdfNotification = $admin->notifications()
+        ->whereKeyNot($xlsxNotification->id)
+        ->firstOrFail();
+    $pdfPath = (string) ($pdfNotification->data['meta']['export_path'] ?? '');
+    Storage::disk('local')->assertExists($pdfPath);
+    expect(substr((string) Storage::disk('local')->get($pdfPath), 0, 5))->toBe('%PDF-');
 });
 
 test('export validation rejects unsupported export formats and invalid columns', function () {
@@ -367,16 +422,16 @@ test('export validation rejects unsupported export formats and invalid columns',
 
     $this->actingAs($admin)
         ->from(route('admin.categories.index'))
-        ->get(route('admin.categories.export', ['format' => 'docx']))
+        ->post(route('admin.categories.export'), ['format' => 'docx'])
         ->assertRedirect(route('admin.categories.index'))
         ->assertSessionHasErrors(['format']);
 
     $this->actingAs($admin)
         ->from(route('admin.categories.index'))
-        ->get(route('admin.categories.export', [
+        ->post(route('admin.categories.export'), [
             'format' => 'csv',
             'columns' => ['nonexistent_column'],
-        ]))
+        ])
         ->assertRedirect(route('admin.categories.index'))
         ->assertSessionHasErrors(['columns.0']);
 });

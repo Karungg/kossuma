@@ -11,9 +11,6 @@ class BulkDestroyCategoryRequest extends FormRequest
         return $this->user()?->hasRole('Admin') ?? false;
     }
 
-    /**
-     * @return array<string, array<int, string>>
-     */
     public function rules(): array
     {
         return [
@@ -22,9 +19,6 @@ class BulkDestroyCategoryRequest extends FormRequest
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [

@@ -1,5 +1,5 @@
 import { Loader2, Search, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 
 type Props = {
@@ -26,6 +26,11 @@ export function DataTableSearch({
 }: Props) {
     const [search, setSearch] = useState(value);
     const [isSearching, setIsSearching] = useState(false);
+    const onSearchRef = useRef(onSearch);
+
+    useEffect(() => {
+        onSearchRef.current = onSearch;
+    }, [onSearch]);
 
     useEffect(() => {
         if (search.trim() === value.trim()) {
@@ -33,14 +38,13 @@ export function DataTableSearch({
         }
 
         const timeout = setTimeout(() => {
-            onSearch(search.trim(), {
+            onSearchRef.current(search.trim(), {
                 onStart: () => setIsSearching(true),
                 onFinish: () => setIsSearching(false),
             });
         }, debounceMs);
 
         return () => clearTimeout(timeout);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, value, debounceMs]);
 
     const handleClear = () => {

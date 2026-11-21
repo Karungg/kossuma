@@ -7,9 +7,6 @@ use App\Models\Category\Category;
 
 class CategoryExportDefinition implements TabularExportDefinitionInterface
 {
-    /**
-     * @var array<int, string>
-     */
     public const ALL_COLUMNS = [
         'name',
         'slug',
@@ -19,9 +16,6 @@ class CategoryExportDefinition implements TabularExportDefinitionInterface
         'updated_at',
     ];
 
-    /**
-     * @var array<int, string>
-     */
     public const DEFAULT_COLUMNS = [
         'name',
         'slug',

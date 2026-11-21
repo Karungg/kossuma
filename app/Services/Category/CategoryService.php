@@ -111,16 +111,6 @@ class CategoryService implements CategoryServiceInterface
         });
     }
 
-    /**
-     * @param  array{
-     *     search?: string|null,
-     *     product_status?: string|null,
-     *     description_status?: string|null,
-     *     sort?: string|null,
-     *     direction?: string|null
-     * }  $filters
-     * @return Builder<Category>
-     */
     private function buildQuery(array $filters = []): Builder
     {
         $query = Category::query()->withCount('products');

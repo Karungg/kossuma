@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     destroy,
     destroyRead,
@@ -13,7 +13,13 @@ import type {
     NotificationFeedResponse,
 } from '@/types/notification';
 
-export type NotificationStatusFilter = 'all' | 'unread';
+export type NotificationFilterValue = 'all' | 'unread' | NotificationCategory;
+
+type CachedTabFeed = {
+    items: AppNotificationItem[];
+    currentPage: number;
+    hasMore: boolean;
+};
 
 function getXsrfToken(): string {
     const match = document.cookie
@@ -26,6 +32,7 @@ function getXsrfToken(): string {
 async function requestJson<T>(
     url: string,
     method: 'GET' | 'PATCH' | 'DELETE' = 'GET',
+    signal?: AbortSignal,
 ): Promise<T> {
     const headers: Record<string, string> = {
         Accept: 'application/json',
@@ -44,6 +51,7 @@ async function requestJson<T>(
         method,
         headers,
         credentials: 'same-origin',
+        signal,
     });
 
     if (!response.ok) {
@@ -59,73 +67,151 @@ export function useNotifications(autoLoad: boolean) {
 
     const [unreadCount, setUnreadCount] = useState(sharedUnreadCount);
     const [readCount, setReadCount] = useState(0);
-    const [status, setStatus] = useState<NotificationStatusFilter>('all');
-    const [category, setCategory] = useState<'' | NotificationCategory>('');
+    const [activeFilter, setActiveFilter] =
+        useState<NotificationFilterValue>('all');
     const [items, setItems] = useState<AppNotificationItem[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [busyAction, setBusyAction] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const cacheRef = useRef<
+        Partial<Record<NotificationFilterValue, CachedTabFeed>>
+    >({});
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const requestIdRef = useRef(0);
+    const hasLoadedOnceRef = useRef(false);
 
     useEffect(() => {
         setUnreadCount(sharedUnreadCount);
     }, [sharedUnreadCount]);
 
-    const loadNotifications = async (
-        targetPage: number,
-        append: boolean,
-        targetStatus: NotificationStatusFilter = status,
-        targetCategory: '' | NotificationCategory = category,
-    ) => {
-        if (append) {
-            setLoadingMore(true);
-        } else {
-            setLoading(true);
-        }
+    const loadNotifications = useCallback(
+        async (
+            targetPage: number,
+            append: boolean,
+            targetFilter: NotificationFilterValue,
+        ) => {
+            if (!append) {
+                abortControllerRef.current?.abort();
+            }
 
-        setErrorMessage(null);
+            const controller = new AbortController();
+            abortControllerRef.current = controller;
+            const requestId = ++requestIdRef.current;
 
-        try {
-            const url = index.url({
-                query: {
-                    page: targetPage > 1 ? targetPage : undefined,
-                    status: targetStatus === 'unread' ? 'unread' : undefined,
-                    category: targetCategory || undefined,
-                },
-            });
+            const cached = !append ? cacheRef.current[targetFilter] : undefined;
 
-            const payload = await requestJson<NotificationFeedResponse>(
-                url,
-                'GET',
-            );
+            if (append) {
+                setLoadingMore(true);
+            } else if (cached) {
+                setItems(cached.items);
+                setCurrentPage(cached.currentPage);
+                setHasMore(cached.hasMore);
+                setLoading(false);
+                setRefreshing(false);
+            } else if (!hasLoadedOnceRef.current) {
+                setLoading(true);
+                setRefreshing(false);
+            } else {
+                setLoading(false);
+                setRefreshing(true);
+            }
 
-            setItems((prev) =>
-                append ? [...prev, ...payload.data] : payload.data,
-            );
-            setCurrentPage(payload.meta.current_page);
-            setHasMore(payload.meta.has_more);
-            setUnreadCount(payload.unread_count);
-            setReadCount(payload.read_count);
-        } catch {
-            setErrorMessage(
-                'Gagal memuat notifikasi. Silakan coba beberapa saat lagi.',
-            );
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
-        }
-    };
+            setErrorMessage(null);
+
+            try {
+                const statusParam =
+                    targetFilter === 'unread' ? 'unread' : undefined;
+                const categoryParam =
+                    targetFilter !== 'all' && targetFilter !== 'unread'
+                        ? targetFilter
+                        : undefined;
+
+                const url = index.url({
+                    query: {
+                        page: targetPage > 1 ? targetPage : undefined,
+                        status: statusParam,
+                        category: categoryParam,
+                    },
+                });
+
+                const payload = await requestJson<NotificationFeedResponse>(
+                    url,
+                    'GET',
+                    controller.signal,
+                );
+
+                if (requestId !== requestIdRef.current) {
+                    return;
+                }
+
+                setItems((prev) => {
+                    const nextItems = append
+                        ? [...prev, ...payload.data]
+                        : payload.data;
+
+                    cacheRef.current[targetFilter] = {
+                        items: nextItems,
+                        currentPage: payload.meta.current_page,
+                        hasMore: payload.meta.has_more,
+                    };
+
+                    return nextItems;
+                });
+
+                hasLoadedOnceRef.current = true;
+                setHasLoadedOnce(true);
+                setCurrentPage(payload.meta.current_page);
+                setHasMore(payload.meta.has_more);
+                setUnreadCount(payload.unread_count);
+                setReadCount(payload.read_count);
+            } catch (error) {
+                if (
+                    error instanceof DOMException &&
+                    error.name === 'AbortError'
+                ) {
+                    return;
+                }
+
+                if (requestId !== requestIdRef.current) {
+                    return;
+                }
+
+                setErrorMessage(
+                    'Gagal memuat notifikasi. Silakan coba beberapa saat lagi.',
+                );
+            } finally {
+                if (requestId === requestIdRef.current) {
+                    setLoading(false);
+                    setRefreshing(false);
+                    setLoadingMore(false);
+                }
+            }
+        },
+        [],
+    );
 
     useEffect(() => {
         if (!autoLoad) {
+            abortControllerRef.current?.abort();
             return;
         }
 
-        void loadNotifications(1, false, status, category);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoLoad, status, category]);
+        void loadNotifications(1, false, activeFilter);
+
+        return () => {
+            abortControllerRef.current?.abort();
+        };
+    }, [autoLoad, activeFilter, loadNotifications]);
+
+    const invalidateCache = () => {
+        cacheRef.current = {};
+    };
 
     const markAsRead = async (item: AppNotificationItem) => {
         if (item.is_read) {
@@ -138,10 +224,11 @@ export function useNotifications(autoLoad: boolean) {
                 read_count: number;
             }>(read.url(item.id), 'PATCH');
 
+            invalidateCache();
             setUnreadCount(result.unread_count);
             setReadCount(result.read_count);
             setItems((prev) =>
-                status === 'unread'
+                activeFilter === 'unread'
                     ? prev.filter((entry) => entry.id !== item.id)
                     : prev.map((entry) =>
                           entry.id === item.id
@@ -168,6 +255,29 @@ export function useNotifications(autoLoad: boolean) {
         }
     };
 
+    const downloadNotification = (item: AppNotificationItem) => {
+        if (!item.download_url) {
+            return;
+        }
+
+        if (!item.is_read) {
+            invalidateCache();
+            setUnreadCount((prev) => Math.max(0, prev - 1));
+            setReadCount((prev) => prev + 1);
+            setItems((prev) =>
+                activeFilter === 'unread'
+                    ? prev.filter((entry) => entry.id !== item.id)
+                    : prev.map((entry) =>
+                          entry.id === item.id
+                              ? { ...entry, is_read: true }
+                              : entry,
+                      ),
+            );
+        }
+
+        window.location.assign(item.download_url);
+    };
+
     const markAllAsRead = async () => {
         if (unreadCount === 0 || busyAction) {
             return;
@@ -181,10 +291,11 @@ export function useNotifications(autoLoad: boolean) {
                 read_count: number;
             }>(readAll.url(), 'PATCH');
 
+            invalidateCache();
             setUnreadCount(result.unread_count);
             setReadCount(result.read_count);
             setItems((prev) =>
-                status === 'unread'
+                activeFilter === 'unread'
                     ? []
                     : prev.map((entry) => ({ ...entry, is_read: true })),
             );
@@ -202,6 +313,7 @@ export function useNotifications(autoLoad: boolean) {
                 read_count: number;
             }>(destroy.url(item.id), 'DELETE');
 
+            invalidateCache();
             setUnreadCount(result.unread_count);
             setReadCount(result.read_count);
             setItems((prev) => prev.filter((entry) => entry.id !== item.id));
@@ -223,6 +335,7 @@ export function useNotifications(autoLoad: boolean) {
                 read_count: number;
             }>(destroyRead.url(), 'DELETE');
 
+            invalidateCache();
             setUnreadCount(result.unread_count);
             setReadCount(result.read_count);
             setItems((prev) => prev.filter((entry) => !entry.is_read));
@@ -238,24 +351,25 @@ export function useNotifications(autoLoad: boolean) {
             return;
         }
 
-        await loadNotifications(currentPage + 1, true);
+        await loadNotifications(currentPage + 1, true, activeFilter);
     };
 
     return {
         items,
         unreadCount,
         readCount,
-        status,
-        setStatus,
-        category,
-        setCategory,
+        activeFilter,
+        setActiveFilter,
         hasMore,
+        hasLoadedOnce,
         loading,
+        refreshing,
         loadingMore,
         busyAction,
         errorMessage,
         markAsRead,
         openNotification,
+        downloadNotification,
         markAllAsRead,
         deleteItem,
         deleteRead,

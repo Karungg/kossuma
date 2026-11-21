@@ -7,9 +7,6 @@ use App\Enums\Notification\NotificationLevel;
 
 class GeneralAppNotification extends BaseAppNotification
 {
-    /**
-     * @param  array<string, mixed>  $notificationMeta
-     */
     public function __construct(
         public readonly string $notificationTitle,
         public readonly string $notificationMessage,

@@ -8,6 +8,8 @@ use App\Http\Resources\Notification\NotificationResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class NotificationController extends Controller
 {
@@ -17,8 +19,11 @@ class NotificationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
 
         $status = $request->string('status')->toString();
         $category = $request->string('category')->toString();
@@ -42,10 +47,30 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function download(Request $request, string $notification): StreamedResponse
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
+
+        $file = $this->notificationService->resolveDownloadableFile($user, $notification);
+
+        if ($file === null) {
+            abort(404, 'File ekspor tidak ditemukan atau sudah dihapus.');
+        }
+
+        return Storage::disk($file['disk'])->download($file['path'], $file['filename']);
+    }
+
     public function markAsRead(Request $request, string $notification): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
 
         if (! $this->notificationService->markAsRead($user, $notification)) {
             return response()->json([
@@ -61,8 +86,11 @@ class NotificationController extends Controller
 
     public function markAllAsRead(Request $request): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
 
         $updated = $this->notificationService->markAllAsRead($user);
 
@@ -75,8 +103,11 @@ class NotificationController extends Controller
 
     public function destroy(Request $request, string $notification): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
 
         if (! $this->notificationService->delete($user, $notification)) {
             return response()->json([
@@ -92,8 +123,11 @@ class NotificationController extends Controller
 
     public function destroyRead(Request $request): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
 
         $deleted = $this->notificationService->deleteRead($user);
 

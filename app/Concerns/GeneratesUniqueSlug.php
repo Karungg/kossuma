@@ -3,14 +3,10 @@
 namespace App\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 trait GeneratesUniqueSlug
 {
-    /**
-     * @param  class-string<Model>  $modelClass
-     */
     protected function resolveUniqueSlug(
         string $modelClass,
         ?string $slug,
@@ -36,9 +32,6 @@ trait GeneratesUniqueSlug
         return $candidate;
     }
 
-    /**
-     * @param  class-string<Model>  $modelClass
-     */
     private function slugAlreadyExists(
         string $modelClass,
         string $slug,

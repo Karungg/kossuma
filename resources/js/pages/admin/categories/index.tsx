@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useDataTable } from '@/hooks/use-data-table';
 import { dashboard } from '@/routes';
 import { exportMethod, index } from '@/routes/admin/categories';
@@ -36,9 +36,10 @@ export default function CategoriesIndex({ categories, stats, filters }: Props) {
         defaultDirection: 'asc',
         onlyProps: ['categories', 'filters'],
         buildIndexUrl: (query) => index.url({ query }),
-        buildExportUrl: ({ format, ids, columns, filters: activeFilters }) =>
-            exportMethod.url({
-                query: {
+        onExport: ({ format, ids, columns, filters: activeFilters }) => {
+            router.post(
+                exportMethod.url(),
+                {
                     format,
                     ids,
                     columns,
@@ -48,7 +49,12 @@ export default function CategoriesIndex({ categories, stats, filters }: Props) {
                     sort: activeFilters.sort,
                     direction: activeFilters.direction,
                 },
-            }),
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
+        },
     });
 
     const handleResetFilters = () => {
