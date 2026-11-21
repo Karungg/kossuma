@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { cart, dashboard, home, login, logout, register } from '@/routes';
 import { NotificationBellSheet } from '@/components/notifications/notification-bell-sheet';
+import { useFlashToast } from '@/hooks/use-flash-toast';
 import { CartFooter } from '@/pages/customer/cart/components/cart-footer';
 import { INSTITUTIONAL_NAV_ITEMS } from './navigation';
 
@@ -24,10 +25,12 @@ interface HomeLayoutProps {
 
 export function HomeLayout({
     children,
-    cartCount = 2,
+    cartCount,
     searchQuery = '',
     onSearchChange,
 }: HomeLayoutProps) {
+    useFlashToast();
+
     const [localSearch, setLocalSearch] = useState(searchQuery);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -37,12 +40,17 @@ export function HomeLayout({
 
     const navRef = useRef<HTMLDivElement>(null);
 
-    const { auth } = usePage().props as unknown as {
+    const { auth, cart: sharedCart } = usePage().props as unknown as {
         auth?: {
             user?: { name: string } | null;
             roles?: string[];
         };
+        cart?: {
+            count?: number;
+        };
     };
+
+    const resolvedCartCount = cartCount ?? sharedCart?.count ?? 0;
 
     const isAdmin = auth?.roles?.includes('Admin') ?? false;
 
@@ -300,9 +308,9 @@ export function HomeLayout({
                                 className="relative flex cursor-pointer items-center justify-center rounded-full p-2.5 text-gray-700 focus:ring-2 focus:ring-[#7D3394] focus:outline-none"
                             >
                                 <ShoppingCart className="h-6 w-6" />
-                                {cartCount > 0 && (
+                                {resolvedCartCount > 0 && (
                                     <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#DC2626] px-1 text-xs leading-none font-bold text-white shadow-sm">
-                                        {cartCount}
+                                        {resolvedCartCount}
                                     </span>
                                 )}
                             </Link>

@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Contracts\Cart\CartServiceInterface;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,16 +37,26 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $rawGuestToken = $request->cookie(CartServiceInterface::GUEST_COOKIE_NAME);
+        $guestToken = is_string($rawGuestToken) ? $rawGuestToken : null;
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
-                'roles' => $request->user()?->getRoleNames()->all() ?? [],
+                'user' => $user,
+                'roles' => $user?->getRoleNames()->all() ?? [],
+            ],
+            'cart' => [
+                'count' => app(CartServiceInterface::class)->getCartCount(
+                    $user instanceof User ? $user : null,
+                    $guestToken,
+                ),
             ],
             'notifications' => [
-                'unread_count' => $request->user()
-                    ? $request->user()->unreadNotifications()->count()
+                'unread_count' => $user
+                    ? $user->unreadNotifications()->count()
                     : 0,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

@@ -1,230 +1,223 @@
-import { useState } from 'react';
+import { router } from '@inertiajs/react';
 import {
-    CheckCircle2,
+    AlertCircle,
     Heart,
+    Loader2,
     MessageSquare,
-    Minus,
-    Pencil,
-    Plus,
     Share2,
 } from 'lucide-react';
-import { Link, router } from '@inertiajs/react';
-import { cart } from '@/routes';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { QuantityStepper } from '@/components/commerce';
+import { StorefrontImage } from '@/components/media';
+import { store as storeCartItem } from '@/routes/cart/items';
 import type { ProductDetail } from '../types';
 
 interface PurchaseActionPodProps {
     product: ProductDetail;
-    onAddToCart: (quantity: number) => void;
 }
 
-export function PurchaseActionPod({
-    product,
-    onAddToCart,
-}: PurchaseActionPodProps) {
-    const [quantity, setQuantity] = useState(1);
-    const [showNoteInput, setShowNoteInput] = useState(false);
-    const [note, setNote] = useState('');
-    const [isWishlisted, setIsWishlisted] = useState(false);
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
+export function PurchaseActionPod({ product }: PurchaseActionPodProps) {
+    const stock = Math.max(0, product.stockCount ?? 0);
+    const isOutOfStock = stock <= 0;
 
-    const maxStock = product.stockCount ?? 24;
-    const subtotal = quantity * product.price;
+    const [quantity, setQuantity] = useState(1);
+    const [isQuantityExceeding, setIsQuantityExceeding] = useState(false);
+    const [isWishlisted, setIsWishlisted] = useState(false);
+    const [submittingMode, setSubmittingMode] = useState<'cart' | 'buy' | null>(
+        null,
+    );
+
+    const effectiveQty = isOutOfStock ? 0 : Math.min(quantity, stock);
+    const subtotal = effectiveQty * product.price;
     const originalSubtotal =
-        product.originalPrice > 0 ? quantity * product.originalPrice : 0;
+        product.originalPrice > product.price
+            ? effectiveQty * product.originalPrice
+            : 0;
 
     const formatRupiah = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
-    const handleIncrement = () =>
-        setQuantity((prev) => Math.min(maxStock, prev + 1));
-    const handleDecrement = () => setQuantity((prev) => Math.max(1, prev - 1));
+    const submitToCart = (buyNow: boolean) => {
+        if (isOutOfStock || isQuantityExceeding || submittingMode !== null) {
+            return;
+        }
 
-    const triggerToast = (msg: string) => {
-        setToastMessage(msg);
-        setShowToast(true);
-        setTimeout(() => {
-            setShowToast(false);
-        }, 3500);
-    };
+        setSubmittingMode(buyNow ? 'buy' : 'cart');
 
-    const handleAddToCartClick = () => {
-        onAddToCart(quantity);
-        triggerToast(`${quantity} pack ${product.name} masuk keranjang.`);
-    };
-
-    const handleBuyNowClick = () => {
-        onAddToCart(quantity);
-        router.visit(cart());
+        router.post(
+            storeCartItem.url(),
+            {
+                product_id: Number(product.id),
+                quantity: effectiveQty,
+                buy_now: buyNow,
+            },
+            {
+                preserveScroll: !buyNow,
+                onError: (errors) => {
+                    const message =
+                        errors.quantity ??
+                        errors.product_id ??
+                        'Gagal menambahkan produk ke keranjang.';
+                    toast.error(message);
+                },
+                onFinish: () => {
+                    setSubmittingMode(null);
+                },
+            },
+        );
     };
 
     const handleShareClick = () => {
         if (typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText(window.location.href);
-            triggerToast('Tautan produk berhasil disalin.');
+            void navigator.clipboard.writeText(window.location.href);
+            toast.success('Tautan produk berhasil disalin.');
         }
     };
 
-    const thumbnailImage = product.images[0]?.url;
+    const primaryImage = product.images[0];
+    const isActionDisabled =
+        isOutOfStock || isQuantityExceeding || submittingMode !== null;
 
     return (
         <div className="flex flex-col gap-3">
-            {/* Banner Promo / Diskon */}
             {product.discountPercent > 0 && (
-                <div className="px-4 py-2.5 rounded-xl bg-[#7D3394] text-white flex items-center justify-between gap-2 shadow-xs">
+                <div className="flex items-center justify-between gap-2 rounded-xl bg-[#7D3394] px-4 py-2.5 text-white shadow-xs">
                     <span className="text-xs font-bold">Spesial Diskon</span>
-                    <span className="px-2 py-0.5 rounded bg-white text-[#7D3394] text-xs font-extrabold">
+                    <span className="rounded bg-white px-2 py-0.5 text-xs font-extrabold text-[#7D3394]">
                         Hemat {product.discountPercent}%
                     </span>
                 </div>
             )}
 
-            {/* Card Atur Jumlah & Checkout */}
-            <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-xs flex flex-col gap-4">
+            <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-xs">
                 <h2 className="text-sm font-bold text-gray-900">
-                    Atur jumlah dan catatan
+                    Atur jumlah pembelian
                 </h2>
 
-                {/* Mini Preview Varian */}
-                <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
-                    <div className="w-11 h-11 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center">
-                        {thumbnailImage ? (
-                            <img
-                                src={thumbnailImage}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <span className="text-[10px] text-gray-400">Foto</span>
-                        )}
+                <div className="flex items-center gap-2.5 border-b border-gray-100 pb-3">
+                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
+                        <StorefrontImage
+                            src={
+                                primaryImage?.thumbnailUrl ?? primaryImage?.url
+                            }
+                            fallbackSrc={primaryImage?.url}
+                            alt={product.name}
+                            compact
+                        />
                     </div>
-                    <span className="text-xs font-medium text-gray-700 line-clamp-2">
+                    <span className="line-clamp-2 text-xs font-medium text-gray-700">
                         {product.unitLabel ?? '1 Pack'}
                     </span>
                 </div>
 
-                {/* Counter & Info Stok */}
-                <div className="flex items-center gap-3">
-                    <div className="inline-flex items-center rounded-lg border border-gray-300 bg-white">
-                        <button
-                            type="button"
-                            onClick={handleDecrement}
-                            disabled={quantity <= 1}
-                            aria-label="Kurangi jumlah"
-                            className="w-8 h-8 flex items-center justify-center text-gray-600 disabled:text-gray-300 cursor-pointer"
-                        >
-                            <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <input
-                            type="text"
-                            readOnly
-                            value={quantity}
-                            aria-label="Jumlah pembelian"
-                            className="w-9 text-center text-sm font-bold text-gray-900 bg-transparent focus:outline-none"
-                        />
-                        <button
-                            type="button"
-                            onClick={handleIncrement}
-                            disabled={quantity >= maxStock}
-                            aria-label="Tambah jumlah"
-                            className="w-8 h-8 flex items-center justify-center text-[#7D3394] disabled:text-gray-300 cursor-pointer"
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-
-                    <div className="text-xs text-gray-600">
-                        Stok:{' '}
-                        <strong className="text-gray-900">
-                            {product.stockCount ?? 'Tersedia'}
-                        </strong>
-                    </div>
-                </div>
-
-                {/* Tambah Catatan */}
-                <div className="flex flex-col gap-2">
-                    {!showNoteInput ? (
-                        <button
-                            type="button"
-                            onClick={() => setShowNoteInput(true)}
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7D3394] w-fit cursor-pointer"
-                        >
-                            <Pencil className="w-3.5 h-3.5" />
-                            <span>Tambah Catatan</span>
-                        </button>
-                    ) : (
-                        <div className="flex flex-col gap-1.5">
-                            <input
-                                type="text"
-                                value={note}
-                                onChange={(e) => setNote(e.target.value)}
-                                placeholder="Contoh: Sambal dipisah ya Bu"
-                                className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 focus:border-[#7D3394] focus:outline-none"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowNoteInput(false)}
-                                className="text-[11px] font-medium text-gray-500 w-fit cursor-pointer"
-                            >
-                                Tutup catatan
-                            </button>
+                {isOutOfStock ? (
+                    <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-xs text-[#DC2626]">
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <div className="flex flex-col gap-0.5">
+                            <span className="font-bold">Stok Habis</span>
+                            <span className="text-red-700/80">
+                                Produk ini sedang habis dan belum dapat dibeli.
+                            </span>
                         </div>
-                    )}
-                </div>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-start gap-3">
+                            <QuantityStepper
+                                value={effectiveQty}
+                                max={stock}
+                                disabled={submittingMode !== null}
+                                size="md"
+                                onChange={setQuantity}
+                                onExceedStateChange={setIsQuantityExceeding}
+                                inputDataTest="product-quantity-input"
+                            />
 
-                {/* Subtotal */}
-                <div className="flex items-end justify-between pt-2 border-t border-gray-100">
-                    <span className="text-xs sm:text-sm text-gray-500">
+                            <div className="pt-2 text-xs text-gray-600 tabular-nums">
+                                Stok:{' '}
+                                <strong
+                                    className={
+                                        stock <= 5
+                                            ? 'text-amber-600'
+                                            : 'text-gray-900'
+                                    }
+                                >
+                                    {stock}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex items-end justify-between border-t border-gray-100 pt-2">
+                    <span className="text-xs text-gray-500 sm:text-sm">
                         Subtotal
                     </span>
-                    <div className="flex flex-col items-end">
+                    <div className="flex flex-col items-end tabular-nums">
                         {originalSubtotal > 0 && (
                             <span className="text-xs text-gray-400 line-through">
                                 {formatRupiah(originalSubtotal)}
                             </span>
                         )}
-                        <span className="text-lg font-extrabold text-gray-900">
+                        <span className="text-lg font-extrabold text-[#DC2626]">
                             {formatRupiah(subtotal)}
                         </span>
                     </div>
                 </div>
 
-                {/* Tombol Aksi */}
                 <div className="flex flex-col gap-2">
                     <button
                         type="button"
-                        onClick={handleAddToCartClick}
-                        className="w-full h-10 rounded-lg bg-[#7D3394] text-white font-bold text-sm flex items-center justify-center cursor-pointer"
+                        onClick={() => submitToCart(false)}
+                        disabled={isActionDisabled}
+                        data-test="add-to-cart-button"
+                        className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#7D3394] text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                        + Keranjang
+                        {submittingMode === 'cart' && (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        )}
+                        <span>
+                            {isOutOfStock
+                                ? 'Stok Habis'
+                                : submittingMode === 'cart'
+                                  ? 'Menambahkan...'
+                                  : '+ Keranjang'}
+                        </span>
                     </button>
                     <button
                         type="button"
-                        onClick={handleBuyNowClick}
-                        className="w-full h-10 rounded-lg border border-[#7D3394] text-[#7D3394] font-bold text-sm flex items-center justify-center cursor-pointer"
+                        onClick={() => submitToCart(true)}
+                        disabled={isActionDisabled}
+                        data-test="buy-now-button"
+                        className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#7D3394] text-sm font-bold text-[#7D3394] disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                        Beli Langsung
+                        {submittingMode === 'buy' && (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        )}
+                        <span>Beli Langsung</span>
                     </button>
                 </div>
 
-                {/* Baris Aksi Bawah: Chat, Wishlist, Share */}
-                <div className="grid grid-cols-3 pt-2 border-t border-gray-100 text-xs font-bold text-gray-700">
+                <div className="grid grid-cols-3 border-t border-gray-100 pt-2 text-xs font-bold text-gray-700">
                     <a
                         href="#ulasan-produk"
-                        className="flex items-center justify-center gap-1.5 py-1 border-r border-gray-200 cursor-pointer"
+                        className="flex cursor-pointer items-center justify-center gap-1.5 border-r border-gray-200 py-1"
                     >
-                        <MessageSquare className="w-3.5 h-3.5" />
+                        <MessageSquare className="h-3.5 w-3.5" />
                         <span>Chat</span>
                     </a>
                     <button
                         type="button"
                         onClick={() => setIsWishlisted((prev) => !prev)}
-                        className={`flex items-center justify-center gap-1.5 py-1 border-r border-gray-200 cursor-pointer ${
+                        className={`flex cursor-pointer items-center justify-center gap-1.5 border-r border-gray-200 py-1 ${
                             isWishlisted ? 'text-[#DC2626]' : 'text-gray-700'
                         }`}
                     >
                         <Heart
-                            className={`w-3.5 h-3.5 ${
-                                isWishlisted ? 'fill-[#DC2626] text-[#DC2626]' : ''
+                            className={`h-3.5 w-3.5 ${
+                                isWishlisted
+                                    ? 'fill-[#DC2626] text-[#DC2626]'
+                                    : ''
                             }`}
                         />
                         <span>Wishlist</span>
@@ -232,36 +225,13 @@ export function PurchaseActionPod({
                     <button
                         type="button"
                         onClick={handleShareClick}
-                        className="flex items-center justify-center gap-1.5 py-1 cursor-pointer"
+                        className="flex cursor-pointer items-center justify-center gap-1.5 py-1"
                     >
-                        <Share2 className="w-3.5 h-3.5" />
+                        <Share2 className="h-3.5 w-3.5" />
                         <span>Share</span>
                     </button>
                 </div>
             </div>
-
-            {/* Toast Notification */}
-            {showToast && (
-                <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full">
-                    <div className="p-4 rounded-xl bg-gray-900 text-white shadow-2xl flex items-center justify-between gap-3 border border-gray-800">
-                        <div className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                            <div className="flex flex-col">
-                                <span className="text-xs font-bold">Berhasil!</span>
-                                <span className="text-xs text-gray-300 line-clamp-1">
-                                    {toastMessage}
-                                </span>
-                            </div>
-                        </div>
-                        <Link
-                            href={cart()}
-                            className="px-3 py-1.5 rounded-full bg-[#7D3394] text-white text-xs font-bold shrink-0 cursor-pointer"
-                        >
-                            Keranjang
-                        </Link>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
