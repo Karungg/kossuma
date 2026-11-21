@@ -15,12 +15,122 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class ProductService implements ProductServiceInterface
 {
     use AppliesTableQuery;
     use GeneratesUniqueSlug;
+
+    public function __construct(
+        public readonly ProductImageOptimizationService $imageOptimizationService,
+    ) {}
+
+    public function getStorefrontCategories(): array
+    {
+        $categories = Category::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->map(static fn (Category $category): array => [
+                'id' => $category->slug,
+                'label' => $category->name,
+            ])
+            ->values()
+            ->all();
+
+        return [
+            ['id' => 'all', 'label' => 'Semua'],
+            ...$categories,
+        ];
+    }
+
+    public function getStorefrontCatalog(array $filters = [], int $page = 1, int $perPage = 18): array
+    {
+        $query = Product::query()
+            ->with([
+                'category:id,name,slug',
+                'store:id,name,slug,location',
+                'primaryImage:id,product_id,image_path,alt,is_primary,sort_order',
+            ])
+            ->where('is_active', true);
+
+        $category = trim((string) ($filters['category'] ?? ''));
+
+        if ($category !== '' && $category !== 'all') {
+            $query->whereHas('category', static function (Builder $categoryQuery) use ($category): void {
+                $categoryQuery->where('slug', $category);
+            });
+        }
+
+        $search = trim((string) ($filters['search'] ?? ''));
+
+        if ($search !== '') {
+            $query->where(static function (Builder $searchQuery) use ($search): void {
+                $searchQuery
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('store', static function (Builder $storeQuery) use ($search): void {
+                        $storeQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $paginator = $query
+            ->orderByDesc('sold_count')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'page', max(1, $page));
+
+        $items = [];
+
+        foreach ($paginator->items() as $product) {
+            if (! $product instanceof Product) {
+                continue;
+            }
+
+            $storeLocation = $product->store instanceof Store ? $product->store->location : 'Kota Bogor';
+            [$district] = $this->parseStoreLocation($storeLocation);
+
+            $originalPrice = (int) ($product->original_price ?? 0);
+            $primaryThumbUrl = $product->getPrimaryImageUrl(true) ?? '';
+            $primaryFullUrl = $product->getPrimaryImageUrl(false) ?? '';
+
+            $items[] = [
+                'id' => (string) $product->id,
+                'slug' => $product->slug,
+                'title' => $product->name,
+                'description' => $product->description,
+                'category' => $product->category instanceof Category ? $product->category->slug : '',
+                'price' => $product->price,
+                'originalPrice' => $originalPrice > $product->price ? $originalPrice : null,
+                'rating' => (float) $product->rating_avg,
+                'soldCount' => $this->formatCatalogSoldCount($product->sold_count),
+                'storeName' => $product->store instanceof Store ? $product->store->name : 'UMKM Kossuma',
+                'storeDistrict' => $district,
+                'imageUrl' => $primaryThumbUrl,
+                'imageFullUrl' => $primaryFullUrl,
+                'imageAlt' => $product->primaryImage instanceof ProductImage && is_string($product->primaryImage->alt) && trim($product->primaryImage->alt) !== ''
+                    ? $product->primaryImage->alt
+                    : $product->name,
+                'isPreorder' => $product->is_preorder,
+                'preorderDays' => $product->preorder_days,
+                'stock' => $product->stock,
+            ];
+        }
+
+        return [
+            'data' => $items,
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+            'has_more' => $paginator->hasMorePages(),
+        ];
+    }
+
+    public function hasActiveStorefrontProducts(): bool
+    {
+        return Product::query()->where('is_active', true)->exists();
+    }
 
     public function getProductDetailBySlug(string $slug): array
     {
@@ -71,7 +181,8 @@ class ProductService implements ProductServiceInterface
             ],
             'images' => $product->images->map(fn (ProductImage $image): array => [
                 'id' => (string) $image->id,
-                'url' => $image->image_path,
+                'url' => $image->resolveUrl(false) ?? '',
+                'thumbnailUrl' => $image->resolveUrl(true) ?? '',
                 'alt' => $image->alt ?? $product->name,
                 'label' => $image->label ?? $product->name,
             ])->values()->all(),
@@ -101,7 +212,8 @@ class ProductService implements ProductServiceInterface
                     ? ($related->preorder_days ? "Pre-order {$related->preorder_days} hari" : 'Pre-order')
                     : 'Pilihan Kami',
                 'rating' => (float) $related->rating_avg,
-                'imageUrl' => $related->primaryImage?->image_path ?? '',
+                'imageUrl' => $related->getPrimaryImageUrl(true) ?? '',
+                'imageFullUrl' => $related->getPrimaryImageUrl(false) ?? '',
                 'imageAlt' => $related->primaryImage?->alt ?? $related->name,
             ])->values()->all(),
         ];
@@ -240,7 +352,7 @@ class ProductService implements ProductServiceInterface
         $query = Product::query()->with([
             'category:id,name,slug',
             'store:id,name,slug',
-            'primaryImage:id,product_id,image_path,alt',
+            'primaryImage:id,product_id,image_path,alt,is_primary,sort_order',
         ]);
 
         $this->applySearch($query, $filters['search'] ?? null, ['name', 'slug', 'description']);
@@ -390,14 +502,14 @@ class ProductService implements ProductServiceInterface
                 continue;
             }
 
-            $storedPath = Storage::disk('public')->putFile('products', $file);
+            $storedPath = $this->imageOptimizationService->storeUploadedImage($file);
 
-            if (! is_string($storedPath) || $storedPath === '') {
+            if ($storedPath === '') {
                 continue;
             }
 
             $createdImage = $product->images()->create([
-                'image_path' => '/storage/'.$storedPath,
+                'image_path' => $storedPath,
                 'alt' => $product->name,
                 'label' => $product->name,
                 'is_primary' => false,
@@ -424,15 +536,11 @@ class ProductService implements ProductServiceInterface
     private function deleteStoredPublicImages(array $imagePaths): void
     {
         foreach ($imagePaths as $path) {
-            if (! is_string($path) || ! str_starts_with($path, '/storage/')) {
+            if (! is_string($path)) {
                 continue;
             }
 
-            $relativePath = substr($path, strlen('/storage/'));
-
-            if ($relativePath !== '' && Storage::disk('public')->exists($relativePath)) {
-                Storage::disk('public')->delete($relativePath);
-            }
+            $this->imageOptimizationService->deleteImage($path);
         }
     }
 
@@ -441,7 +549,7 @@ class ProductService implements ProductServiceInterface
         return Product::query()
             ->with([
                 'store:id,name',
-                'primaryImage:id,product_id,image_path,alt',
+                'primaryImage:id,product_id,image_path,alt,is_primary,sort_order',
             ])
             ->where('is_active', true)
             ->where('id', '!=', $product->id)
@@ -468,6 +576,19 @@ class ProductService implements ProductServiceInterface
         }
 
         return (string) $soldCount;
+    }
+
+    private function formatCatalogSoldCount(int $soldCount): string
+    {
+        if ($soldCount <= 0) {
+            return '';
+        }
+
+        if ($soldCount >= 1000) {
+            return number_format($soldCount / 1000, 1, ',', '.').' rb terjual';
+        }
+
+        return "{$soldCount} terjual";
     }
 
     private function resolveStockStatus(Product $product): string

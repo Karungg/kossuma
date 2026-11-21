@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Product\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::inertia('/', 'home/index')->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::inertia('cart', 'customer/cart/index')->name('cart');
 Route::inertia('checkout', 'customer/checkout/index')->name('checkout');
 Route::get('checkout/payment', function (Request $request) {

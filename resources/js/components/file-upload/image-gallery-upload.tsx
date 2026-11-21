@@ -8,12 +8,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { ImageLightbox, StorefrontImage } from '@/components/media';
 import {
     type ExistingFileItem,
     type FileValidationError,
@@ -26,6 +21,7 @@ type GalleryEntry =
           key: string;
           index: number;
           url: string;
+          thumbnailUrl: string;
           name: string;
           sizeText: string | null;
       }
@@ -34,6 +30,7 @@ type GalleryEntry =
           key: string;
           index: number;
           url: string;
+          thumbnailUrl: string;
           name: string;
           sizeText: string;
       };
@@ -88,10 +85,7 @@ export function ImageGalleryUpload({
     const [validationErrors, setValidationErrors] = useState<
         FileValidationError[]
     >([]);
-    const [previewImage, setPreviewImage] = useState<{
-        url: string;
-        name: string;
-    } | null>(null);
+    const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
     const previewMap = new Map<File, string>();
 
@@ -135,17 +129,23 @@ export function ImageGalleryUpload({
             key: `existing:${image.id}`,
             index: idx,
             url: image.url,
+            thumbnailUrl: image.thumbnailUrl ?? image.url,
             name: image.name ?? image.alt ?? `Foto ${idx + 1}`,
             sizeText: null,
         })),
-        ...files.map((file, idx) => ({
-            kind: 'new' as const,
-            key: `new:${idx}`,
-            index: idx,
-            url: previewMap.get(file) ?? '',
-            name: file.name,
-            sizeText: formatFileSize(file.size),
-        })),
+        ...files.map((file, idx) => {
+            const previewUrl = previewMap.get(file) ?? '';
+
+            return {
+                kind: 'new' as const,
+                key: `new:${idx}`,
+                index: idx,
+                url: previewUrl,
+                thumbnailUrl: previewUrl,
+                name: file.name,
+                sizeText: formatFileSize(file.size),
+            };
+        }),
     ];
 
     const resolvedPrimaryKey =
@@ -389,7 +389,7 @@ export function ImageGalleryUpload({
 
             {entries.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                    {entries.map((entry) => {
+                    {entries.map((entry, entryIdx) => {
                         const isPrimary = resolvedPrimaryKey === entry.key;
                         const canMoveLeft = entry.index > 0;
                         const canMoveRight =
@@ -403,15 +403,12 @@ export function ImageGalleryUpload({
                                 className="flex flex-col gap-2"
                             >
                                 <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-100">
-                                    {entry.url ? (
-                                        <img
-                                            src={entry.url}
-                                            alt={entry.name}
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="h-full w-full animate-pulse bg-gray-100" />
-                                    )}
+                                    <StorefrontImage
+                                        src={entry.thumbnailUrl}
+                                        fallbackSrc={entry.url}
+                                        alt={entry.name}
+                                        compact
+                                    />
 
                                     <button
                                         type="button"
@@ -442,10 +439,7 @@ export function ImageGalleryUpload({
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    setPreviewImage({
-                                                        url: entry.url,
-                                                        name: entry.name,
-                                                    })
+                                                    setPreviewIndex(entryIdx)
                                                 }
                                                 aria-label={`Lihat pratinjau ${entry.name}`}
                                                 className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-white/90 text-gray-700 shadow-2xs"
@@ -553,27 +547,22 @@ export function ImageGalleryUpload({
 
             {error && <p className="text-xs text-[#DC2626]">{error}</p>}
 
-            <Dialog
-                open={previewImage !== null}
-                onOpenChange={(isOpen) => !isOpen && setPreviewImage(null)}
-            >
-                <DialogContent className="rounded-2xl sm:max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle className="truncate text-base font-bold text-gray-900">
-                            {previewImage?.name}
-                        </DialogTitle>
-                    </DialogHeader>
-                    {previewImage && (
-                        <div className="overflow-hidden rounded-xl bg-gray-100">
-                            <img
-                                src={previewImage.url}
-                                alt={previewImage.name}
-                                className="max-h-[70vh] w-full object-contain"
-                            />
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <ImageLightbox
+                images={entries.map((item) => ({
+                    id: item.key,
+                    url: item.url,
+                    thumbnailUrl: item.thumbnailUrl,
+                    alt: item.name,
+                    label: item.name,
+                }))}
+                open={previewIndex !== null}
+                initialIndex={previewIndex ?? 0}
+                onOpenChange={(isOpen) => {
+                    if (!isOpen) {
+                        setPreviewIndex(null);
+                    }
+                }}
+            />
         </div>
     );
 }

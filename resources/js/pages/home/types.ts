@@ -5,15 +5,17 @@ export interface CatalogProduct {
     description?: string;
     category: string;
     price: number;
-    originalPrice?: number;
+    originalPrice?: number | null;
     rating: number;
     soldCount: string;
     storeName: string;
     storeDistrict: string;
     imageUrl: string;
+    imageFullUrl?: string;
     imageAlt: string;
     isPreorder?: boolean;
-    preorderDays?: number;
+    preorderDays?: number | null;
+    stock?: number;
 }
 
 export interface CategoryTab {
@@ -22,3 +24,16 @@ export interface CategoryTab {
     icon?: string;
 }
 
+export interface CatalogPageData {
+    data: CatalogProduct[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    has_more: boolean;
+}
+
+export interface HomeFilters {
+    category: string;
+    search: string;
+}
