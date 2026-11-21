@@ -213,7 +213,6 @@ export default function HomePage({
 
     return (
         <HomeLayout
-            cartCount={2}
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
         >

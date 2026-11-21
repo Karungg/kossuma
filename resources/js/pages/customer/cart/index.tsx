@@ -1,367 +1,577 @@
-import { useState, useMemo } from 'react';
-import type { CartCalculation, CartItem, RecommendationProduct, StoreGroup } from './types';
+import { Head, Link, router } from '@inertiajs/react';
+import { AlertCircle, ShoppingBag, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { HomeLayout } from '@/layouts/home-layout';
+import { checkout, home } from '@/routes';
+import {
+    destroy as destroyCartItem,
+    destroySelected as destroySelectedCartItems,
+    destroyUnavailable as destroyUnavailableCartItems,
+    store as storeCartItem,
+    update as updateCartItem,
+} from '@/routes/cart/items';
+import { update as updateCartSelection } from '@/routes/cart/selection';
 import { CartBreadcrumbBar } from './components/cart-breadcrumb-bar';
-import { StoreCartGroup } from './components/store-cart-group';
 import { CartRecommendations } from './components/cart-recommendations';
 import { OrderSummaryCard } from './components/order-summary-card';
-import { ShoppingBag } from 'lucide-react';
-import { Head, router } from '@inertiajs/react';
-import { checkout } from '@/routes';
+import { StoreCartGroup } from './components/store-cart-group';
+import type {
+    CartCalculation,
+    CartItem,
+    RecommendationProduct,
+    StoreGroup,
+} from './types';
 
-const INITIAL_STORES: StoreGroup[] = [
-    {
-        id: 'store-1',
-        name: 'Dapur Ummi Salma — Tanah Sareal',
-        district: 'Tanah Sareal',
-        city: 'Kota Bogor',
-        notePlaceholder: 'Tulis catatan untuk Ummi (misal: minta kirim frozen beku, pisahkan saus sambal)...',
-        note: '',
-    },
-    {
-        id: 'store-2',
-        name: 'Pawon Ibu Fatimah — Bogor Barat',
-        district: 'Semplak',
-        city: 'Bogor Barat',
-        notePlaceholder: 'Tulis catatan untuk Bu Fatimah (misal: sambal bawang ekstra pedas)...',
-        note: '',
-    },
-];
+interface CartPageProps {
+    stores: StoreGroup[];
+    items: CartItem[];
+    calculation: CartCalculation;
+    recommendations: RecommendationProduct[];
+}
 
-const INITIAL_ITEMS: CartItem[] = [
-    {
-        id: 'item-1',
-        storeId: 'store-1',
-        name: 'Risol Mayo Smoked Beef & Telur Keju Lumer',
-        variant: 'Varian: 450 gr (Isi 10 pcs)',
-        price: 35000,
-        originalPrice: 38000,
-        imageUrl: '',
-        imageAlt: 'Warm golden crispy indonesian mayo risoles',
-        quantity: 1,
-        isSelected: true,
-    },
-    {
-        id: 'item-2',
-        storeId: 'store-2',
-        name: 'Ayam Ungkep Bumbu Kuning Lengkuas Siap Goreng',
-        variant: 'Varian: 850 gr (1 Ekor Potong 8)',
-        price: 65000,
-        originalPrice: 72000,
-        discountPercent: 10,
-        imageUrl: '',
-        imageAlt: 'Traditional Indonesian spiced yellow chicken Ayam Ungkep Bumbu Kuning',
-        quantity: 1,
-        isSelected: false,
-    },
-];
+const QUANTITY_SYNC_DEBOUNCE_MS = 350;
 
-const INITIAL_RECOMMENDATIONS: RecommendationProduct[] = [
-    {
-        id: 'rec-1',
-        storeId: 'store-1',
-        storeName: 'Dapur Ummi Salma',
-        name: 'Sambal Cumi Judes',
-        price: 28000,
-        imageUrl: '',
-        imageAlt: 'Traditional Indonesian sambal cumi pedas glass jar',
-        variant: 'Botol 150 gr',
-    },
-    {
-        id: 'rec-2',
-        storeId: 'store-2',
-        storeName: 'Pawon Ibu Fatimah',
-        name: 'Pastel Sayur Telur (5 Pcs)',
-        price: 22500,
-        imageUrl: '',
-        imageAlt: 'Indonesian fresh pastel sayur telor golden brown pastry',
-        variant: 'Isi 5 pcs',
-    },
-    {
-        id: 'rec-3',
-        storeId: 'store-3',
-        storeName: 'Herbal Barokah',
-        name: 'Sirup Jahe Merah Rempah',
-        price: 32000,
-        imageUrl: '',
-        imageAlt: 'Traditional Indonesian rempah drink wedang uwuh spiced herbal infusion',
-        variant: 'Botol 250 ml',
-    },
-    {
-        id: 'rec-4',
-        storeId: 'store-4',
-        storeName: 'Snack Berkah',
-        name: 'Kripik Pisang Cokelat',
-        price: 18000,
-        imageUrl: '',
-        imageAlt: 'Crunchy Indonesian keripik pisang lumer chocolate coated banana chips',
-        variant: 'Pouch 200 gr',
-    },
-];
+export default function CartPage({
+    stores,
+    items,
+    calculation,
+    recommendations,
+}: CartPageProps) {
+    const [localQuantities, setLocalQuantities] = useState<
+        Record<string, number>
+    >({});
+    const [exceedingItemIds, setExceedingItemIds] = useState<
+        Record<string, boolean>
+    >({});
+    const [deletingItemIds, setDeletingItemIds] = useState<
+        Record<string, boolean>
+    >({});
+    const [isGlobalBusy, setIsGlobalBusy] = useState(false);
+    const [addingProductId, setAddingProductId] = useState<number | null>(null);
 
-export default function CartPage() {
-    const [stores, setStores] = useState<StoreGroup[]>(INITIAL_STORES);
-    const [items, setItems] = useState<CartItem[]>(INITIAL_ITEMS);
-    const [searchQuery, setSearchQuery] = useState('');
+    const syncTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+        new Map(),
+    );
+    const pendingTargetQtyRef = useRef<Map<string, number>>(new Map());
 
-    // Selected Calculations (hanya subtotal & diskon barang yang diterapkan)
-    const selectedItems = useMemo(() => items.filter((i) => i.isSelected), [items]);
-    const selectedCount = selectedItems.length;
-    const isAllSelected = items.length > 0 && items.every((i) => i.isSelected);
+    useEffect(() => {
+        const timers = syncTimersRef.current;
 
-    const calculation: CartCalculation = useMemo(() => {
-        const subtotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-        const discountTotal = selectedItems.reduce(
-            (acc, i) =>
-                acc +
-                (i.originalPrice && i.originalPrice > i.price
-                    ? (i.originalPrice - i.price) * i.quantity
-                    : 0),
-            0,
-        );
-        const originalItemsTotal = subtotal + discountTotal;
+        return () => {
+            for (const timer of timers.values()) {
+                clearTimeout(timer);
+            }
+            timers.clear();
+        };
+    }, []);
+
+    const effectiveItems = useMemo(() => {
+        return items.map((item) => {
+            const optimisticQty = localQuantities[item.id];
+
+            if (optimisticQty === undefined) {
+                return item;
+            }
+
+            const exceedsStock = item.isAvailable && optimisticQty > item.stock;
+
+            return {
+                ...item,
+                quantity: optimisticQty,
+                exceedsStock,
+                canCheckout: item.isAvailable && !exceedsStock,
+            };
+        });
+    }, [items, localQuantities]);
+
+    const effectiveCalculation = useMemo<CartCalculation>(() => {
+        let selectedCount = 0;
+        let selectedUnits = 0;
+        let subtotal = 0;
+        let discountTotal = 0;
+        let hasBlockingSelectionIssue = false;
+
+        for (const item of effectiveItems) {
+            if (!item.isSelected || !item.isAvailable) {
+                continue;
+            }
+
+            selectedCount += 1;
+            selectedUnits += item.quantity;
+            subtotal += item.price * item.quantity;
+
+            if (item.originalPrice && item.originalPrice > item.price) {
+                discountTotal +=
+                    (item.originalPrice - item.price) * item.quantity;
+            }
+
+            if (item.exceedsStock || exceedingItemIds[item.id]) {
+                hasBlockingSelectionIssue = true;
+            }
+        }
 
         return {
             selectedCount,
-            originalItemsTotal,
+            selectedUnits,
+            originalItemsTotal: subtotal + discountTotal,
             discountTotal,
             subtotal,
+            hasBlockingSelectionIssue,
+            unavailableCount: calculation.unavailableCount,
         };
-    }, [selectedItems, selectedCount]);
+    }, [calculation.unavailableCount, effectiveItems, exceedingItemIds]);
 
-    // Handlers
+    const availableItems = effectiveItems.filter((item) => item.isAvailable);
+    const hasAvailableItems = availableItems.length > 0;
+    const isAllSelected =
+        hasAvailableItems && availableItems.every((item) => item.isSelected);
+    const canCheckout =
+        effectiveCalculation.selectedCount > 0 &&
+        !effectiveCalculation.hasBlockingSelectionIssue;
+
+    const setItemDeleting = (itemId: string, deleting: boolean) => {
+        setDeletingItemIds((prev) => {
+            if (!deleting) {
+                const next = { ...prev };
+                delete next[itemId];
+
+                return next;
+            }
+
+            return { ...prev, [itemId]: true };
+        });
+    };
+
+    const showFirstError = (errors: Record<string, string>) => {
+        const firstMessage = Object.values(errors)[0];
+        toast.error(firstMessage || 'Terjadi kesalahan. Silakan coba lagi.');
+    };
+
+    const clearPendingSyncForItem = (itemId: string) => {
+        const existingTimer = syncTimersRef.current.get(itemId);
+
+        if (existingTimer) {
+            clearTimeout(existingTimer);
+            syncTimersRef.current.delete(itemId);
+        }
+
+        pendingTargetQtyRef.current.delete(itemId);
+        setLocalQuantities((prev) => {
+            if (prev[itemId] === undefined) {
+                return prev;
+            }
+
+            const next = { ...prev };
+            delete next[itemId];
+
+            return next;
+        });
+    };
+
+    const handleExceedStateChange = (itemId: string, isExceeding: boolean) => {
+        setExceedingItemIds((prev) => {
+            if (!isExceeding) {
+                if (!prev[itemId]) {
+                    return prev;
+                }
+
+                const next = { ...prev };
+                delete next[itemId];
+
+                return next;
+            }
+
+            return { ...prev, [itemId]: true };
+        });
+    };
+
     const handleToggleSelectAll = (checked: boolean) => {
-        setItems((prev) => prev.map((item) => ({ ...item, isSelected: checked })));
+        if (!hasAvailableItems || isGlobalBusy) {
+            return;
+        }
+
+        setIsGlobalBusy(true);
+        router.patch(
+            updateCartSelection.url(),
+            { is_selected: checked },
+            {
+                only: ['stores', 'items', 'calculation'],
+                preserveState: true,
+                preserveScroll: true,
+                showProgress: false,
+                onError: showFirstError,
+                onFinish: () => setIsGlobalBusy(false),
+            },
+        );
     };
 
     const handleToggleStore = (storeId: string, checked: boolean) => {
-        setItems((prev) =>
-            prev.map((item) =>
-                item.storeId === storeId ? { ...item, isSelected: checked } : item,
-            ),
+        if (isGlobalBusy) {
+            return;
+        }
+
+        setIsGlobalBusy(true);
+        router.patch(
+            updateCartSelection.url(),
+            { store_id: Number(storeId), is_selected: checked },
+            {
+                only: ['stores', 'items', 'calculation'],
+                preserveState: true,
+                preserveScroll: true,
+                showProgress: false,
+                onError: showFirstError,
+                onFinish: () => setIsGlobalBusy(false),
+            },
         );
     };
 
-    const handleToggleItem = (itemId: string) => {
-        setItems((prev) =>
-            prev.map((item) =>
-                item.id === itemId ? { ...item, isSelected: !item.isSelected } : item,
-            ),
+    const handleToggleItem = (item: CartItem) => {
+        if (!item.isAvailable || deletingItemIds[item.id] || isGlobalBusy) {
+            return;
+        }
+
+        router.patch(
+            updateCartItem.url(item.id),
+            { is_selected: !item.isSelected },
+            {
+                only: ['stores', 'items', 'calculation'],
+                preserveState: true,
+                preserveScroll: true,
+                showProgress: false,
+                onError: showFirstError,
+            },
         );
     };
 
-    const handleUpdateQuantity = (itemId: string, delta: number) => {
-        setItems((prev) =>
-            prev.map((item) => {
-                if (item.id === itemId) {
-                    const newQty = Math.max(1, item.quantity + delta);
-                    return { ...item, quantity: newQty };
-                }
-                return item;
-            }),
-        );
+    const handleSetQuantity = (item: CartItem, nextQuantity: number) => {
+        if (!item.isAvailable || deletingItemIds[item.id] || isGlobalBusy) {
+            return;
+        }
+
+        const clamped = Math.max(1, Math.min(item.stock, nextQuantity));
+
+        setLocalQuantities((prev) => ({
+            ...prev,
+            [item.id]: clamped,
+        }));
+        pendingTargetQtyRef.current.set(item.id, clamped);
+
+        const existingTimer = syncTimersRef.current.get(item.id);
+
+        if (existingTimer) {
+            clearTimeout(existingTimer);
+        }
+
+        const timer = setTimeout(() => {
+            syncTimersRef.current.delete(item.id);
+
+            router.patch(
+                updateCartItem.url(item.id),
+                { quantity: clamped },
+                {
+                    only: ['stores', 'items', 'calculation'],
+                    preserveState: true,
+                    preserveScroll: true,
+                    showProgress: false,
+                    onSuccess: () => {
+                        if (
+                            pendingTargetQtyRef.current.get(item.id) === clamped
+                        ) {
+                            pendingTargetQtyRef.current.delete(item.id);
+                            setLocalQuantities((prev) => {
+                                const next = { ...prev };
+                                delete next[item.id];
+
+                                return next;
+                            });
+                        }
+                    },
+                    onError: (errors) => {
+                        pendingTargetQtyRef.current.delete(item.id);
+                        setLocalQuantities((prev) => {
+                            const next = { ...prev };
+                            delete next[item.id];
+
+                            return next;
+                        });
+                        showFirstError(errors);
+                    },
+                },
+            );
+        }, QUANTITY_SYNC_DEBOUNCE_MS);
+
+        syncTimersRef.current.set(item.id, timer);
     };
 
-    const handleRemoveItem = (itemId: string) => {
-        setItems((prev) => prev.filter((item) => item.id !== itemId));
+    const handleRemoveItem = (item: CartItem) => {
+        if (deletingItemIds[item.id] || isGlobalBusy) {
+            return;
+        }
+
+        clearPendingSyncForItem(item.id);
+        setItemDeleting(item.id, true);
+        router.delete(destroyCartItem.url(item.id), {
+            preserveScroll: true,
+            onError: showFirstError,
+            onFinish: () => setItemDeleting(item.id, false),
+        });
     };
 
     const handleDeleteSelected = () => {
-        setItems((prev) => prev.filter((item) => !item.isSelected));
-    };
+        if (effectiveCalculation.selectedCount === 0 || isGlobalBusy) {
+            return;
+        }
 
-    const handleUpdateNote = (storeId: string, note: string) => {
-        setStores((prev) =>
-            prev.map((store) => (store.id === storeId ? { ...store, note } : store)),
-        );
-    };
-
-    const handleAddToCart = (recProduct: RecommendationProduct) => {
-        setItems((prev) => {
-            const existing = prev.find((item) => item.name === recProduct.name);
-            if (existing) {
-                return prev.map((item) =>
-                    item.id === existing.id
-                        ? { ...item, quantity: item.quantity + 1, isSelected: true }
-                        : item,
-                );
-            }
-
-            // Ensure store exists
-            setStores((prevStores) => {
-                if (!prevStores.some((s) => s.id === recProduct.storeId)) {
-                    return [
-                        ...prevStores,
-                        {
-                            id: recProduct.storeId,
-                            name: `${recProduct.storeName} — Kota Bogor`,
-                            district: 'Bogor',
-                            city: 'Kota Bogor',
-                            notePlaceholder: `Tulis catatan untuk ${recProduct.storeName}...`,
-                            note: '',
-                        },
-                    ];
-                }
-                return prevStores;
-            });
-
-            const newItem: CartItem = {
-                id: `cart-${Date.now()}`,
-                storeId: recProduct.storeId,
-                name: recProduct.name,
-                variant: recProduct.variant,
-                price: recProduct.price,
-                imageUrl: recProduct.imageUrl,
-                imageAlt: recProduct.imageAlt,
-                quantity: 1,
-                isSelected: true,
-            };
-
-            return [...prev, newItem];
+        setIsGlobalBusy(true);
+        router.delete(destroySelectedCartItems.url(), {
+            preserveScroll: true,
+            onError: showFirstError,
+            onFinish: () => setIsGlobalBusy(false),
         });
+    };
+
+    const handleDeleteUnavailable = () => {
+        if (effectiveCalculation.unavailableCount === 0 || isGlobalBusy) {
+            return;
+        }
+
+        setIsGlobalBusy(true);
+        router.delete(destroyUnavailableCartItems.url(), {
+            preserveScroll: true,
+            onError: showFirstError,
+            onFinish: () => setIsGlobalBusy(false),
+        });
+    };
+
+    const handleAddRecommendation = (product: RecommendationProduct) => {
+        if (addingProductId !== null || isGlobalBusy) {
+            return;
+        }
+
+        setAddingProductId(product.productId);
+        router.post(
+            storeCartItem.url(),
+            {
+                product_id: product.productId,
+                quantity: 1,
+                buy_now: false,
+            },
+            {
+                preserveScroll: true,
+                onError: showFirstError,
+                onFinish: () => setAddingProductId(null),
+            },
+        );
     };
 
     const formatRupiah = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
-    // Filter items per store
-    const filteredStores = stores.filter((store) =>
-        items.some((item) => item.storeId === store.id),
+    const visibleStores = stores.filter((store) =>
+        effectiveItems.some((item) => item.storeId === store.id),
     );
 
     return (
-        <HomeLayout
-            cartCount={items.length}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-        >
+        <HomeLayout cartCount={effectiveItems.length}>
             <Head title="Keranjang Belanja - Kossuma Kota Bogor">
                 <meta
                     name="description"
-                    content="Keranjang Belanja Multi-Toko UMKM Kossuma Kota Bogor — Halal Food & Local UMKM E-Commerce"
+                    content="Keranjang Belanja Multi-Toko UMKM Kossuma Kota Bogor — Belanja Kuliner Halal & Produk UMKM Lokal"
                 />
             </Head>
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8">
-                {/* Breadcrumbs & Bulk Selection Bar */}
-                <CartBreadcrumbBar
-                    totalItemCount={items.length}
-                    selectedCount={selectedCount}
-                    isAllSelected={isAllSelected}
-                    onToggleSelectAll={handleToggleSelectAll}
-                    onDeleteSelected={handleDeleteSelected}
-                />
 
-                {/* Shopping Cart Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Left Column: Cart Items & Store Groups (8 cols on desktop) */}
-                    <div className="lg:col-span-8 flex flex-col gap-5">
-                        {/* Global Select Bar Card */}
-                        <div className="bg-white rounded-xl p-4 shadow-2xs border border-gray-100 flex items-center justify-between gap-3">
-                            <label className="flex items-center gap-3 cursor-pointer select-none">
-                                <input
-                                    type="checkbox"
-                                    checked={isAllSelected}
-                                    onChange={(e) => handleToggleSelectAll(e.target.checked)}
-                                    className="w-5 h-5 rounded text-[#7D3394] focus:ring-[#7D3394] accent-[#7D3394] cursor-pointer"
-                                />
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                                    <span className="text-sm sm:text-base font-bold text-gray-900">
-                                        Pilih Semua Produk
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                        ({selectedCount} item terpilih dari {filteredStores.length} toko UMKM Binaan)
+            <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 pb-24 sm:gap-8 sm:px-6 lg:px-8 lg:pb-8">
+                <CartBreadcrumbBar totalItemCount={effectiveItems.length} />
+
+                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+                    <div className="flex flex-col gap-5 lg:col-span-8">
+                        {effectiveItems.length > 0 && (
+                            <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-2xs">
+                                <label
+                                    className={`flex items-center gap-3 select-none ${
+                                        hasAvailableItems && !isGlobalBusy
+                                            ? 'cursor-pointer'
+                                            : 'cursor-not-allowed opacity-60'
+                                    }`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={isAllSelected}
+                                        disabled={
+                                            !hasAvailableItems || isGlobalBusy
+                                        }
+                                        onChange={(event) =>
+                                            handleToggleSelectAll(
+                                                event.target.checked,
+                                            )
+                                        }
+                                        data-test="cart-select-all-checkbox"
+                                        className="h-5 w-5 cursor-pointer rounded text-[#7D3394] accent-[#7D3394] focus:ring-[#7D3394] disabled:cursor-not-allowed"
+                                    />
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                                        <span className="text-sm font-bold text-gray-900 sm:text-base">
+                                            Pilih Semua Produk
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                            (
+                                            {effectiveCalculation.selectedCount}{' '}
+                                            terpilih dari {visibleStores.length}{' '}
+                                            toko UMKM)
+                                        </span>
+                                    </div>
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteSelected}
+                                    disabled={
+                                        effectiveCalculation.selectedCount ===
+                                            0 || isGlobalBusy
+                                    }
+                                    data-test="cart-delete-selected-button"
+                                    className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-[#DC2626] disabled:cursor-not-allowed disabled:opacity-40 sm:text-sm"
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    <span>Hapus Terpilih</span>
+                                </button>
+                            </div>
+                        )}
+
+                        {effectiveCalculation.unavailableCount > 0 && (
+                            <div
+                                data-test="cart-unavailable-banner"
+                                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-100 bg-red-50/80 px-4 py-3 text-xs text-[#DC2626] sm:text-sm"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <AlertCircle className="h-4 w-4 shrink-0" />
+                                    <span>
+                                        {effectiveCalculation.unavailableCount}{' '}
+                                        produk di keranjang sedang habis atau
+                                        tidak tersedia dan tidak dapat
+                                        di-checkout.
                                     </span>
                                 </div>
-                            </label>
-                            <button
-                                type="button"
-                                onClick={handleDeleteSelected}
-                                disabled={selectedCount === 0}
-                                className="text-xs sm:text-sm font-semibold text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                                Hapus
-                            </button>
-                        </div>
+                                <button
+                                    type="button"
+                                    disabled={isGlobalBusy}
+                                    onClick={handleDeleteUnavailable}
+                                    data-test="cart-delete-unavailable-button"
+                                    className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-[#DC2626] shadow-2xs disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Hapus yang Tidak Tersedia
+                                </button>
+                            </div>
+                        )}
 
-                        {/* Store Groups */}
-                        {filteredStores.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 flex flex-col items-center justify-center gap-3">
-                                <ShoppingBag className="w-12 h-12 text-gray-300" />
+                        {visibleStores.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-xs">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0E6F5] text-[#7D3394]">
+                                    <ShoppingBag className="h-7 w-7" />
+                                </div>
                                 <h3 className="text-lg font-bold text-gray-900">
                                     Keranjang Belanja Anda Kosong
                                 </h3>
-                                <p className="text-sm text-gray-500 max-w-sm">
-                                    Yuk jelajahi produk makanan halal, camilan, dan lauk siap saji UMKM binaan Kossuma di bawah ini!
+                                <p className="max-w-sm text-sm text-gray-500">
+                                    Yuk jelajahi aneka olahan pangan halal,
+                                    camilan, dan lauk siap saji dari UMKM binaan
+                                    Kossuma Kota Bogor.
                                 </p>
+                                <Link
+                                    href={home()}
+                                    className="mt-1 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#7D3394] px-6 py-2.5 text-sm font-bold text-white"
+                                >
+                                    <span>Mulai Belanja</span>
+                                </Link>
                             </div>
                         ) : (
-                            filteredStores.map((store) => (
+                            visibleStores.map((store) => (
                                 <StoreCartGroup
                                     key={store.id}
                                     store={store}
-                                    items={items.filter((item) => item.storeId === store.id)}
+                                    items={effectiveItems.filter(
+                                        (item) => item.storeId === store.id,
+                                    )}
+                                    deletingItemIds={deletingItemIds}
+                                    isGlobalBusy={isGlobalBusy}
                                     onToggleStore={handleToggleStore}
                                     onToggleItem={handleToggleItem}
-                                    onUpdateQuantity={handleUpdateQuantity}
+                                    onSetQuantity={handleSetQuantity}
+                                    onExceedStateChange={
+                                        handleExceedStateChange
+                                    }
                                     onRemoveItem={handleRemoveItem}
-                                    onUpdateNote={handleUpdateNote}
                                 />
                             ))
                         )}
 
-                        {/* Recommendations Carousel Mini Strip */}
                         <CartRecommendations
-                            items={INITIAL_RECOMMENDATIONS}
-                            onAddToCart={handleAddToCart}
+                            items={recommendations}
+                            addingProductId={addingProductId}
+                            onAddToCart={handleAddRecommendation}
                         />
                     </div>
 
-                    {/* Right Column: Sticky Order Summary (4 cols on desktop) */}
                     <div className="lg:col-span-4">
-                        <OrderSummaryCard calculation={calculation} />
+                        <OrderSummaryCard calculation={effectiveCalculation} />
                     </div>
                 </div>
             </div>
 
-            {/* Mobile Fixed Bottom Checkout Bar */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
-                <div className="flex items-center justify-between gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
-                        <input
-                            type="checkbox"
-                            checked={isAllSelected}
-                            onChange={(e) => handleToggleSelectAll(e.target.checked)}
-                            className="w-4 h-4 rounded text-[#7D3394] focus:ring-[#7D3394] accent-[#7D3394] cursor-pointer"
-                        />
-                        <span className="text-xs font-semibold text-gray-800">
-                            Pilih Semua
-                        </span>
-                    </label>
-
-                    <div className="flex items-center gap-3">
-                        <div className="flex flex-col text-right">
-                            <span className="text-[11px] text-gray-500">Subtotal:</span>
-                            <span className="text-base font-extrabold text-[#DC2626]">
-                                {formatRupiah(calculation.subtotal)}
-                            </span>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (selectedCount > 0) {
-                                    router.visit(checkout());
-                                }
-                            }}
-                            disabled={selectedCount === 0}
-                            className="py-2.5 px-4 rounded-xl bg-[#7D3394] text-white disabled:opacity-40 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+            {effectiveItems.length > 0 && (
+                <div className="fixed right-0 bottom-0 left-0 z-40 border-t border-gray-200 bg-white/95 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
+                    <div className="flex items-center justify-between gap-3">
+                        <label
+                            className={`flex items-center gap-2 select-none ${
+                                hasAvailableItems && !isGlobalBusy
+                                    ? 'cursor-pointer'
+                                    : 'cursor-not-allowed opacity-60'
+                            }`}
                         >
-                            <ShoppingBag className="w-4 h-4" />
-                            <span>Checkout ({selectedCount})</span>
-                        </button>
+                            <input
+                                type="checkbox"
+                                checked={isAllSelected}
+                                disabled={!hasAvailableItems || isGlobalBusy}
+                                onChange={(event) =>
+                                    handleToggleSelectAll(event.target.checked)
+                                }
+                                className="h-4 w-4 cursor-pointer rounded text-[#7D3394] accent-[#7D3394] focus:ring-[#7D3394] disabled:cursor-not-allowed"
+                            />
+                            <span className="text-xs font-semibold text-gray-800">
+                                Pilih Semua
+                            </span>
+                        </label>
+
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col text-right tabular-nums">
+                                <span className="text-[11px] text-gray-500">
+                                    Subtotal:
+                                </span>
+                                <span className="text-base font-extrabold text-[#DC2626]">
+                                    {formatRupiah(
+                                        effectiveCalculation.subtotal,
+                                    )}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (canCheckout) {
+                                        router.visit(checkout());
+                                    }
+                                }}
+                                disabled={!canCheckout}
+                                className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#7D3394] px-4 py-2.5 text-xs font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <ShoppingBag className="h-4 w-4" />
+                                <span>
+                                    Checkout (
+                                    {effectiveCalculation.selectedCount})
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </HomeLayout>
     );
 }
-

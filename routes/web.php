@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::inertia('cart', 'customer/cart/index')->name('cart');
+require __DIR__.'/cart/cart.php';
 Route::inertia('checkout', 'customer/checkout/index')->name('checkout');
 Route::get('checkout/payment', function (Request $request) {
     return Inertia::render('customer/payment/index', [

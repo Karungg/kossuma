@@ -1,6 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
 import { HomeLayout } from '@/layouts/home-layout';
 import { home } from '@/routes';
 import { GalleryShowcase } from './components/gallery-showcase';
@@ -16,14 +15,8 @@ interface ProductShowPageProps {
 }
 
 export default function ProductShowPage({ product }: ProductShowPageProps) {
-    const [cartCount, setCartCount] = useState(2);
-
-    const handleAddToCart = (qty: number) => {
-        setCartCount((prev) => prev + qty);
-    };
-
     return (
-        <HomeLayout cartCount={cartCount}>
+        <HomeLayout>
             <Head title={`${product.name} - Kossuma Kota Bogor`}>
                 <meta name="description" content={product.description} />
             </Head>
@@ -80,7 +73,6 @@ export default function ProductShowPage({ product }: ProductShowPageProps) {
                                     <PurchaseActionPod
                                         key={`${product.slug}-mobile`}
                                         product={product}
-                                        onAddToCart={handleAddToCart}
                                     />
                                 </div>
 
@@ -105,7 +97,6 @@ export default function ProductShowPage({ product }: ProductShowPageProps) {
                         <PurchaseActionPod
                             key={`${product.slug}-desktop`}
                             product={product}
-                            onAddToCart={handleAddToCart}
                         />
                     </div>
                 </div>
