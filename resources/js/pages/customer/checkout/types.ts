@@ -6,6 +6,8 @@ export interface CheckoutAddress {
     fullAddress: string;
     district: string;
     city: string;
+    postalCode?: string;
+    courierNote?: string;
     isPrimary?: boolean;
 }
 

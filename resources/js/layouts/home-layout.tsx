@@ -1,19 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
     ChevronDown,
+    LayoutDashboard,
     LogOut,
     Menu,
     Search,
+    Settings,
+    ShoppingBag,
     ShoppingCart,
-    User,
     X,
 } from 'lucide-react';
-import { cart, dashboard, home, login, logout, register } from '@/routes';
+import { useEffect, useRef, useState } from 'react';
+import { CustomerProfileDropdown } from '@/components/navigation/customer-profile-dropdown';
 import { NotificationBellSheet } from '@/components/notifications/notification-bell-sheet';
 import { useFlashToast } from '@/hooks/use-flash-toast';
 import { CartFooter } from '@/pages/customer/cart/components/cart-footer';
+import { cart, dashboard, home, login, logout, register } from '@/routes';
+import { index as customerOrdersIndex } from '@/routes/customer/orders';
+import { index as customerSettingsIndex } from '@/routes/customer/settings';
 import { INSTITUTIONAL_NAV_ITEMS } from './navigation';
 
 interface HomeLayoutProps {
@@ -40,18 +45,29 @@ export function HomeLayout({
 
     const navRef = useRef<HTMLDivElement>(null);
 
-    const { auth, cart: sharedCart } = usePage().props as unknown as {
+    const {
+        auth,
+        cart: sharedCart,
+        orderSummary,
+    } = usePage().props as unknown as {
         auth?: {
-            user?: { name: string } | null;
+            user?: {
+                name: string;
+                email?: string;
+                avatar_url?: string | null;
+            } | null;
             roles?: string[];
         };
         cart?: {
             count?: number;
         };
+        orderSummary?: {
+            active_count?: number;
+        };
     };
 
     const resolvedCartCount = cartCount ?? sharedCart?.count ?? 0;
-
+    const activeOrderCount = orderSummary?.active_count ?? 0;
     const isAdmin = auth?.roles?.includes('Admin') ?? false;
 
     const handleSearch = (val: string) => {
@@ -72,7 +88,6 @@ export function HomeLayout({
         }
     };
 
-    // Close desktop dropdown on click outside or escape key
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (navRef.current && !navRef.current.contains(e.target as Node)) {
@@ -109,9 +124,7 @@ export function HomeLayout({
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-[#F8F9FB] font-sans text-[#1F2937] antialiased">
-            {/* Unified Fixed Header: Two-Tier */}
             <header className="fixed top-0 right-0 left-0 z-50 border-b border-gray-100 bg-white shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-                {/* Tier 1: Top Utility Bar with Popover Sub-menus */}
                 <div className="relative hidden border-b border-gray-100/90 bg-[#F8F9FB] sm:block">
                     <div
                         ref={navRef}
@@ -159,7 +172,6 @@ export function HomeLayout({
                                             </Link>
                                         )}
 
-                                        {/* Desktop Popover Island Card */}
                                         {isOpen && item.subItems && (
                                             <div className="absolute top-full right-0 z-50 mt-2 flex w-80 animate-in flex-col gap-1 rounded-2xl border border-gray-100 bg-white/98 p-2.5 shadow-xl backdrop-blur-md duration-150 zoom-in-95 fade-in">
                                                 <div className="px-2.5 py-1 text-xs font-bold text-gray-500">
@@ -235,17 +247,15 @@ export function HomeLayout({
                     </div>
                 </div>
 
-                {/* Tier 2: Main Commerce Bar */}
                 <div className="bg-white/95 backdrop-blur-md">
                     <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-                        {/* Left: Mobile Menu Button + Brand Logo */}
                         <div className="flex items-center gap-2">
                             <button
                                 type="button"
                                 onClick={() =>
                                     setIsMobileMenuOpen(!isMobileMenuOpen)
                                 }
-                                aria-label="Toggle Navigation Menu"
+                                aria-label="Buka Menu Navigasi"
                                 className="cursor-pointer rounded-lg p-2 text-gray-700 focus:outline-none sm:hidden"
                             >
                                 {isMobileMenuOpen ? (
@@ -267,7 +277,6 @@ export function HomeLayout({
                             </Link>
                         </div>
 
-                        {/* Search Bar */}
                         <div className="mx-2 hidden max-w-xl flex-1 md:block">
                             <div className="relative flex w-full items-center">
                                 <Search className="pointer-events-none absolute left-3.5 h-5 w-5 text-gray-400" />
@@ -300,8 +309,7 @@ export function HomeLayout({
                             </div>
                         </div>
 
-                        {/* Right Actions: Cart, Notifications & Auth Navigation */}
-                        <div className="flex shrink-0 items-center gap-3">
+                        <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
                             <Link
                                 href={cart()}
                                 aria-label="Keranjang Belanja"
@@ -320,32 +328,11 @@ export function HomeLayout({
                             <div className="hidden h-6 w-px bg-gray-200 sm:block" />
 
                             {auth?.user ? (
-                                isAdmin ? (
-                                    <Link
-                                        href={dashboard()}
-                                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#E2C9EB] px-3.5 py-1.5 text-sm font-semibold text-[#7D3394]"
-                                    >
-                                        <User className="h-4 w-4" />
-                                        <span className="hidden sm:inline">
-                                            Dashboard
-                                        </span>
-                                    </Link>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <span className="hidden text-sm font-medium text-gray-700 sm:inline">
-                                            {auth.user.name}
-                                        </span>
-                                        <Link
-                                            href={logout()}
-                                            method="post"
-                                            as="button"
-                                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700"
-                                        >
-                                            <LogOut className="h-4 w-4" />
-                                            <span>Keluar</span>
-                                        </Link>
-                                    </div>
-                                )
+                                <CustomerProfileDropdown
+                                    user={auth.user}
+                                    isAdmin={isAdmin}
+                                    activeOrderCount={activeOrderCount}
+                                />
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <Link
@@ -366,7 +353,6 @@ export function HomeLayout({
                     </div>
                 </div>
 
-                {/* Mobile Drawer / Slide-down Hierarchical Menu */}
                 {isMobileMenuOpen && (
                     <div className="flex max-h-[80vh] flex-col gap-3 overflow-y-auto border-t border-gray-100 bg-white px-4 py-4 shadow-lg sm:hidden">
                         <nav className="flex flex-col gap-2 text-sm font-medium text-gray-700">
@@ -377,6 +363,62 @@ export function HomeLayout({
                             >
                                 Katalog Produk
                             </Link>
+
+                            {auth?.user && (
+                                <div className="flex flex-col gap-1 border-b border-gray-100 pb-2">
+                                    {isAdmin && (
+                                        <Link
+                                            href={dashboard()}
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                            className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-[#7D3394]"
+                                        >
+                                            <LayoutDashboard className="h-4 w-4" />
+                                            <span>Dashboard Admin</span>
+                                        </Link>
+                                    )}
+                                    <Link
+                                        href={customerOrdersIndex()}
+                                        onClick={() =>
+                                            setIsMobileMenuOpen(false)
+                                        }
+                                        className="flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm text-gray-700"
+                                    >
+                                        <span className="flex items-center gap-2.5">
+                                            <ShoppingBag className="h-4 w-4 text-gray-500" />
+                                            <span>Pembelian</span>
+                                        </span>
+                                        {activeOrderCount > 0 && (
+                                            <span className="rounded-full bg-[#F0E6F5] px-2 py-0.5 text-xs font-bold text-[#7D3394]">
+                                                {activeOrderCount}
+                                            </span>
+                                        )}
+                                    </Link>
+                                    <Link
+                                        href={customerSettingsIndex()}
+                                        onClick={() =>
+                                            setIsMobileMenuOpen(false)
+                                        }
+                                        className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-700"
+                                    >
+                                        <Settings className="h-4 w-4 text-gray-500" />
+                                        <span>Pengaturan Akun</span>
+                                    </Link>
+                                    <Link
+                                        href={logout()}
+                                        method="post"
+                                        as="button"
+                                        onClick={() =>
+                                            setIsMobileMenuOpen(false)
+                                        }
+                                        className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-[#DC2626]"
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        <span>Keluar</span>
+                                    </Link>
+                                </div>
+                            )}
 
                             {INSTITUTIONAL_NAV_ITEMS.map((item) => {
                                 const isExpanded = Boolean(
@@ -485,12 +527,10 @@ export function HomeLayout({
                 )}
             </header>
 
-            {/* Main Viewport Shell: pt-[116px] for desktop, pt-20 for mobile */}
             <main className="w-full flex-1 pt-20 sm:pt-[116px]">
                 {children}
             </main>
 
-            {/* Unified Footer */}
             <CartFooter />
         </div>
     );

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Contracts\Cart\CartServiceInterface;
+use App\Contracts\Order\CustomerOrderServiceInterface;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -10,29 +11,16 @@ use Inertia\Middleware;
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * The root template that's loaded on the first page visit.
-     *
-     * @see https://inertiajs.com/server-side-setup#root-template
-     *
      * @var string
      */
     protected $rootView = 'app';
 
-    /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
     /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
      * @return array<string, mixed>
      */
     public function share(Request $request): array
@@ -45,8 +33,11 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user,
-                'roles' => $user?->getRoleNames()->all() ?? [],
+                'user' => $user instanceof User ? [
+                    ...$user->toArray(),
+                    'avatar_url' => $user->getAvatarUrl(),
+                ] : null,
+                'roles' => $user instanceof User ? $user->getRoleNames()->all() : [],
             ],
             'cart' => [
                 'count' => app(CartServiceInterface::class)->getCartCount(
@@ -54,8 +45,13 @@ class HandleInertiaRequests extends Middleware
                     $guestToken,
                 ),
             ],
+            'orderSummary' => [
+                'active_count' => $user instanceof User
+                    ? app(CustomerOrderServiceInterface::class)->getActiveOrderCount($user)
+                    : 0,
+            ],
             'notifications' => [
-                'unread_count' => $user
+                'unread_count' => $user instanceof User
                     ? $user->unreadNotifications()->count()
                     : 0,
             ],
