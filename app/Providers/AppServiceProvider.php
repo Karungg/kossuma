@@ -4,12 +4,18 @@ namespace App\Providers;
 
 use App\Contracts\Cart\CartServiceInterface;
 use App\Contracts\Category\CategoryServiceInterface;
+use App\Contracts\Customer\CustomerAddressServiceInterface;
+use App\Contracts\Customer\CustomerProfileServiceInterface;
 use App\Contracts\Notification\NotificationServiceInterface;
+use App\Contracts\Order\CustomerOrderServiceInterface;
 use App\Contracts\Product\ProductServiceInterface;
 use App\Listeners\Cart\MergeGuestCartOnLogin;
 use App\Services\Cart\CartService;
 use App\Services\Category\CategoryService;
+use App\Services\Customer\CustomerAddressService;
+use App\Services\Customer\CustomerProfileService;
 use App\Services\Notification\NotificationService;
+use App\Services\Order\CustomerOrderService;
 use App\Services\Product\ProductService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
@@ -28,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(CartServiceInterface::class, CartService::class);
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
+        $this->app->bind(CustomerAddressServiceInterface::class, CustomerAddressService::class);
+        $this->app->bind(CustomerOrderServiceInterface::class, CustomerOrderService::class);
+        $this->app->bind(CustomerProfileServiceInterface::class, CustomerProfileService::class);
         $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
         $this->app->bind(ProductServiceInterface::class, ProductService::class);
     }

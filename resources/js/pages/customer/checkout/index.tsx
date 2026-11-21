@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Banknote,
     Building2,
     CheckCircle2,
     MapPin,
+    Plus,
     QrCode,
     Receipt,
     ShieldCheck,
@@ -12,10 +13,11 @@ import {
     Ticket,
     Truck,
 } from 'lucide-react';
-import { Head, Link, router } from '@inertiajs/react';
-import { cart, home } from '@/routes';
-import { payment as checkoutPayment } from '@/routes/checkout';
+import { useMemo, useState } from 'react';
 import { HomeLayout } from '@/layouts/home-layout';
+import { cart, home, login } from '@/routes';
+import { payment as checkoutPayment } from '@/routes/checkout';
+import { index as customerSettingsIndex } from '@/routes/customer/settings';
 import type {
     BankOption,
     CheckoutAddress,
@@ -25,28 +27,9 @@ import type {
     VoucherOption,
 } from './types';
 
-const ADDRESSES: CheckoutAddress[] = [
-    {
-        id: 'addr-1',
-        label: 'Rumah',
-        recipientName: 'Ibu Siti Aminah',
-        phone: '0812-8844-1122',
-        fullAddress: 'Jl. Cimanggu Permai Blok B2 No. 14',
-        district: 'Tanah Sareal',
-        city: 'Kota Bogor, Jawa Barat 16164',
-        isPrimary: true,
-    },
-    {
-        id: 'addr-2',
-        label: 'Kantor',
-        recipientName: 'Ibu Siti Aminah',
-        phone: '0812-8844-1122',
-        fullAddress: 'Jl. Raya Pajajaran No. 45, Gedung Koperasi',
-        district: 'Bogor Tengah',
-        city: 'Kota Bogor, Jawa Barat 16143',
-        isPrimary: false,
-    },
-];
+interface CheckoutPageProps {
+    addresses?: CheckoutAddress[];
+}
 
 const CHECKOUT_ITEMS: CheckoutItem[] = [
     {
@@ -133,22 +116,39 @@ const BANKS: BankOption[] = [
     },
 ];
 
-export default function CheckoutPage() {
-    const [selectedAddressId, setSelectedAddressId] = useState(ADDRESSES[0].id);
+export default function CheckoutPage({ addresses = [] }: CheckoutPageProps) {
+    const { auth } = usePage().props as unknown as {
+        auth?: { user?: { name: string } | null };
+    };
+    const isAuthenticated = Boolean(auth?.user);
+    const defaultAddress =
+        addresses.find((address) => address.isPrimary) ?? addresses[0] ?? null;
+    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+        defaultAddress?.id ?? null,
+    );
     const [isAddressListOpen, setIsAddressListOpen] = useState(false);
-    const [selectedShippingId, setSelectedShippingId] = useState(SHIPPING_OPTIONS[0].id);
-    const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('qris');
-    const [selectedBankId, setSelectedBankId] = useState<BankOption['id']>('bsi');
+    const [selectedShippingId, setSelectedShippingId] = useState(
+        SHIPPING_OPTIONS[0].id,
+    );
+    const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
+        null,
+    );
+    const [paymentMethod, setPaymentMethod] =
+        useState<PaymentMethodType>('qris');
+    const [selectedBankId, setSelectedBankId] =
+        useState<BankOption['id']>('bsi');
     const [note, setNote] = useState('');
 
     const formatRupiah = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
     const selectedAddress =
-        ADDRESSES.find((a) => a.id === selectedAddressId) ?? ADDRESSES[0];
+        addresses.find((address) => address.id === selectedAddressId) ??
+        defaultAddress;
     const selectedShipping =
-        SHIPPING_OPTIONS.find((s) => s.id === selectedShippingId) ?? SHIPPING_OPTIONS[0];
-    const selectedVoucher = VOUCHERS.find((v) => v.id === selectedVoucherId) ?? null;
+        SHIPPING_OPTIONS.find((s) => s.id === selectedShippingId) ??
+        SHIPPING_OPTIONS[0];
+    const selectedVoucher =
+        VOUCHERS.find((v) => v.id === selectedVoucherId) ?? null;
 
     const calculation = useMemo(() => {
         const itemsSubtotal = CHECKOUT_ITEMS.reduce(
@@ -169,9 +169,15 @@ export default function CheckoutPage() {
         let voucherDiscount = 0;
         if (selectedVoucher && itemsSubtotal >= selectedVoucher.minPurchase) {
             if (selectedVoucher.type === 'subtotal') {
-                voucherDiscount = Math.min(itemsSubtotal, selectedVoucher.discountAmount);
+                voucherDiscount = Math.min(
+                    itemsSubtotal,
+                    selectedVoucher.discountAmount,
+                );
             } else {
-                voucherDiscount = Math.min(shippingFee, selectedVoucher.discountAmount);
+                voucherDiscount = Math.min(
+                    shippingFee,
+                    selectedVoucher.discountAmount,
+                );
             }
         }
 
@@ -216,21 +222,21 @@ export default function CheckoutPage() {
                     content="Pilih alamat pengiriman, kurir, voucher, dan metode pembayaran untuk pesanan UMKM Kossuma Kota Bogor."
                 />
             </Head>
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+            <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
                 {/* Breadcrumbs & Kembali */}
-                <div className="bg-white rounded-xl px-4 py-3 border border-gray-100 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3">
+                    <div className="flex min-w-0 items-center gap-3">
                         <Link
                             href={cart()}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-[#7D3394] text-xs font-bold shrink-0 cursor-pointer"
+                            className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-bold text-[#7D3394]"
                         >
-                            <ArrowLeft className="w-3.5 h-3.5" />
+                            <ArrowLeft className="h-3.5 w-3.5" />
                             <span>Kembali ke Keranjang</span>
                         </Link>
 
                         <nav
                             aria-label="Breadcrumb"
-                            className="hidden md:flex items-center gap-2 text-xs text-gray-500"
+                            className="hidden items-center gap-2 text-xs text-gray-500 md:flex"
                         >
                             <span className="text-gray-300">/</span>
                             <Link href={home()} className="cursor-pointer">
@@ -241,73 +247,147 @@ export default function CheckoutPage() {
                                 Keranjang
                             </Link>
                             <span className="text-gray-300">/</span>
-                            <span className="text-gray-900 font-semibold">Checkout</span>
+                            <span className="font-semibold text-gray-900">
+                                Checkout
+                            </span>
                         </nav>
                     </div>
                 </div>
 
-                <h1 className="text-xl sm:text-2xl font-extrabold text-[#1F2937] tracking-tight">
+                <h1 className="text-xl font-extrabold tracking-tight text-[#1F2937] sm:text-2xl">
                     Checkout Pesanan
                 </h1>
 
                 {/* Main 2-Column Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
                     {/* Kolom Kiri (8 kolom): Alamat, Produk, Pengiriman, Voucher, Pembayaran */}
-                    <div className="lg:col-span-8 flex flex-col gap-5">
-                        {/* 1. Alamat Pengiriman */}
-                        <section className="bg-white rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
-                            <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-5 lg:col-span-8">
+                        <section className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-xs sm:p-6">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                    <MapPin className="w-5 h-5 text-[#7D3394]" />
+                                    <MapPin className="h-5 w-5 text-[#7D3394]" />
                                     <h2 className="text-base font-bold text-gray-900">
                                         Alamat Pengiriman
                                     </h2>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsAddressListOpen((prev) => !prev)}
-                                    className="text-xs font-bold text-[#7D3394] px-3 py-1.5 rounded-lg bg-[#F0E6F5] cursor-pointer"
-                                >
-                                    {isAddressListOpen ? 'Tutup Pilihan' : 'Ganti Alamat'}
-                                </button>
-                            </div>
-
-                            <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col gap-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-bold text-gray-900">
-                                        {selectedAddress.recipientName}
-                                    </span>
-                                    <span className="text-xs text-gray-400">•</span>
-                                    <span className="text-xs font-semibold text-[#7D3394]">
-                                        {selectedAddress.label}
-                                    </span>
+                                    {addresses.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setIsAddressListOpen(
+                                                    (prev) => !prev,
+                                                )
+                                            }
+                                            className="cursor-pointer rounded-lg bg-[#F0E6F5] px-3 py-1.5 text-xs font-bold text-[#7D3394]"
+                                        >
+                                            {isAddressListOpen
+                                                ? 'Tutup Pilihan'
+                                                : 'Ganti Alamat'}
+                                        </button>
+                                    )}
+                                    {isAuthenticated && (
+                                        <Link
+                                            href={customerSettingsIndex({
+                                                query: { tab: 'addresses' },
+                                            })}
+                                            data-test="checkout-manage-addresses-link"
+                                            className="cursor-pointer rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                                        >
+                                            Kelola Alamat
+                                        </Link>
+                                    )}
                                 </div>
-                                <span className="text-xs text-gray-600">
-                                    {selectedAddress.phone}
-                                </span>
-                                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed pt-0.5">
-                                    {selectedAddress.fullAddress}, {selectedAddress.district},{' '}
-                                    {selectedAddress.city}
-                                </p>
                             </div>
 
-                            {isAddressListOpen && (
-                                <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
+                            {selectedAddress ? (
+                                <div className="flex flex-col gap-1 border-t border-gray-100 pt-3">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="text-sm font-bold text-gray-900">
+                                            {selectedAddress.recipientName}
+                                        </span>
+                                        <span className="text-xs text-gray-400">
+                                            •
+                                        </span>
+                                        <span className="text-xs font-semibold text-[#7D3394]">
+                                            {selectedAddress.label}
+                                        </span>
+                                        {selectedAddress.isPrimary && (
+                                            <span className="rounded bg-[#F0E6F5] px-2 py-0.5 text-[10px] font-bold text-[#7D3394]">
+                                                Alamat Utama
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-gray-600">
+                                        {selectedAddress.phone}
+                                    </span>
+                                    <p className="pt-0.5 text-xs leading-relaxed text-gray-700 sm:text-sm">
+                                        {selectedAddress.fullAddress},{' '}
+                                        {selectedAddress.district},{' '}
+                                        {selectedAddress.city}
+                                        {selectedAddress.postalCode
+                                            ? ` ${selectedAddress.postalCode}`
+                                            : ''}
+                                    </p>
+                                    {selectedAddress.courierNote && (
+                                        <span className="text-xs text-gray-500">
+                                            Patokan:{' '}
+                                            {selectedAddress.courierNote}
+                                        </span>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-start gap-3 border-t border-gray-100 pt-3">
+                                    <p className="text-xs text-gray-600 sm:text-sm">
+                                        {isAuthenticated
+                                            ? 'Anda belum memiliki alamat pengiriman tersimpan. Tambahkan alamat terlebih dahulu di Pengaturan Akun.'
+                                            : 'Masuk ke akun Anda untuk memilih atau menyimpan alamat pengiriman.'}
+                                    </p>
+                                    <Link
+                                        href={
+                                            isAuthenticated
+                                                ? customerSettingsIndex({
+                                                      query: {
+                                                          tab: 'addresses',
+                                                      },
+                                                  })
+                                                : login()
+                                        }
+                                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#7D3394] px-4 py-2 text-xs font-bold text-white"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" />
+                                        <span>
+                                            {isAuthenticated
+                                                ? 'Tambah Alamat Pengiriman'
+                                                : 'Masuk Sekarang'}
+                                        </span>
+                                    </Link>
+                                </div>
+                            )}
+
+                            {isAddressListOpen && addresses.length > 1 && (
+                                <div className="flex flex-col gap-2 border-t border-gray-100 pt-3">
                                     <span className="text-xs font-semibold text-gray-600">
                                         Pilih alamat tersimpan:
                                     </span>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {ADDRESSES.map((addr) => {
-                                            const isSelected = addr.id === selectedAddressId;
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        {addresses.map((addr) => {
+                                            const isSelected =
+                                                addr.id === selectedAddress?.id;
+
                                             return (
                                                 <button
                                                     key={addr.id}
                                                     type="button"
                                                     onClick={() => {
-                                                        setSelectedAddressId(addr.id);
-                                                        setIsAddressListOpen(false);
+                                                        setSelectedAddressId(
+                                                            addr.id,
+                                                        );
+                                                        setIsAddressListOpen(
+                                                            false,
+                                                        );
                                                     }}
-                                                    className={`p-3 rounded-xl border text-left flex flex-col gap-1 cursor-pointer ${
+                                                    className={`flex cursor-pointer flex-col gap-1 rounded-xl border p-3 text-left ${
                                                         isSelected
                                                             ? 'border-[#7D3394] bg-[#F0E6F5]/40'
                                                             : 'border-gray-200 bg-white'
@@ -316,16 +396,20 @@ export default function CheckoutPage() {
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-xs font-bold text-[#7D3394]">
                                                             {addr.label}
+                                                            {addr.isPrimary
+                                                                ? ' • Utama'
+                                                                : ''}
                                                         </span>
                                                         {isSelected && (
-                                                            <CheckCircle2 className="w-4 h-4 text-[#7D3394]" />
+                                                            <CheckCircle2 className="h-4 w-4 text-[#7D3394]" />
                                                         )}
                                                     </div>
                                                     <span className="text-xs font-bold text-gray-900">
                                                         {addr.recipientName}
                                                     </span>
-                                                    <span className="text-xs text-gray-600 line-clamp-2">
-                                                        {addr.fullAddress}, {addr.district}
+                                                    <span className="line-clamp-2 text-xs text-gray-600">
+                                                        {addr.fullAddress},{' '}
+                                                        {addr.district}
                                                     </span>
                                                 </button>
                                             );
@@ -336,9 +420,9 @@ export default function CheckoutPage() {
                         </section>
 
                         {/* 2. Daftar Produk & Pengiriman */}
-                        <section className="bg-white rounded-xl p-5 border border-gray-200 flex flex-col gap-5">
-                            <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-                                <Store className="w-5 h-5 text-[#7D3394]" />
+                        <section className="flex flex-col gap-5 rounded-xl border border-gray-200 bg-white p-5">
+                            <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+                                <Store className="h-5 w-5 text-[#7D3394]" />
                                 <h2 className="text-base font-bold text-gray-900">
                                     Pesanan Produk &amp; Pengiriman
                                 </h2>
@@ -350,12 +434,12 @@ export default function CheckoutPage() {
                                     className="flex items-start justify-between gap-4"
                                 >
                                     <div className="flex items-start gap-3">
-                                        <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center text-[10px] text-gray-400">
+                                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-100 text-[10px] text-gray-400">
                                             {item.imageUrl ? (
                                                 <img
                                                     src={item.imageUrl}
                                                     alt={item.name}
-                                                    className="w-full h-full object-cover rounded-lg"
+                                                    className="h-full w-full rounded-lg object-cover"
                                                 />
                                             ) : (
                                                 'Foto'
@@ -369,18 +453,24 @@ export default function CheckoutPage() {
                                                 {item.name}
                                             </span>
                                             <span className="text-xs text-gray-500">
-                                                {item.variant} • {item.quantity} barang
+                                                {item.variant} • {item.quantity}{' '}
+                                                barang
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col items-end shrink-0">
+                                    <div className="flex shrink-0 flex-col items-end">
                                         <span className="text-sm font-bold text-gray-900">
-                                            {formatRupiah(item.price * item.quantity)}
+                                            {formatRupiah(
+                                                item.price * item.quantity,
+                                            )}
                                         </span>
                                         {item.originalPrice && (
                                             <span className="text-xs text-gray-400 line-through">
-                                                {formatRupiah(item.originalPrice * item.quantity)}
+                                                {formatRupiah(
+                                                    item.originalPrice *
+                                                        item.quantity,
+                                                )}
                                             </span>
                                         )}
                                     </div>
@@ -401,45 +491,52 @@ export default function CheckoutPage() {
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
                                     placeholder="Misal: Minta kirim dalam keadaan beku, saus dipisah"
-                                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-lg border border-gray-300 focus:border-[#7D3394] focus:outline-none"
+                                    className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-xs focus:border-[#7D3394] focus:outline-none sm:text-sm"
                                 />
                             </div>
 
                             {/* Pilihan Kurir Pengiriman */}
-                            <div className="flex flex-col gap-2.5 pt-2 border-t border-gray-100">
+                            <div className="flex flex-col gap-2.5 border-t border-gray-100 pt-2">
                                 <div className="flex items-center gap-2">
-                                    <Truck className="w-4 h-4 text-[#7D3394]" />
+                                    <Truck className="h-4 w-4 text-[#7D3394]" />
                                     <span className="text-sm font-bold text-gray-900">
                                         Pilih Metode Pengiriman
                                     </span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                     {SHIPPING_OPTIONS.map((opt) => {
-                                        const isSelected = opt.id === selectedShippingId;
+                                        const isSelected =
+                                            opt.id === selectedShippingId;
                                         return (
                                             <button
                                                 key={opt.id}
                                                 type="button"
-                                                onClick={() => setSelectedShippingId(opt.id)}
-                                                className={`p-3.5 rounded-xl border text-left flex flex-col justify-between gap-2 cursor-pointer ${
+                                                onClick={() =>
+                                                    setSelectedShippingId(
+                                                        opt.id,
+                                                    )
+                                                }
+                                                className={`flex cursor-pointer flex-col justify-between gap-2 rounded-xl border p-3.5 text-left ${
                                                     isSelected
                                                         ? 'border-[#7D3394] bg-[#F0E6F5]/40'
                                                         : 'border-gray-200 bg-white'
                                                 }`}
                                             >
                                                 <div className="flex flex-col gap-0.5">
-                                                    <span className="text-xs sm:text-sm font-bold text-gray-900">
+                                                    <span className="text-xs font-bold text-gray-900 sm:text-sm">
                                                         {opt.name}
                                                     </span>
                                                     <span className="text-[11px] text-gray-500">
                                                         {opt.estimate}
                                                     </span>
                                                 </div>
-                                                <span className="text-xs sm:text-sm font-extrabold text-[#7D3394]">
+                                                <span className="text-xs font-extrabold text-[#7D3394] sm:text-sm">
                                                     {opt.price === 0
                                                         ? 'Gratis'
-                                                        : formatRupiah(opt.price)}
+                                                        : formatRupiah(
+                                                              opt.price,
+                                                          )}
                                                 </span>
                                             </button>
                                         );
@@ -449,19 +546,21 @@ export default function CheckoutPage() {
                         </section>
 
                         {/* 3. Pilihan Voucher */}
-                        <section className="bg-white rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+                        <section className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5">
                             <div className="flex items-center gap-2">
-                                <Ticket className="w-5 h-5 text-[#7D3394]" />
+                                <Ticket className="h-5 w-5 text-[#7D3394]" />
                                 <h2 className="text-base font-bold text-gray-900">
                                     Voucher &amp; Promo Tersedia
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 {VOUCHERS.map((voucher) => {
-                                    const isSelected = selectedVoucherId === voucher.id;
+                                    const isSelected =
+                                        selectedVoucherId === voucher.id;
                                     const isEligible =
-                                        calculation.itemsSubtotal >= voucher.minPurchase;
+                                        calculation.itemsSubtotal >=
+                                        voucher.minPurchase;
 
                                     return (
                                         <button
@@ -470,10 +569,12 @@ export default function CheckoutPage() {
                                             disabled={!isEligible}
                                             onClick={() =>
                                                 setSelectedVoucherId(
-                                                    isSelected ? null : voucher.id,
+                                                    isSelected
+                                                        ? null
+                                                        : voucher.id,
                                                 )
                                             }
-                                            className={`p-3.5 rounded-xl border text-left flex items-start justify-between gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                                            className={`flex cursor-pointer items-start justify-between gap-2 rounded-xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-50 ${
                                                 isSelected
                                                     ? 'border-[#7D3394] bg-[#F0E6F5]/50'
                                                     : 'border-gray-200 bg-white'
@@ -483,7 +584,7 @@ export default function CheckoutPage() {
                                                 <span className="text-xs font-bold text-[#7D3394]">
                                                     {voucher.code}
                                                 </span>
-                                                <span className="text-xs sm:text-sm font-bold text-gray-900">
+                                                <span className="text-xs font-bold text-gray-900 sm:text-sm">
                                                     {voucher.title}
                                                 </span>
                                                 <span className="text-[11px] text-gray-500">
@@ -491,7 +592,7 @@ export default function CheckoutPage() {
                                                 </span>
                                             </div>
                                             {isSelected && (
-                                                <CheckCircle2 className="w-4 h-4 text-[#7D3394] shrink-0 mt-0.5" />
+                                                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#7D3394]" />
                                             )}
                                         </button>
                                     );
@@ -500,9 +601,9 @@ export default function CheckoutPage() {
                         </section>
 
                         {/* 4. Metode Pembayaran */}
-                        <section className="bg-white rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+                        <section className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5">
                             <div className="flex items-center gap-2">
-                                <ShieldCheck className="w-5 h-5 text-[#7D3394]" />
+                                <ShieldCheck className="h-5 w-5 text-[#7D3394]" />
                                 <h2 className="text-base font-bold text-gray-900">
                                     Metode Pembayaran
                                 </h2>
@@ -512,7 +613,7 @@ export default function CheckoutPage() {
                                 {/* Opsi 1: QRIS */}
                                 <div
                                     onClick={() => setPaymentMethod('qris')}
-                                    className={`p-4 rounded-xl border flex items-start gap-3 cursor-pointer ${
+                                    className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 ${
                                         paymentMethod === 'qris'
                                             ? 'border-[#7D3394] bg-[#F0E6F5]/40'
                                             : 'border-gray-200 bg-white'
@@ -522,16 +623,19 @@ export default function CheckoutPage() {
                                         type="radio"
                                         name="paymentMethod"
                                         checked={paymentMethod === 'qris'}
-                                        onChange={() => setPaymentMethod('qris')}
-                                        className="mt-1 accent-[#7D3394] cursor-pointer"
+                                        onChange={() =>
+                                            setPaymentMethod('qris')
+                                        }
+                                        className="mt-1 cursor-pointer accent-[#7D3394]"
                                     />
-                                    <QrCode className="w-5 h-5 text-[#7D3394] shrink-0 mt-0.5" />
+                                    <QrCode className="mt-0.5 h-5 w-5 shrink-0 text-[#7D3394]" />
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-sm font-bold text-gray-900">
                                             QRIS (Scan Instan)
                                         </span>
                                         <span className="text-xs text-gray-500">
-                                            Bayar cepat dari GoPay, OVO, Dana, ShopeePay, dan semua m-Banking
+                                            Bayar cepat dari GoPay, OVO, Dana,
+                                            ShopeePay, dan semua m-Banking
                                         </span>
                                     </div>
                                 </div>
@@ -539,7 +643,7 @@ export default function CheckoutPage() {
                                 {/* Opsi 2: Transfer Bank / Virtual Account */}
                                 <div
                                     onClick={() => setPaymentMethod('bank')}
-                                    className={`p-4 rounded-xl border flex flex-col gap-3 cursor-pointer ${
+                                    className={`flex cursor-pointer flex-col gap-3 rounded-xl border p-4 ${
                                         paymentMethod === 'bank'
                                             ? 'border-[#7D3394] bg-[#F0E6F5]/40'
                                             : 'border-gray-200 bg-white'
@@ -550,33 +654,39 @@ export default function CheckoutPage() {
                                             type="radio"
                                             name="paymentMethod"
                                             checked={paymentMethod === 'bank'}
-                                            onChange={() => setPaymentMethod('bank')}
-                                            className="mt-1 accent-[#7D3394] cursor-pointer"
+                                            onChange={() =>
+                                                setPaymentMethod('bank')
+                                            }
+                                            className="mt-1 cursor-pointer accent-[#7D3394]"
                                         />
-                                        <Building2 className="w-5 h-5 text-[#7D3394] shrink-0 mt-0.5" />
+                                        <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-[#7D3394]" />
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-sm font-bold text-gray-900">
                                                 Transfer Virtual Account Bank
                                             </span>
                                             <span className="text-xs text-gray-500">
-                                                Verifikasi otomatis melalui nomor Virtual Account
+                                                Verifikasi otomatis melalui
+                                                nomor Virtual Account
                                             </span>
                                         </div>
                                     </div>
 
                                     {paymentMethod === 'bank' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pl-7 pt-1">
+                                        <div className="grid grid-cols-1 gap-2.5 pt-1 pl-7 sm:grid-cols-2">
                                             {BANKS.map((bank) => {
-                                                const isBankSelected = selectedBankId === bank.id;
+                                                const isBankSelected =
+                                                    selectedBankId === bank.id;
                                                 return (
                                                     <button
                                                         key={bank.id}
                                                         type="button"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setSelectedBankId(bank.id);
+                                                            setSelectedBankId(
+                                                                bank.id,
+                                                            );
                                                         }}
-                                                        className={`p-3 rounded-lg border text-left flex items-center justify-between gap-2 cursor-pointer ${
+                                                        className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg border p-3 text-left ${
                                                             isBankSelected
                                                                 ? 'border-[#7D3394] bg-white'
                                                                 : 'border-gray-200 bg-gray-50'
@@ -587,11 +697,13 @@ export default function CheckoutPage() {
                                                                 {bank.name}
                                                             </span>
                                                             <span className="text-[11px] text-gray-500">
-                                                                {bank.description}
+                                                                {
+                                                                    bank.description
+                                                                }
                                                             </span>
                                                         </div>
                                                         {isBankSelected && (
-                                                            <CheckCircle2 className="w-4 h-4 text-[#7D3394] shrink-0" />
+                                                            <CheckCircle2 className="h-4 w-4 shrink-0 text-[#7D3394]" />
                                                         )}
                                                     </button>
                                                 );
@@ -603,7 +715,7 @@ export default function CheckoutPage() {
                                 {/* Opsi 3: Bayar di Tempat (COD) */}
                                 <div
                                     onClick={() => setPaymentMethod('cod')}
-                                    className={`p-4 rounded-xl border flex items-start gap-3 cursor-pointer ${
+                                    className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 ${
                                         paymentMethod === 'cod'
                                             ? 'border-[#7D3394] bg-[#F0E6F5]/40'
                                             : 'border-gray-200 bg-white'
@@ -614,15 +726,16 @@ export default function CheckoutPage() {
                                         name="paymentMethod"
                                         checked={paymentMethod === 'cod'}
                                         onChange={() => setPaymentMethod('cod')}
-                                        className="mt-1 accent-[#7D3394] cursor-pointer"
+                                        className="mt-1 cursor-pointer accent-[#7D3394]"
                                     />
-                                    <Banknote className="w-5 h-5 text-[#7D3394] shrink-0 mt-0.5" />
+                                    <Banknote className="mt-0.5 h-5 w-5 shrink-0 text-[#7D3394]" />
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-sm font-bold text-gray-900">
                                             Bayar di Tempat (COD)
                                         </span>
                                         <span className="text-xs text-gray-500">
-                                            Siapkan uang tunai saat kurir tiba mengantarkan pesanan
+                                            Siapkan uang tunai saat kurir tiba
+                                            mengantarkan pesanan
                                         </span>
                                     </div>
                                 </div>
@@ -631,53 +744,67 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* Kolom Kanan (4 kolom Sticky): Ringkasan Tagihan */}
-                    <div className="lg:col-span-4 lg:sticky lg:top-[132px]">
-                        <div className="bg-white rounded-2xl p-6 border border-gray-200 flex flex-col gap-5">
-                            <h2 className="text-lg font-bold text-gray-900 flex items-center justify-between">
+                    <div className="lg:sticky lg:top-[132px] lg:col-span-4">
+                        <div className="flex flex-col gap-5 rounded-2xl border border-gray-200 bg-white p-6">
+                            <h2 className="flex items-center justify-between text-lg font-bold text-gray-900">
                                 <span>Ringkasan Tagihan</span>
-                                <Receipt className="w-5 h-5 text-[#7D3394]" />
+                                <Receipt className="h-5 w-5 text-[#7D3394]" />
                             </h2>
 
                             <div className="flex flex-col gap-2.5 text-sm">
                                 <div className="flex items-center justify-between text-gray-600">
                                     <span>Subtotal Harga Barang</span>
                                     <span className="font-semibold text-gray-900">
-                                        {formatRupiah(calculation.itemsSubtotal)}
+                                        {formatRupiah(
+                                            calculation.itemsSubtotal,
+                                        )}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center justify-between text-gray-600">
-                                    <span>Ongkos Kirim ({selectedShipping.name})</span>
+                                    <span>
+                                        Ongkos Kirim ({selectedShipping.name})
+                                    </span>
                                     <span className="font-semibold text-gray-900">
                                         {calculation.shippingFee === 0
                                             ? 'Gratis'
-                                            : formatRupiah(calculation.shippingFee)}
+                                            : formatRupiah(
+                                                  calculation.shippingFee,
+                                              )}
                                     </span>
                                 </div>
 
                                 {calculation.voucherDiscount > 0 && (
                                     <div className="flex items-center justify-between text-gray-600">
-                                        <span>Potongan Voucher ({selectedVoucher?.code})</span>
+                                        <span>
+                                            Potongan Voucher (
+                                            {selectedVoucher?.code})
+                                        </span>
                                         <span className="font-semibold text-[#059669]">
-                                            -{formatRupiah(calculation.voucherDiscount)}
+                                            -
+                                            {formatRupiah(
+                                                calculation.voucherDiscount,
+                                            )}
                                         </span>
                                     </div>
                                 )}
 
                                 <div className="flex items-center justify-between text-gray-600">
-                                    <span>Biaya Layanan &amp; Infaq Koperasi</span>
+                                    <span>
+                                        Biaya Layanan &amp; Infaq Koperasi
+                                    </span>
                                     <span className="font-semibold text-gray-900">
                                         {formatRupiah(calculation.serviceFee)}
                                     </span>
                                 </div>
 
-                                <div className="h-px bg-gray-200 my-1" />
+                                <div className="my-1 h-px bg-gray-200" />
 
                                 <div className="flex items-baseline justify-between pt-1">
                                     <span className="text-base font-extrabold text-gray-900">
                                         Total Tagihan
                                     </span>
-                                    <span className="text-xl sm:text-2xl font-extrabold text-[#DC2626]">
+                                    <span className="text-xl font-extrabold text-[#DC2626] sm:text-2xl">
                                         {formatRupiah(calculation.grandTotal)}
                                     </span>
                                 </div>
@@ -686,13 +813,14 @@ export default function CheckoutPage() {
                             <button
                                 type="button"
                                 onClick={handlePayNow}
-                                className="w-full py-3.5 px-6 rounded-xl bg-[#7D3394] text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#7D3394] px-6 py-3.5 text-sm font-bold text-white"
                             >
                                 <span>Bayar Sekarang</span>
                             </button>
 
-                            <p className="text-[11px] text-gray-500 text-center">
-                                Halaman ini menggunakan mode demo sebelum integrasi payment gateway
+                            <p className="text-center text-[11px] text-gray-500">
+                                Halaman ini menggunakan mode demo sebelum
+                                integrasi payment gateway
                             </p>
                         </div>
                     </div>

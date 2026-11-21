@@ -232,7 +232,7 @@ export default function CartPage({
         }
 
         router.patch(
-            updateCartItem.url(item.id),
+            updateCartItem.url(Number(item.id)),
             { is_selected: !item.isSelected },
             {
                 only: ['stores', 'items', 'calculation'],
@@ -267,7 +267,7 @@ export default function CartPage({
             syncTimersRef.current.delete(item.id);
 
             router.patch(
-                updateCartItem.url(item.id),
+                updateCartItem.url(Number(item.id)),
                 { quantity: clamped },
                 {
                     only: ['stores', 'items', 'calculation'],
@@ -311,7 +311,7 @@ export default function CartPage({
 
         clearPendingSyncForItem(item.id);
         setItemDeleting(item.id, true);
-        router.delete(destroyCartItem.url(item.id), {
+        router.delete(destroyCartItem.url(Number(item.id)), {
             preserveScroll: true,
             onError: showFirstError,
             onFinish: () => setItemDeleting(item.id, false),

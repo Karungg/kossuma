@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('slug', 170)->unique();
             $table->text('description')->nullable();
             $table->string('location', 150);
+            $table->string('whatsapp_number', 30)->nullable();
             $table->boolean('is_verified')->default(true);
             $table->timestamps();
         });

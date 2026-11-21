@@ -1,14 +1,27 @@
 <?php
 
+use App\Contracts\Customer\CustomerAddressServiceInterface;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Product\ProductController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 require __DIR__.'/cart/cart.php';
-Route::inertia('checkout', 'customer/checkout/index')->name('checkout');
+require __DIR__.'/customer/account.php';
+
+Route::get('checkout', function (Request $request, CustomerAddressServiceInterface $addressService) {
+    $user = $request->user();
+
+    return Inertia::render('customer/checkout/index', [
+        'addresses' => $user instanceof User
+            ? $addressService->listFormattedForUser($user)
+            : [],
+    ]);
+})->name('checkout');
+
 Route::get('checkout/payment', function (Request $request) {
     return Inertia::render('customer/payment/index', [
         'method' => $request->query('method', 'qris'),
@@ -17,6 +30,7 @@ Route::get('checkout/payment', function (Request $request) {
         'orderId' => $request->query('order_id', 'KSM-'.date('Ymd').'-0842'),
     ]);
 })->name('checkout.payment');
+
 Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::inertia('about', 'home/about')->name('about');
 Route::inertia('blog', 'home/blog')->name('blog');
