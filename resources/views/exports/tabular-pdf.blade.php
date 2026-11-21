@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Daftar Kategori Produk — Kossuma Kota Bogor</title>
+    <title>{{ $documentTitle }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -47,14 +47,11 @@
             vertical-align: top;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            line-height: 1.45;
         }
-        .col-no { width: 5%; }
-        .col-name { font-weight: bold; }
-        .col-slug { color: #6B7280; }
-        .col-description { color: #4B5563; line-height: 1.45; }
-        .col-products_count { width: 11%; text-align: center; }
-        .col-created_at,
-        .col-updated_at { width: 13%; color: #6B7280; }
+        .col-no {
+            width: 5%;
+        }
         .empty {
             text-align: center;
             color: #6B7280;
@@ -64,8 +61,8 @@
 </head>
 <body>
     <div class="header">
-        <p class="title">Daftar Kategori Produk — Kossuma Kota Bogor</p>
-        <p class="subtitle">Dicetak pada {{ $printedAt }} • Total {{ $total }} kategori</p>
+        <p class="title">{{ $documentTitle }}</p>
+        <p class="subtitle">Dicetak pada {{ $printedAt }} • Total {{ $total }} {{ $itemLabel }}</p>
     </div>
 
     <table>
@@ -73,7 +70,7 @@
             <tr>
                 <th class="col-no">No</th>
                 @foreach ($columns as $column)
-                    <th class="col-{{ $column }}">{{ $headers[$column] ?? $column }}</th>
+                    <th>{{ $headers[$column] ?? $column }}</th>
                 @endforeach
             </tr>
         </thead>
@@ -82,12 +79,14 @@
                 <tr>
                     <td class="col-no">{{ $index + 1 }}</td>
                     @foreach ($columns as $column)
-                        <td class="col-{{ $column }}">{{ $row[$column] ?? '-' }}</td>
+                        <td>{{ $row[$column] ?? '-' }}</td>
                     @endforeach
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($columns) + 1 }}" class="empty">Tidak ada data kategori untuk diekspor.</td>
+                    <td colspan="{{ count($columns) + 1 }}" class="empty">
+                        Tidak ada data {{ $itemLabel }} untuk diekspor.
+                    </td>
                 </tr>
             @endforelse
         </tbody>

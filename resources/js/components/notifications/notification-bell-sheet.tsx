@@ -1,6 +1,5 @@
-import { router, usePage } from '@inertiajs/react';
 import { Bell, Check, CheckCheck, Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     Sheet,
     SheetContent,
@@ -10,21 +9,11 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-    destroy,
-    destroyRead,
-    index,
-    read,
-    readAll,
-} from '@/routes/notifications';
+import { useNotifications } from '@/hooks/use-notifications';
 import type {
-    AppNotificationItem,
     NotificationCategory,
-    NotificationFeedResponse,
     NotificationLevel,
 } from '@/types/notification';
-
-type StatusFilter = 'all' | 'unread';
 
 const CATEGORY_OPTIONS: Array<{
     value: '' | NotificationCategory;
@@ -45,221 +34,29 @@ const LEVEL_DOT_STYLES: Record<NotificationLevel, string> = {
     danger: 'bg-[#DC2626]',
 };
 
-function getXsrfToken(): string {
-    const match = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('XSRF-TOKEN='));
-
-    return match ? decodeURIComponent(match.split('=')[1] ?? '') : '';
-}
-
-async function requestJson<T>(
-    url: string,
-    method: 'GET' | 'PATCH' | 'DELETE' = 'GET',
-): Promise<T> {
-    const headers: Record<string, string> = {
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-    };
-
-    if (method !== 'GET') {
-        const token = getXsrfToken();
-
-        if (token !== '') {
-            headers['X-XSRF-TOKEN'] = token;
-        }
-    }
-
-    const response = await fetch(url, {
-        method,
-        headers,
-        credentials: 'same-origin',
-    });
-
-    if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-    }
-
-    return (await response.json()) as T;
-}
-
 export function NotificationBellSheet() {
-    const { notifications: sharedNotifications } = usePage().props;
-    const sharedUnreadCount = sharedNotifications?.unread_count ?? 0;
-
     const [open, setOpen] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(sharedUnreadCount);
-    const [readCount, setReadCount] = useState(0);
-    const [status, setStatus] = useState<StatusFilter>('all');
-    const [category, setCategory] = useState<'' | NotificationCategory>('');
-    const [items, setItems] = useState<AppNotificationItem[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [hasMore, setHasMore] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [busyAction, setBusyAction] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    useEffect(() => {
-        setUnreadCount(sharedUnreadCount);
-    }, [sharedUnreadCount]);
-
-    const loadNotifications = async (
-        targetPage: number,
-        append: boolean,
-        targetStatus: StatusFilter = status,
-        targetCategory: '' | NotificationCategory = category,
-    ) => {
-        if (append) {
-            setLoadingMore(true);
-        } else {
-            setLoading(true);
-        }
-
-        setErrorMessage(null);
-
-        try {
-            const url = index.url({
-                query: {
-                    page: targetPage > 1 ? targetPage : undefined,
-                    status: targetStatus === 'unread' ? 'unread' : undefined,
-                    category: targetCategory || undefined,
-                },
-            });
-
-            const payload = await requestJson<NotificationFeedResponse>(
-                url,
-                'GET',
-            );
-
-            setItems((prev) =>
-                append ? [...prev, ...payload.data] : payload.data,
-            );
-            setCurrentPage(payload.meta.current_page);
-            setHasMore(payload.meta.has_more);
-            setUnreadCount(payload.unread_count);
-            setReadCount(payload.read_count);
-        } catch {
-            setErrorMessage(
-                'Gagal memuat notifikasi. Silakan coba beberapa saat lagi.',
-            );
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
-        }
-    };
-
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        void loadNotifications(1, false, status, category);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, status, category]);
-
-    const handleMarkAsRead = async (item: AppNotificationItem) => {
-        if (item.is_read) {
-            return;
-        }
-
-        try {
-            const result = await requestJson<{
-                unread_count: number;
-                read_count: number;
-            }>(read.url(item.id), 'PATCH');
-
-            setUnreadCount(result.unread_count);
-            setReadCount(result.read_count);
-            setItems((prev) =>
-                status === 'unread'
-                    ? prev.filter((entry) => entry.id !== item.id)
-                    : prev.map((entry) =>
-                          entry.id === item.id
-                              ? { ...entry, is_read: true }
-                              : entry,
-                      ),
-            );
-        } catch {
-            setErrorMessage('Gagal menandai notifikasi sebagai dibaca.');
-        }
-    };
-
-    const handleOpenNotification = async (item: AppNotificationItem) => {
-        if (!item.is_read) {
-            await handleMarkAsRead(item);
-        }
-
-        if (item.action_url) {
-            setOpen(false);
-            router.visit(item.action_url);
-        }
-    };
-
-    const handleMarkAllAsRead = async () => {
-        if (unreadCount === 0 || busyAction) {
-            return;
-        }
-
-        setBusyAction(true);
-
-        try {
-            const result = await requestJson<{
-                unread_count: number;
-                read_count: number;
-            }>(readAll.url(), 'PATCH');
-
-            setUnreadCount(result.unread_count);
-            setReadCount(result.read_count);
-            setItems((prev) =>
-                status === 'unread'
-                    ? []
-                    : prev.map((entry) => ({ ...entry, is_read: true })),
-            );
-        } catch {
-            setErrorMessage('Gagal menandai semua notifikasi sebagai dibaca.');
-        } finally {
-            setBusyAction(false);
-        }
-    };
-
-    const handleDelete = async (item: AppNotificationItem) => {
-        try {
-            const result = await requestJson<{
-                unread_count: number;
-                read_count: number;
-            }>(destroy.url(item.id), 'DELETE');
-
-            setUnreadCount(result.unread_count);
-            setReadCount(result.read_count);
-            setItems((prev) => prev.filter((entry) => entry.id !== item.id));
-        } catch {
-            setErrorMessage('Gagal menghapus notifikasi.');
-        }
-    };
-
-    const handleDeleteRead = async () => {
-        if (readCount === 0 || busyAction) {
-            return;
-        }
-
-        setBusyAction(true);
-
-        try {
-            const result = await requestJson<{
-                unread_count: number;
-                read_count: number;
-            }>(destroyRead.url(), 'DELETE');
-
-            setUnreadCount(result.unread_count);
-            setReadCount(result.read_count);
-            setItems((prev) => prev.filter((entry) => !entry.is_read));
-        } catch {
-            setErrorMessage('Gagal menghapus notifikasi yang sudah dibaca.');
-        } finally {
-            setBusyAction(false);
-        }
-    };
+    const {
+        items,
+        unreadCount,
+        readCount,
+        status,
+        setStatus,
+        category,
+        setCategory,
+        hasMore,
+        loading,
+        loadingMore,
+        busyAction,
+        errorMessage,
+        markAsRead,
+        openNotification,
+        markAllAsRead,
+        deleteItem,
+        deleteRead,
+        loadMore,
+    } = useNotifications(open);
 
     const formattedBadge = unreadCount > 99 ? '99+' : String(unreadCount);
 
@@ -304,7 +101,7 @@ export function NotificationBellSheet() {
                         {unreadCount > 0 && (
                             <button
                                 type="button"
-                                onClick={handleMarkAllAsRead}
+                                onClick={() => void markAllAsRead()}
                                 disabled={busyAction}
                                 data-test="mark-all-notifications-read"
                                 className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-lg bg-[#F0E6F5] px-2.5 py-1.5 text-xs font-semibold text-[#7D3394] disabled:opacity-50"
@@ -316,7 +113,6 @@ export function NotificationBellSheet() {
                     </div>
                 </SheetHeader>
 
-                {/* Filter Status & Kategori */}
                 <div className="flex flex-col gap-3 border-b border-gray-100 px-5 py-3">
                     <div className="flex items-center gap-2">
                         <button
@@ -376,7 +172,6 @@ export function NotificationBellSheet() {
                     </div>
                 </div>
 
-                {/* Daftar Notifikasi */}
                 <div className="flex-1 overflow-y-auto">
                     {errorMessage && (
                         <div className="border-b border-red-100 bg-red-50 px-5 py-3 text-xs text-[#DC2626]">
@@ -450,8 +245,10 @@ export function NotificationBellSheet() {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        void handleOpenNotification(
+                                                        void openNotification(
                                                             item,
+                                                            () =>
+                                                                setOpen(false),
                                                         )
                                                     }
                                                     className="flex cursor-pointer flex-col gap-1 text-left"
@@ -487,7 +284,7 @@ export function NotificationBellSheet() {
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            void handleMarkAsRead(
+                                                            void markAsRead(
                                                                 item,
                                                             )
                                                         }
@@ -501,7 +298,7 @@ export function NotificationBellSheet() {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        void handleDelete(item)
+                                                        void deleteItem(item)
                                                     }
                                                     aria-label="Hapus notifikasi"
                                                     className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1 text-[11px] font-medium text-[#DC2626]"
@@ -519,12 +316,7 @@ export function NotificationBellSheet() {
                                 <div className="border-t border-gray-100 p-4">
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            void loadNotifications(
-                                                currentPage + 1,
-                                                true,
-                                            )
-                                        }
+                                        onClick={() => void loadMore()}
                                         disabled={loadingMore}
                                         className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-100 text-xs font-semibold text-gray-700 disabled:opacity-50"
                                     >
@@ -547,7 +339,7 @@ export function NotificationBellSheet() {
                     <SheetFooter className="border-t border-gray-100 px-5 py-3">
                         <button
                             type="button"
-                            onClick={handleDeleteRead}
+                            onClick={() => void deleteRead()}
                             disabled={busyAction}
                             data-test="clear-read-notifications"
                             className="h-9 w-full cursor-pointer rounded-xl bg-gray-100 text-xs font-semibold text-gray-700 disabled:opacity-50"

@@ -1,6 +1,13 @@
-import { Link } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Trash2 } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    DataTableBulkActionBar,
+    DataTableBulkDeleteDialog,
+    DataTableExpandableText,
+    DataTablePagination,
+    DataTableSortHeader,
+} from '@/components/data-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Select,
@@ -9,33 +16,32 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { edit } from '@/routes/admin/categories';
-import { CATEGORY_COLUMN_ORDER } from '../types';
+import { bulkDestroy, edit } from '@/routes/admin/categories';
+import type { SortDirection } from '@/types/data-table';
+import { CATEGORY_COLUMNS } from '../types';
 import type {
     CategoryColumnVisibility,
-    CategoryFilters,
     CategoryItem,
     CategorySortField,
     ExportFormat,
     PaginatedCategories,
 } from '../types';
-import { CategoryBulkActionBar } from './category-bulk-action-bar';
-import { CategoryBulkDeleteDialog } from './category-bulk-delete-dialog';
 import { CategoryDeleteDialog } from './category-delete-dialog';
 
 type Props = {
     categories: PaginatedCategories;
-    filters: CategoryFilters;
+    activeSort: CategorySortField;
+    activeDirection: SortDirection;
     visibleColumns: CategoryColumnVisibility;
     selectedIds: number[];
+    isAllSelected: boolean;
+    isPartiallySelected: boolean;
     onToggleSelect: (id: number) => void;
     onToggleSelectAll: (checked: boolean) => void;
     onClearSelection: () => void;
     onSort: (column: CategorySortField) => void;
     onExportSelected: (format: ExportFormat) => void;
 };
-
-const LONG_DESCRIPTION_THRESHOLD = 90;
 
 const timestampFormatter = new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
@@ -55,70 +61,17 @@ function formatTimestamp(isoDate: string): string {
     return timestampFormatter.format(parsed);
 }
 
-function SortIcon({
-    column,
-    activeSort,
-    activeDirection,
-}: {
-    column: CategorySortField;
-    activeSort: CategorySortField;
-    activeDirection: 'asc' | 'desc';
-}) {
-    if (activeSort !== column) {
-        return <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-gray-400" />;
-    }
-
-    if (activeDirection === 'desc') {
-        return <ArrowDown className="h-3.5 w-3.5 shrink-0 text-[#7D3394]" />;
-    }
-
-    return <ArrowUp className="h-3.5 w-3.5 shrink-0 text-[#7D3394]" />;
-}
-
-function ExpandableDescription({
-    description,
-    isExpanded,
-    onToggle,
-}: {
-    description: string | null;
-    isExpanded: boolean;
-    onToggle: () => void;
-}) {
-    if (!description || description.trim() === '') {
-        return <span className="text-gray-400">Belum ada deskripsi</span>;
-    }
-
-    const isLong =
-        description.length > LONG_DESCRIPTION_THRESHOLD ||
-        description.includes('\n');
-
-    return (
-        <div className="flex flex-col items-start gap-1">
-            <p
-                className={`leading-relaxed break-words whitespace-pre-line text-gray-600 ${
-                    isLong && !isExpanded ? 'line-clamp-2' : ''
-                }`}
-            >
-                {description}
-            </p>
-            {isLong && (
-                <button
-                    type="button"
-                    onClick={onToggle}
-                    className="cursor-pointer text-xs font-medium text-[#7D3394]"
-                >
-                    {isExpanded ? 'Ringkas' : 'Selengkapnya'}
-                </button>
-            )}
-        </div>
-    );
-}
+const CHECKBOX_CLASS =
+    'cursor-pointer border-gray-300 data-[state=checked]:border-[#7D3394] data-[state=checked]:bg-[#7D3394] data-[state=indeterminate]:border-[#7D3394] data-[state=indeterminate]:bg-[#7D3394]';
 
 export function CategoryTable({
     categories,
-    filters,
+    activeSort,
+    activeDirection,
     visibleColumns,
     selectedIds,
+    isAllSelected,
+    isPartiallySelected,
     onToggleSelect,
     onToggleSelectAll,
     onClearSelection,
@@ -129,29 +82,20 @@ export function CategoryTable({
         useState<CategoryItem | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
     const [expandedIds, setExpandedIds] = useState<number[]>([]);
-
-    const activeSort: CategorySortField = filters.sort ?? 'name';
-    const activeDirection: 'asc' | 'desc' =
-        filters.direction === 'desc' ? 'desc' : 'asc';
-
-    const pageIds = categories.data.map((category) => category.id);
-    const selectedOnPageCount = pageIds.filter((id) =>
-        selectedIds.includes(id),
-    ).length;
-    const isAllSelected =
-        pageIds.length > 0 && selectedOnPageCount === pageIds.length;
-    const isPartiallySelected =
-        selectedOnPageCount > 0 && selectedOnPageCount < pageIds.length;
 
     const selectedCategories = categories.data.filter((category) =>
         selectedIds.includes(category.id),
     );
-
-    const visibleDataColumnCount = CATEGORY_COLUMN_ORDER.filter(
-        (key) => visibleColumns[key],
+    const deletableCount = selectedCategories.filter(
+        (category) => category.products_count === 0,
     ).length;
-    const totalDesktopColumns = visibleDataColumnCount + 2;
+    const blockedCount = selectedCategories.length - deletableCount;
+
+    const totalDesktopColumns =
+        CATEGORY_COLUMNS.filter((column) => visibleColumns[column.key]).length +
+        2;
 
     const toggleExpand = (id: number) => {
         setExpandedIds((prev) =>
@@ -161,38 +105,35 @@ export function CategoryTable({
         );
     };
 
-    const getAriaSort = (
-        column: CategorySortField,
-    ): 'ascending' | 'descending' | 'none' => {
-        if (activeSort !== column) {
-            return 'none';
+    const handleConfirmBulkDelete = () => {
+        if (deletableCount === 0) {
+            return;
         }
 
-        return activeDirection === 'desc' ? 'descending' : 'ascending';
+        setIsBulkDeleting(true);
+        router.delete(bulkDestroy.url(), {
+            data: { ids: selectedIds },
+            preserveScroll: true,
+            onSuccess: () => {
+                onClearSelection();
+                setIsBulkDeleteOpen(false);
+            },
+            onFinish: () => {
+                setIsBulkDeleting(false);
+            },
+        });
     };
-
-    const formatPaginationLabel = (label: string): string => {
-        if (label.includes('Previous')) {
-            return 'Sebelumnya';
-        }
-        if (label.includes('Next')) {
-            return 'Berikutnya';
-        }
-
-        return label;
-    };
-
-    const checkboxClassName =
-        'cursor-pointer border-gray-300 data-[state=checked]:border-[#7D3394] data-[state=checked]:bg-[#7D3394] data-[state=indeterminate]:border-[#7D3394] data-[state=indeterminate]:bg-[#7D3394]';
 
     return (
         <>
             <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xs">
-                <CategoryBulkActionBar
+                <DataTableBulkActionBar
                     selectedCount={selectedIds.length}
+                    itemLabel="kategori"
                     onExport={onExportSelected}
                     onBulkDelete={() => setIsBulkDeleteOpen(true)}
                     onClearSelection={onClearSelection}
+                    dataTest="category-bulk-action-bar"
                 />
 
                 {/* Tampilan Desktop & Tablet */}
@@ -214,60 +155,28 @@ export function CategoryTable({
                                         }
                                         aria-label="Pilih semua kategori di halaman ini"
                                         data-test="select-all-categories"
-                                        className={checkboxClassName}
+                                        className={CHECKBOX_CLASS}
                                     />
                                 </th>
 
                                 {visibleColumns.name && (
-                                    <th
-                                        aria-sort={getAriaSort('name')}
-                                        className="px-4 py-3.5 text-xs font-semibold text-gray-600"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => onSort('name')}
-                                            className={`inline-flex cursor-pointer items-center gap-1.5 ${
-                                                activeSort === 'name'
-                                                    ? 'text-[#7D3394]'
-                                                    : 'text-gray-600'
-                                            }`}
-                                        >
-                                            <span>Nama Kategori</span>
-                                            <SortIcon
-                                                column="name"
-                                                activeSort={activeSort}
-                                                activeDirection={
-                                                    activeDirection
-                                                }
-                                            />
-                                        </button>
-                                    </th>
+                                    <DataTableSortHeader
+                                        column="name"
+                                        label="Nama Kategori"
+                                        activeSort={activeSort}
+                                        activeDirection={activeDirection}
+                                        onSort={onSort}
+                                    />
                                 )}
 
                                 {visibleColumns.slug && (
-                                    <th
-                                        aria-sort={getAriaSort('slug')}
-                                        className="px-4 py-3.5 text-xs font-semibold text-gray-600"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => onSort('slug')}
-                                            className={`inline-flex cursor-pointer items-center gap-1.5 ${
-                                                activeSort === 'slug'
-                                                    ? 'text-[#7D3394]'
-                                                    : 'text-gray-600'
-                                            }`}
-                                        >
-                                            <span>Slug</span>
-                                            <SortIcon
-                                                column="slug"
-                                                activeSort={activeSort}
-                                                activeDirection={
-                                                    activeDirection
-                                                }
-                                            />
-                                        </button>
-                                    </th>
+                                    <DataTableSortHeader
+                                        column="slug"
+                                        label="Slug"
+                                        activeSort={activeSort}
+                                        activeDirection={activeDirection}
+                                        onSort={onSort}
+                                    />
                                 )}
 
                                 {visibleColumns.description && (
@@ -277,85 +186,33 @@ export function CategoryTable({
                                 )}
 
                                 {visibleColumns.products_count && (
-                                    <th
-                                        aria-sort={getAriaSort(
-                                            'products_count',
-                                        )}
-                                        className="px-4 py-3.5 text-xs font-semibold text-gray-600"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                onSort('products_count')
-                                            }
-                                            className={`inline-flex cursor-pointer items-center gap-1.5 ${
-                                                activeSort === 'products_count'
-                                                    ? 'text-[#7D3394]'
-                                                    : 'text-gray-600'
-                                            }`}
-                                        >
-                                            <span>Jumlah Produk</span>
-                                            <SortIcon
-                                                column="products_count"
-                                                activeSort={activeSort}
-                                                activeDirection={
-                                                    activeDirection
-                                                }
-                                            />
-                                        </button>
-                                    </th>
+                                    <DataTableSortHeader
+                                        column="products_count"
+                                        label="Jumlah Produk"
+                                        activeSort={activeSort}
+                                        activeDirection={activeDirection}
+                                        onSort={onSort}
+                                    />
                                 )}
 
                                 {visibleColumns.created_at && (
-                                    <th
-                                        aria-sort={getAriaSort('created_at')}
-                                        className="px-4 py-3.5 text-xs font-semibold text-gray-600"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => onSort('created_at')}
-                                            className={`inline-flex cursor-pointer items-center gap-1.5 ${
-                                                activeSort === 'created_at'
-                                                    ? 'text-[#7D3394]'
-                                                    : 'text-gray-600'
-                                            }`}
-                                        >
-                                            <span>Dibuat</span>
-                                            <SortIcon
-                                                column="created_at"
-                                                activeSort={activeSort}
-                                                activeDirection={
-                                                    activeDirection
-                                                }
-                                            />
-                                        </button>
-                                    </th>
+                                    <DataTableSortHeader
+                                        column="created_at"
+                                        label="Dibuat"
+                                        activeSort={activeSort}
+                                        activeDirection={activeDirection}
+                                        onSort={onSort}
+                                    />
                                 )}
 
                                 {visibleColumns.updated_at && (
-                                    <th
-                                        aria-sort={getAriaSort('updated_at')}
-                                        className="px-4 py-3.5 text-xs font-semibold text-gray-600"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => onSort('updated_at')}
-                                            className={`inline-flex cursor-pointer items-center gap-1.5 ${
-                                                activeSort === 'updated_at'
-                                                    ? 'text-[#7D3394]'
-                                                    : 'text-gray-600'
-                                            }`}
-                                        >
-                                            <span>Diperbarui</span>
-                                            <SortIcon
-                                                column="updated_at"
-                                                activeSort={activeSort}
-                                                activeDirection={
-                                                    activeDirection
-                                                }
-                                            />
-                                        </button>
-                                    </th>
+                                    <DataTableSortHeader
+                                        column="updated_at"
+                                        label="Diperbarui"
+                                        activeSort={activeSort}
+                                        activeDirection={activeDirection}
+                                        onSort={onSort}
+                                    />
                                 )}
 
                                 <th className="py-3.5 pr-5 pl-4 text-right text-xs font-semibold text-gray-600">
@@ -402,7 +259,7 @@ export function CategoryTable({
                                                     }
                                                     aria-label={`Pilih kategori ${category.name}`}
                                                     data-test={`select-category-${category.id}`}
-                                                    className={`mt-0.5 ${checkboxClassName}`}
+                                                    className={`mt-0.5 ${CHECKBOX_CLASS}`}
                                                 />
                                             </td>
 
@@ -422,10 +279,11 @@ export function CategoryTable({
 
                                             {visibleColumns.description && (
                                                 <td className="max-w-[360px] min-w-[220px] px-4 py-4 align-top text-sm font-normal">
-                                                    <ExpandableDescription
-                                                        description={
+                                                    <DataTableExpandableText
+                                                        text={
                                                             category.description
                                                         }
+                                                        emptyText="Belum ada deskripsi"
                                                         isExpanded={isExpanded}
                                                         onToggle={() =>
                                                             toggleExpand(
@@ -514,7 +372,7 @@ export function CategoryTable({
                                     onToggleSelectAll(checked === true)
                                 }
                                 aria-label="Pilih semua kategori di halaman ini"
-                                className={checkboxClassName}
+                                className={CHECKBOX_CLASS}
                             />
                             <span>Pilih semua</span>
                         </label>
@@ -599,7 +457,7 @@ export function CategoryTable({
                                                         )
                                                     }
                                                     aria-label={`Pilih kategori ${category.name}`}
-                                                    className={`mt-0.5 ${checkboxClassName}`}
+                                                    className={`mt-0.5 ${CHECKBOX_CLASS}`}
                                                 />
                                                 <div className="flex min-w-0 flex-col gap-0.5">
                                                     {visibleColumns.name && (
@@ -625,10 +483,9 @@ export function CategoryTable({
 
                                         {visibleColumns.description && (
                                             <div className="pl-7 text-xs font-normal">
-                                                <ExpandableDescription
-                                                    description={
-                                                        category.description
-                                                    }
+                                                <DataTableExpandableText
+                                                    text={category.description}
+                                                    emptyText="Belum ada deskripsi"
                                                     isExpanded={isExpanded}
                                                     onToggle={() =>
                                                         toggleExpand(
@@ -690,54 +547,11 @@ export function CategoryTable({
                     )}
                 </div>
 
-                {/* Footer Info & Paginasi */}
-                {categories.total > 0 && (
-                    <div className="flex flex-col gap-3 border-t border-gray-100 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                        <span className="text-xs text-gray-500">
-                            Menampilkan {categories.from ?? 0}–
-                            {categories.to ?? 0} dari {categories.total}{' '}
-                            kategori
-                        </span>
-
-                        {categories.last_page > 1 && (
-                            <div className="flex flex-wrap items-center gap-1.5">
-                                {categories.links.map((link, idx) => {
-                                    const label = formatPaginationLabel(
-                                        link.label,
-                                    );
-
-                                    if (link.url === null) {
-                                        return (
-                                            <span
-                                                key={idx}
-                                                className="rounded-lg bg-gray-50 px-3 py-1.5 text-xs text-gray-400"
-                                            >
-                                                {label}
-                                            </span>
-                                        );
-                                    }
-
-                                    return (
-                                        <Link
-                                            key={idx}
-                                            href={link.url}
-                                            preserveState
-                                            preserveScroll
-                                            only={['categories', 'filters']}
-                                            className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                                                link.active
-                                                    ? 'bg-[#7D3394] text-white'
-                                                    : 'bg-gray-100 text-gray-700'
-                                            }`}
-                                        >
-                                            {label}
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                )}
+                <DataTablePagination
+                    paginated={categories}
+                    itemLabel="kategori"
+                    onlyProps={['categories', 'filters']}
+                />
             </div>
 
             <CategoryDeleteDialog
@@ -746,11 +560,17 @@ export function CategoryTable({
                 onClose={() => setIsDeleteDialogOpen(false)}
             />
 
-            <CategoryBulkDeleteDialog
+            <DataTableBulkDeleteDialog
                 open={isBulkDeleteOpen}
-                selectedCategories={selectedCategories}
+                title="Hapus Kategori Terpilih"
+                itemLabel="kategori"
+                deletableCount={deletableCount}
+                blockedCount={blockedCount}
+                blockedReason="masih memiliki produk terkait"
+                processing={isBulkDeleting}
                 onClose={() => setIsBulkDeleteOpen(false)}
-                onDeleted={onClearSelection}
+                onConfirm={handleConfirmBulkDelete}
+                confirmDataTest="confirm-bulk-delete-category-button"
             />
         </>
     );

@@ -1,5 +1,6 @@
 <?php
 
+use App\Contracts\Notification\NotificationServiceInterface;
 use App\Enums\Notification\NotificationCategory;
 use App\Enums\Notification\NotificationLevel;
 use App\Models\Role;
@@ -158,4 +159,40 @@ test('user can delete single notification and clear read notifications safely', 
 
     expect($user->notifications()->count())->toBe(1);
     expect($otherUser->notifications()->count())->toBe(1);
+});
+
+test('notification service can dispatch notifications to a single user or all users with a specific role', function () {
+    $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+    $customerRole = Role::firstOrCreate(['name' => 'Customer']);
+
+    $adminOne = User::factory()->create();
+    $adminOne->assignRole($adminRole);
+
+    $adminTwo = User::factory()->create();
+    $adminTwo->assignRole($adminRole);
+
+    $customer = User::factory()->create();
+    $customer->assignRole($customerRole);
+
+    /** @var NotificationServiceInterface $service */
+    $service = app(NotificationServiceInterface::class);
+
+    $service->notifyRole('Admin', new GeneralAppNotification(
+        notificationTitle: 'Produk Baru Menunggu Review',
+        notificationMessage: 'UMKM Dapur Bogor menambahkan produk baru.',
+        notificationCategory: NotificationCategory::Product,
+        notificationLevel: NotificationLevel::Info,
+    ));
+
+    $service->notifyUser($customer, new GeneralAppNotification(
+        notificationTitle: 'Pesanan Dikirim',
+        notificationMessage: 'Pesanan Anda sedang dalam perjalanan.',
+        notificationCategory: NotificationCategory::Order,
+        notificationLevel: NotificationLevel::Success,
+    ));
+
+    expect($adminOne->unreadNotifications()->count())->toBe(1);
+    expect($adminTwo->unreadNotifications()->count())->toBe(1);
+    expect($customer->unreadNotifications()->count())->toBe(1);
+    expect($customer->notifications()->first()?->data['category'])->toBe('order');
 });

@@ -5,11 +5,35 @@ namespace App\Services\Notification;
 use App\Contracts\Notification\NotificationServiceInterface;
 use App\Enums\Notification\NotificationCategory;
 use App\Models\User;
+use App\Notifications\BaseAppNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Notification;
 
 class NotificationService implements NotificationServiceInterface
 {
+    public function notifyUser(User $user, BaseAppNotification $notification): void
+    {
+        $user->notify($notification);
+    }
+
+    public function notifyUsers(Collection $users, BaseAppNotification $notification): void
+    {
+        if ($users->isEmpty()) {
+            return;
+        }
+
+        Notification::send($users, $notification);
+    }
+
+    public function notifyRole(string $roleName, BaseAppNotification $notification): void
+    {
+        User::role($roleName)->chunkById(100, function (Collection $users) use ($notification): void {
+            Notification::send($users, $notification);
+        });
+    }
+
     public function getUnreadCount(User $user): int
     {
         return $user->unreadNotifications()->count();
