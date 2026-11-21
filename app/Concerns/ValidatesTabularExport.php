@@ -4,11 +4,6 @@ namespace App\Concerns;
 
 trait ValidatesTabularExport
 {
-    /**
-     * @param  array<int, string>  $allowedColumns
-     * @param  array<int, string>  $allowedSorts
-     * @return array<string, array<int, string>>
-     */
     protected function tabularExportRules(
         string $table,
         array $allowedColumns,
@@ -30,9 +25,6 @@ trait ValidatesTabularExport
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
     protected function tabularExportMessages(): array
     {
         return [

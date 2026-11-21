@@ -9,6 +9,16 @@ import type {
 type QueryValue = string | number | boolean | null | undefined;
 type QueryRecord = Record<string, QueryValue>;
 
+type ExportRequestContext<
+    TId extends string | number,
+    TColumnKey extends string,
+> = {
+    format: ExportFormat;
+    ids?: TId[];
+    columns: TColumnKey[];
+    filters: Record<string, string | undefined>;
+};
+
 type UseDataTableOptions<
     TId extends string | number,
     TColumnKey extends string,
@@ -22,12 +32,8 @@ type UseDataTableOptions<
     defaultDirection?: SortDirection;
     onlyProps: string[];
     buildIndexUrl: (query: Record<string, string | undefined>) => string;
-    buildExportUrl?: (query: {
-        format: ExportFormat;
-        ids?: TId[];
-        columns: TColumnKey[];
-        filters: Record<string, string | undefined>;
-    }) => string;
+    onExport?: (context: ExportRequestContext<TId, TColumnKey>) => void;
+    buildExportUrl?: (context: ExportRequestContext<TId, TColumnKey>) => string;
 };
 
 function sanitizeQuery(
@@ -59,6 +65,7 @@ export function useDataTable<
     defaultDirection = 'asc',
     onlyProps,
     buildIndexUrl,
+    onExport,
     buildExportUrl,
 }: UseDataTableOptions<TId, TColumnKey, TSortField, TFilters>) {
     const defaultVisibility = columns.reduce(
@@ -165,18 +172,23 @@ export function useDataTable<
     };
 
     const triggerExport = (format: ExportFormat, ids: TId[] = []) => {
-        if (!buildExportUrl) {
-            return;
-        }
-
-        const url = buildExportUrl({
+        const context: ExportRequestContext<TId, TColumnKey> = {
             format,
             ids: ids.length > 0 ? ids : undefined,
             columns: activeColumnKeys,
             filters: sanitizeQuery(filters),
-        });
+        };
 
-        window.location.assign(url);
+        if (onExport) {
+            onExport(context);
+            return;
+        }
+
+        if (!buildExportUrl) {
+            return;
+        }
+
+        window.location.assign(buildExportUrl(context));
     };
 
     return {

@@ -11,6 +11,7 @@ Route::middleware('auth')
         Route::get('/', 'index')->name('index');
         Route::patch('/read-all', 'markAllAsRead')->name('read-all');
         Route::delete('/read', 'destroyRead')->name('destroy-read');
+        Route::get('/{notification}/download', 'download')->name('download');
         Route::patch('/{notification}/read', 'markAsRead')->name('read');
         Route::delete('/{notification}', 'destroy')->name('destroy');
     });

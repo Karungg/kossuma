@@ -6,33 +6,13 @@ use App\Enums\Notification\NotificationCategory;
 use App\Enums\Notification\NotificationLevel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
-/**
- * @mixin DatabaseNotification
- */
 class NotificationResource extends JsonResource
 {
-    /**
-     * @return array{
-     *     id: string,
-     *     title: string,
-     *     message: string,
-     *     category: string,
-     *     category_label: string,
-     *     level: string,
-     *     action_url: string|null,
-     *     action_label: string|null,
-     *     is_read: bool,
-     *     read_at: string|null,
-     *     created_at: string|null,
-     *     created_at_human: string
-     * }
-     */
     public function toArray(Request $request): array
     {
-        /** @var array<string, mixed> $payload */
         $payload = $this->data;
 
         $rawCategory = is_string($payload['category'] ?? null)
@@ -61,6 +41,13 @@ class NotificationResource extends JsonResource
             ? $payload['action_label']
             : null;
 
+        $meta = is_array($payload['meta'] ?? null) ? $payload['meta'] : [];
+        $exportDisk = is_string($meta['export_disk'] ?? null) ? $meta['export_disk'] : 'local';
+        $exportPath = is_string($meta['export_path'] ?? null) ? $meta['export_path'] : '';
+        $exportFilename = is_string($meta['export_filename'] ?? null) ? $meta['export_filename'] : null;
+
+        $hasDownloadableFile = $exportPath !== '' && Storage::disk($exportDisk)->exists($exportPath);
+
         $createdAtHuman = '-';
 
         if ($this->created_at !== null) {
@@ -80,6 +67,8 @@ class NotificationResource extends JsonResource
             'level' => $level->value,
             'action_url' => $actionUrl,
             'action_label' => $actionLabel,
+            'download_url' => $hasDownloadableFile ? route('notifications.download', $this->id) : null,
+            'download_filename' => $hasDownloadableFile ? $exportFilename : null,
             'is_read' => $this->read_at !== null,
             'read_at' => $this->read_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),

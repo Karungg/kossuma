@@ -1,5 +1,12 @@
-import { Bell, Check, CheckCheck, Loader2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import {
+    Bell,
+    Check,
+    CheckCheck,
+    Download,
+    Loader2,
+    Trash2,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Sheet,
     SheetContent,
@@ -9,17 +16,18 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { useNotifications } from '@/hooks/use-notifications';
-import type {
-    NotificationCategory,
-    NotificationLevel,
-} from '@/types/notification';
+import {
+    type NotificationFilterValue,
+    useNotifications,
+} from '@/hooks/use-notifications';
+import type { NotificationLevel } from '@/types/notification';
 
-const CATEGORY_OPTIONS: Array<{
-    value: '' | NotificationCategory;
+const FILTER_OPTIONS: Array<{
+    value: NotificationFilterValue;
     label: string;
 }> = [
-    { value: '', label: 'Semua' },
+    { value: 'all', label: 'Semua' },
+    { value: 'unread', label: 'Belum dibaca' },
     { value: 'order', label: 'Pesanan' },
     { value: 'product', label: 'Produk' },
     { value: 'category', label: 'Kategori' },
@@ -36,29 +44,90 @@ const LEVEL_DOT_STYLES: Record<NotificationLevel, string> = {
 
 export function NotificationBellSheet() {
     const [open, setOpen] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const filterStripRef = useRef<HTMLDivElement>(null);
+    const listContainerRef = useRef<HTMLDivElement>(null);
+    const isPointerDownRef = useRef(false);
+    const dragStartXRef = useRef(0);
+    const dragStartScrollLeftRef = useRef(0);
+    const didDragRef = useRef(false);
 
     const {
         items,
         unreadCount,
         readCount,
-        status,
-        setStatus,
-        category,
-        setCategory,
+        activeFilter,
+        setActiveFilter,
         hasMore,
         loading,
+        refreshing,
         loadingMore,
         busyAction,
         errorMessage,
         markAsRead,
         openNotification,
+        downloadNotification,
         markAllAsRead,
         deleteItem,
         deleteRead,
         loadMore,
     } = useNotifications(open);
 
+    useEffect(() => {
+        if (listContainerRef.current) {
+            listContainerRef.current.scrollTop = 0;
+        }
+    }, [activeFilter]);
+
     const formattedBadge = unreadCount > 99 ? '99+' : String(unreadCount);
+
+    const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+        const container = filterStripRef.current;
+
+        if (!container) {
+            return;
+        }
+
+        isPointerDownRef.current = true;
+        didDragRef.current = false;
+        dragStartXRef.current = event.pageX - container.offsetLeft;
+        dragStartScrollLeftRef.current = container.scrollLeft;
+    };
+
+    const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!isPointerDownRef.current || !filterStripRef.current) {
+            return;
+        }
+
+        const currentX = event.pageX - filterStripRef.current.offsetLeft;
+        const delta = currentX - dragStartXRef.current;
+
+        if (Math.abs(delta) > 4) {
+            if (!didDragRef.current) {
+                didDragRef.current = true;
+                setIsDragging(true);
+            }
+            event.preventDefault();
+            filterStripRef.current.scrollLeft =
+                dragStartScrollLeftRef.current - delta;
+        }
+    };
+
+    const handleMouseUpOrLeave = () => {
+        isPointerDownRef.current = false;
+        if (isDragging) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleSelectFilter = (value: NotificationFilterValue) => {
+        if (didDragRef.current) {
+            didDragRef.current = false;
+            return;
+        }
+
+        setActiveFilter(value);
+    };
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
@@ -113,66 +182,58 @@ export function NotificationBellSheet() {
                     </div>
                 </SheetHeader>
 
-                <div className="flex flex-col gap-3 border-b border-gray-100 px-5 py-3">
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setStatus('all')}
-                            className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                                status === 'all'
-                                    ? 'bg-[#7D3394] text-white'
-                                    : 'bg-gray-100 text-gray-700'
-                            }`}
-                        >
-                            Semua
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setStatus('unread')}
-                            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                                status === 'unread'
-                                    ? 'bg-[#7D3394] text-white'
-                                    : 'bg-gray-100 text-gray-700'
-                            }`}
-                        >
-                            <span>Belum dibaca</span>
-                            {unreadCount > 0 && (
-                                <span
-                                    className={`rounded-full px-1.5 py-0.25 text-[10px] font-bold ${
-                                        status === 'unread'
-                                            ? 'bg-white/20 text-white'
-                                            : 'bg-[#DC2626] text-white'
-                                    }`}
-                                >
-                                    {formattedBadge}
-                                </span>
-                            )}
-                        </button>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                        {CATEGORY_OPTIONS.map((option) => {
-                            const isActive = category === option.value;
+                <div className="border-b border-gray-100 px-5 py-3">
+                    <div
+                        ref={filterStripRef}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUpOrLeave}
+                        onMouseLeave={handleMouseUpOrLeave}
+                        className={`flex [scrollbar-width:none] items-center gap-1.5 overflow-x-auto select-none [&::-webkit-scrollbar]:hidden ${
+                            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                        }`}
+                    >
+                        {FILTER_OPTIONS.map((option) => {
+                            const isActive = activeFilter === option.value;
 
                             return (
                                 <button
-                                    key={option.value || 'all'}
+                                    key={option.value}
                                     type="button"
-                                    onClick={() => setCategory(option.value)}
-                                    className={`shrink-0 cursor-pointer rounded-lg border px-2.5 py-1 text-xs font-medium ${
+                                    onClick={() =>
+                                        handleSelectFilter(option.value)
+                                    }
+                                    className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium ${
                                         isActive
-                                            ? 'border-[#E2C9EB] bg-[#F0E6F5] text-[#7D3394]'
-                                            : 'border-gray-200 bg-white text-gray-600'
+                                            ? 'border-[#7D3394] bg-[#7D3394] text-white'
+                                            : 'border-gray-200 bg-white text-gray-700'
                                     }`}
                                 >
-                                    {option.label}
+                                    <span>{option.label}</span>
+                                    {option.value === 'unread' &&
+                                        unreadCount > 0 && (
+                                            <span
+                                                className={`rounded-full px-1.5 py-0.25 text-[10px] font-bold ${
+                                                    isActive
+                                                        ? 'bg-white/20 text-white'
+                                                        : 'bg-[#DC2626] text-white'
+                                                }`}
+                                            >
+                                                {formattedBadge}
+                                            </span>
+                                        )}
                                 </button>
                             );
                         })}
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto">
+                <div
+                    ref={listContainerRef}
+                    className={`flex-1 overflow-y-auto transition-opacity duration-150 ${
+                        refreshing ? 'opacity-60' : 'opacity-100'
+                    }`}
+                >
                     {errorMessage && (
                         <div className="border-b border-red-100 bg-red-50 px-5 py-3 text-xs text-[#DC2626]">
                             {errorMessage}
@@ -199,13 +260,13 @@ export function NotificationBellSheet() {
                                 <Bell className="h-5 w-5" />
                             </div>
                             <p className="text-sm font-medium text-gray-900">
-                                {status === 'unread'
+                                {activeFilter === 'unread'
                                     ? 'Tidak ada notifikasi belum dibaca'
                                     : 'Belum ada notifikasi'}
                             </p>
                             <p className="text-xs leading-relaxed text-gray-500">
-                                Pembaruan pesanan, produk, kategori, dan sistem
-                                akan tampil di sini.
+                                Pembaruan pesanan, produk, kategori, ekspor, dan
+                                sistem akan tampil di sini.
                             </p>
                         </div>
                     ) : (
@@ -279,7 +340,23 @@ export function NotificationBellSheet() {
                                                 </div>
                                             )}
 
-                                            <div className="flex items-center justify-end gap-2 pt-1">
+                                            <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+                                                {item.download_url && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            downloadNotification(
+                                                                item,
+                                                            )
+                                                        }
+                                                        aria-label="Unduh file ekspor"
+                                                        data-test={`download-notification-${item.id}`}
+                                                        className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-[#F0E6F5] px-2.5 py-1 text-[11px] font-semibold text-[#7D3394]"
+                                                    >
+                                                        <Download className="h-3 w-3" />
+                                                        <span>Unduh</span>
+                                                    </button>
+                                                )}
                                                 {!item.is_read && (
                                                     <button
                                                         type="button"

@@ -20,6 +20,8 @@ export type AppNotificationItem = {
     level: NotificationLevel;
     action_url: string | null;
     action_label: string | null;
+    download_url: string | null;
+    download_filename: string | null;
     is_read: boolean;
     read_at: string | null;
     created_at: string | null;

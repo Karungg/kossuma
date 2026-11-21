@@ -3,17 +3,9 @@
 namespace App\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 trait AppliesTableQuery
 {
-    /**
-     * @template TModel of Model
-     *
-     * @param  Builder<TModel>  $query
-     * @param  array<int, string>  $searchableColumns
-     * @return Builder<TModel>
-     */
     protected function applySearch(Builder $query, ?string $search, array $searchableColumns): Builder
     {
         $term = trim((string) $search);
@@ -33,14 +25,6 @@ trait AppliesTableQuery
         });
     }
 
-    /**
-     * @template TModel of Model
-     *
-     * @param  Builder<TModel>  $query
-     * @param  array<int, string>  $allowedSorts
-     * @param  'asc'|'desc'  $defaultDirection
-     * @return Builder<TModel>
-     */
     protected function applySort(
         Builder $query,
         ?string $sort,
@@ -61,13 +45,6 @@ trait AppliesTableQuery
         return $query->orderBy($resolvedSort, $resolvedDirection);
     }
 
-    /**
-     * @template TModel of Model
-     *
-     * @param  Builder<TModel>  $query
-     * @param  array<int, int|string>  $ids
-     * @return Builder<TModel>
-     */
     protected function applyExportIds(Builder $query, array $ids, string $column = 'id'): Builder
     {
         if ($ids === []) {

@@ -174,7 +174,6 @@ test('notification service can dispatch notifications to a single user or all us
     $customer = User::factory()->create();
     $customer->assignRole($customerRole);
 
-    /** @var NotificationServiceInterface $service */
     $service = app(NotificationServiceInterface::class);
 
     $service->notifyRole('Admin', new GeneralAppNotification(

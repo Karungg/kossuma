@@ -8,21 +8,21 @@ use App\Http\Requests\Category\BulkDestroyCategoryRequest;
 use App\Http\Requests\Category\ExportCategoryRequest;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
+use App\Jobs\Export\GenerateTabularExportJob;
 use App\Models\Category\Category;
+use App\Models\User;
 use App\Services\Category\CategoryExportService;
+use App\Services\Category\CategoryQueuedExportProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CategoryController extends Controller
 {
     public function __construct(
         public readonly CategoryServiceInterface $categoryService,
-        public readonly CategoryExportService $categoryExportService,
     ) {}
 
     public function index(Request $request): Response
@@ -113,7 +113,6 @@ class CategoryController extends Controller
     {
         Gate::authorize('deleteAny', Category::class);
 
-        /** @var array<int, int> $ids */
         $ids = array_map('intval', $request->validated('ids'));
 
         $result = $this->categoryService->bulkDelete($ids);
@@ -139,26 +138,40 @@ class CategoryController extends Controller
         return to_route('admin.categories.index');
     }
 
-    public function export(ExportCategoryRequest $request): HttpResponse|StreamedResponse
+    public function export(ExportCategoryRequest $request): RedirectResponse
     {
         Gate::authorize('viewAny', Category::class);
 
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
         $validated = $request->validated();
-
-        /** @var array<int, int> $ids */
         $ids = array_map('intval', $validated['ids'] ?? []);
-
-        /** @var array<int, string> $columns */
         $columns = $validated['columns'] ?? CategoryExportService::DEFAULT_COLUMNS;
 
-        $categories = $this->categoryService->getForExport([
-            'search' => $validated['search'] ?? null,
-            'product_status' => $validated['product_status'] ?? null,
-            'description_status' => $validated['description_status'] ?? null,
-            'sort' => $validated['sort'] ?? null,
-            'direction' => $validated['direction'] ?? null,
-        ], $ids);
+        GenerateTabularExportJob::dispatch(
+            userId: (string) $user->id,
+            providerClass: CategoryQueuedExportProvider::class,
+            format: (string) $validated['format'],
+            filters: [
+                'search' => $validated['search'] ?? null,
+                'product_status' => $validated['product_status'] ?? null,
+                'description_status' => $validated['description_status'] ?? null,
+                'sort' => $validated['sort'] ?? null,
+                'direction' => $validated['direction'] ?? null,
+            ],
+            ids: $ids,
+            columns: $columns,
+        );
 
-        return $this->categoryExportService->export($categories, (string) $validated['format'], $columns);
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Ekspor kategori sedang diproses di latar belakang. File akan muncul di notifikasi setelah siap diunduh.',
+        ]);
+
+        return back();
     }
 }

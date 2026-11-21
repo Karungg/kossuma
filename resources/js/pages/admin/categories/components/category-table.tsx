@@ -136,7 +136,6 @@ export function CategoryTable({
                     dataTest="category-bulk-action-bar"
                 />
 
-                {/* Tampilan Desktop & Tablet */}
                 <div className="hidden overflow-x-auto md:block">
                     <table className="w-full border-collapse text-left">
                         <thead>
@@ -356,7 +355,6 @@ export function CategoryTable({
                     </table>
                 </div>
 
-                {/* Tampilan Mobile (< 768px) */}
                 <div className="md:hidden">
                     <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/70 px-4 py-3">
                         <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-gray-700">

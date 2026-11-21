@@ -10,6 +10,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class NotificationService implements NotificationServiceInterface
 {
@@ -63,12 +64,39 @@ class NotificationService implements NotificationServiceInterface
         return $query->paginate($perPage);
     }
 
-    public function markAsRead(User $user, string $notificationId): bool
+    public function resolveDownloadableFile(User $user, string $notificationId): ?array
     {
-        /** @var DatabaseNotification|null $notification */
         $notification = $user->notifications()->whereKey($notificationId)->first();
 
-        if ($notification === null) {
+        if (! $notification instanceof DatabaseNotification) {
+            return null;
+        }
+
+        $meta = $notification->data['meta'] ?? [];
+        $disk = is_string($meta['export_disk'] ?? null) ? $meta['export_disk'] : 'local';
+        $path = is_string($meta['export_path'] ?? null) ? $meta['export_path'] : '';
+        $filename = is_string($meta['export_filename'] ?? null) ? $meta['export_filename'] : basename($path);
+
+        if ($path === '' || ! Storage::disk($disk)->exists($path)) {
+            return null;
+        }
+
+        if ($notification->read_at === null) {
+            $notification->markAsRead();
+        }
+
+        return [
+            'disk' => $disk,
+            'path' => $path,
+            'filename' => $filename,
+        ];
+    }
+
+    public function markAsRead(User $user, string $notificationId): bool
+    {
+        $notification = $user->notifications()->whereKey($notificationId)->first();
+
+        if (! $notification instanceof DatabaseNotification) {
             return false;
         }
 
@@ -88,18 +116,38 @@ class NotificationService implements NotificationServiceInterface
 
     public function delete(User $user, string $notificationId): bool
     {
-        /** @var DatabaseNotification|null $notification */
         $notification = $user->notifications()->whereKey($notificationId)->first();
 
-        if ($notification === null) {
+        if (! $notification instanceof DatabaseNotification) {
             return false;
         }
+
+        $this->deleteStoredExportFile($notification);
 
         return (bool) $notification->delete();
     }
 
     public function deleteRead(User $user): int
     {
+        $readNotifications = $user->readNotifications()->get();
+
+        foreach ($readNotifications as $notification) {
+            if ($notification instanceof DatabaseNotification) {
+                $this->deleteStoredExportFile($notification);
+            }
+        }
+
         return (int) $user->readNotifications()->delete();
+    }
+
+    private function deleteStoredExportFile(DatabaseNotification $notification): void
+    {
+        $meta = $notification->data['meta'] ?? [];
+        $disk = is_string($meta['export_disk'] ?? null) ? $meta['export_disk'] : 'local';
+        $path = is_string($meta['export_path'] ?? null) ? $meta['export_path'] : '';
+
+        if ($path !== '' && Storage::disk($disk)->exists($path)) {
+            Storage::disk($disk)->delete($path);
+        }
     }
 }

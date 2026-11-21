@@ -15,9 +15,6 @@ class ExportCategoryRequest extends FormRequest
         return $this->user()?->hasRole('Admin') ?? false;
     }
 
-    /**
-     * @return array<string, array<int, string>>
-     */
     public function rules(): array
     {
         return [
@@ -31,9 +28,6 @@ class ExportCategoryRequest extends FormRequest
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return $this->tabularExportMessages();
