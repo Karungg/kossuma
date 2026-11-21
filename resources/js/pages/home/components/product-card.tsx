@@ -1,85 +1,92 @@
-import { Star, Store } from "lucide-react";
-import { Link } from "@inertiajs/react";
-import { show as showProduct } from "@/routes/products";
-import type { CatalogProduct } from "../types";
+import { Link } from '@inertiajs/react';
+import { Star, Store } from 'lucide-react';
+import { StorefrontImage } from '@/components/media';
+import { show as showProduct } from '@/routes/products';
+import type { CatalogProduct } from '../types';
 
 interface ProductCardProps {
     product: CatalogProduct;
+    priority?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
-    const formatRupiah = (val: number) => "Rp" + val.toLocaleString("id-ID");
+function formatRupiah(value: number): string {
+    return 'Rp' + value.toLocaleString('id-ID');
+}
+
+export function ProductCard({ product, priority = false }: ProductCardProps) {
+    const hasRating = product.rating > 0;
+    const hasSoldCount = product.soldCount.trim() !== '';
 
     return (
-        <article className="flex flex-col h-full bg-transparent border-0 shadow-none">
-            {/* Foto Produk (Rasio 1:1, Rounded Halus, Menyatu dengan Latar) */}
+        <article className="flex h-full flex-col border-0 bg-transparent shadow-none">
             <Link
                 href={showProduct({ slug: product.slug })}
-                className="relative w-full aspect-square bg-gray-100/80 rounded-md sm:rounded-lg overflow-hidden flex items-center justify-center cursor-pointer block"
+                className="relative block aspect-square w-full cursor-pointer overflow-hidden rounded-md bg-gray-100/80 sm:rounded-lg"
             >
-                {product.imageUrl ? (
-                    <img
-                        src={product.imageUrl}
-                        alt={product.imageAlt}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                    />
-                ) : (
-                    <span className="text-gray-400 text-xs font-medium">
-                        Foto Produk
-                    </span>
-                )}
+                <StorefrontImage
+                    src={product.imageUrl}
+                    fallbackSrc={product.imageFullUrl}
+                    alt={product.imageAlt}
+                    priority={priority}
+                    emptyLabel="Foto Produk"
+                />
 
-                {/* Penanda Pre-order */}
                 {product.isPreorder && (
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#F0E6F5]/95 text-[#7D3394] border border-[#E2C9EB] text-[10px] font-bold shadow-2xs">
+                    <span className="absolute top-2 left-2 rounded border border-[#E2C9EB] bg-[#F0E6F5]/95 px-2 py-0.5 text-[10px] font-bold text-[#7D3394] shadow-2xs">
                         {product.preorderDays
                             ? `Pre-order ${product.preorderDays} hari`
-                            : "Pre-order"}
+                            : 'Pre-order'}
                     </span>
                 )}
             </Link>
 
-            {/* Area Teks & Informasi Produk */}
-            <div className="pt-2 sm:pt-2.5 flex flex-col flex-1 justify-between gap-1.5">
-                {/* Judul Produk */}
+            <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2 sm:pt-2.5">
                 <Link
                     href={showProduct({ slug: product.slug })}
-                    className="text-xs sm:text-sm text-gray-900 line-clamp-2 leading-snug cursor-pointer"
+                    className="line-clamp-2 cursor-pointer text-xs leading-snug font-normal text-gray-900 sm:text-sm"
                     title={product.title}
                 >
                     {product.title}
                 </Link>
 
-                {/* Detail Harga, Rating & Toko */}
                 <div className="flex flex-col gap-1 pt-0.5">
-                    {/* Baris Harga (Bersebelahan) */}
-                    <div className="flex items-baseline gap-1.5 flex-wrap">
-                        <span className="text-sm sm:text-base font-extrabold text-[#DC2626] tracking-tight">
+                    <div className="flex flex-wrap items-baseline gap-1.5">
+                        <span className="text-sm font-extrabold tracking-tight text-[#DC2626] sm:text-base">
                             {formatRupiah(product.price)}
                         </span>
-                        {product.originalPrice && product.originalPrice > 0 && (
-                            <span className="text-[11px] text-gray-400 line-through">
-                                {formatRupiah(product.originalPrice)}
-                            </span>
-                        )}
+                        {product.originalPrice &&
+                            product.originalPrice > product.price && (
+                                <span className="text-[11px] text-gray-400 line-through">
+                                    {formatRupiah(product.originalPrice)}
+                                </span>
+                            )}
                     </div>
 
-                    {/* Rating & Jumlah Terjual */}
                     <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
-                        <div className="flex items-center text-amber-500">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            <span className="font-semibold text-gray-800 ml-0.5">
-                                {product.rating}
+                        {hasRating ? (
+                            <div className="flex items-center text-amber-500">
+                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                <span className="ml-0.5 font-medium text-gray-800">
+                                    {product.rating.toFixed(1)}
+                                </span>
+                            </div>
+                        ) : null}
+
+                        {hasRating && hasSoldCount ? (
+                            <span className="text-gray-300">•</span>
+                        ) : null}
+
+                        {hasSoldCount ? (
+                            <span className="truncate">
+                                {product.soldCount}
                             </span>
-                        </div>
-                        <span className="text-gray-300">•</span>
-                        <span className="truncate">{product.soldCount}</span>
+                        ) : !hasRating ? (
+                            <span className="text-gray-400">Produk baru</span>
+                        ) : null}
                     </div>
 
-                    {/* Nama Toko UMKM & Kecamatan */}
-                    <div className="flex items-center gap-1 text-[11px] text-gray-400 truncate pt-0.5">
-                        <Store className="w-3 h-3 text-gray-400 shrink-0" />
+                    <div className="flex items-center gap-1 truncate pt-0.5 text-[11px] text-gray-400">
+                        <Store className="h-3 w-3 shrink-0 text-gray-400" />
                         <span className="truncate">
                             {product.storeName} • {product.storeDistrict}
                         </span>
@@ -87,5 +94,22 @@ export function ProductCard({ product }: ProductCardProps) {
                 </div>
             </div>
         </article>
+    );
+}
+
+export function ProductCardSkeleton() {
+    return (
+        <div
+            aria-hidden="true"
+            className="flex h-full flex-col border-0 bg-transparent shadow-none"
+        >
+            <div className="aspect-square w-full animate-pulse rounded-md bg-gray-200/80 sm:rounded-lg" />
+            <div className="flex flex-1 flex-col gap-2 pt-2.5">
+                <div className="h-3.5 w-full animate-pulse rounded bg-gray-200/80" />
+                <div className="h-3.5 w-3/4 animate-pulse rounded bg-gray-200/70" />
+                <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200/90" />
+                <div className="h-3 w-2/3 animate-pulse rounded bg-gray-200/60" />
+            </div>
+        </div>
     );
 }

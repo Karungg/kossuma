@@ -7,6 +7,7 @@ import {
     DataTablePagination,
     DataTableSortHeader,
 } from '@/components/data-table';
+import { StorefrontImage } from '@/components/media';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Select,
@@ -284,26 +285,34 @@ export function ProductTable({
                                                 <td className="max-w-[280px] min-w-[210px] px-4 py-4 align-top">
                                                     <div className="flex items-start gap-3">
                                                         <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                                                            {product
-                                                                .primary_image
-                                                                ?.image_path ? (
-                                                                <img
-                                                                    src={
-                                                                        product
-                                                                            .primary_image
-                                                                            .image_path
-                                                                    }
-                                                                    alt={
-                                                                        product
-                                                                            .primary_image
-                                                                            .alt ??
-                                                                        product.name
-                                                                    }
-                                                                    className="h-full w-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <div className="h-full w-full bg-gray-100" />
-                                                            )}
+                                                            <StorefrontImage
+                                                                src={
+                                                                    product
+                                                                        .primary_image
+                                                                        ?.thumbnail_url ??
+                                                                    product
+                                                                        .primary_image
+                                                                        ?.url ??
+                                                                    product
+                                                                        .primary_image
+                                                                        ?.image_path
+                                                                }
+                                                                fallbackSrc={
+                                                                    product
+                                                                        .primary_image
+                                                                        ?.url ??
+                                                                    product
+                                                                        .primary_image
+                                                                        ?.image_path
+                                                                }
+                                                                alt={
+                                                                    product
+                                                                        .primary_image
+                                                                        ?.alt ??
+                                                                    product.name
+                                                                }
+                                                                compact
+                                                            />
                                                         </div>
                                                         <div className="flex min-w-0 flex-col gap-0.5">
                                                             <span className="text-sm leading-snug font-medium break-words text-gray-900">
@@ -562,25 +571,34 @@ export function ProductTable({
                                                     className={`mt-1 ${CHECKBOX_CLASS}`}
                                                 />
                                                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                                                    {product.primary_image
-                                                        ?.image_path ? (
-                                                        <img
-                                                            src={
-                                                                product
-                                                                    .primary_image
-                                                                    .image_path
-                                                            }
-                                                            alt={
-                                                                product
-                                                                    .primary_image
-                                                                    .alt ??
-                                                                product.name
-                                                            }
-                                                            className="h-full w-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="h-full w-full bg-gray-100" />
-                                                    )}
+                                                    <StorefrontImage
+                                                        src={
+                                                            product
+                                                                .primary_image
+                                                                ?.thumbnail_url ??
+                                                            product
+                                                                .primary_image
+                                                                ?.url ??
+                                                            product
+                                                                .primary_image
+                                                                ?.image_path
+                                                        }
+                                                        fallbackSrc={
+                                                            product
+                                                                .primary_image
+                                                                ?.url ??
+                                                            product
+                                                                .primary_image
+                                                                ?.image_path
+                                                        }
+                                                        alt={
+                                                            product
+                                                                .primary_image
+                                                                ?.alt ??
+                                                            product.name
+                                                        }
+                                                        compact
+                                                    />
                                                 </div>
                                                 <div className="flex min-w-0 flex-col gap-0.5">
                                                     {visibleColumns.name && (

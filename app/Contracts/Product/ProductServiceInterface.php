@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ProductServiceInterface
 {
+    public function getStorefrontCategories(): array;
+
+    public function getStorefrontCatalog(array $filters = [], int $page = 1, int $perPage = 18): array;
+
+    public function hasActiveStorefrontProducts(): bool;
+
     public function getProductDetailBySlug(string $slug): array;
 
     public function getPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator;

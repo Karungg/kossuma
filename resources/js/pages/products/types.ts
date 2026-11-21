@@ -1,6 +1,7 @@
 export interface ProductImage {
     id: string;
     url: string;
+    thumbnailUrl?: string;
     alt: string;
     label: string;
 }
@@ -31,6 +32,7 @@ export interface RelatedProduct {
     badge: string;
     rating: number;
     imageUrl: string;
+    imageFullUrl?: string;
     imageAlt: string;
 }
 

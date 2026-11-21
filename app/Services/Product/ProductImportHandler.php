@@ -8,7 +8,6 @@ use App\Enums\Notification\NotificationCategory;
 use App\Models\Category\Category;
 use App\Models\Product\Product;
 use App\Models\Store\Store;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +15,10 @@ use Illuminate\Validation\ValidationException;
 class ProductImportHandler implements TabularImportHandlerInterface
 {
     use GeneratesUniqueSlug;
+
+    public function __construct(
+        public readonly ProductImageOptimizationService $imageOptimizationService,
+    ) {}
 
     public function templateFilePrefix(): string
     {
@@ -272,17 +275,17 @@ class ProductImportHandler implements TabularImportHandlerInterface
             }
 
             $extension = (string) ($fileEntry['extension'] ?? 'jpg');
-            $storedRelativePath = 'products/'.Str::uuid()->toString().'.'.$extension;
-            $binary = file_get_contents($fileEntry['path']);
+            $storedPath = $this->imageOptimizationService->storeFromLocalPath(
+                (string) $fileEntry['path'],
+                $extension,
+            );
 
-            if (! is_string($binary)) {
+            if ($storedPath === '') {
                 continue;
             }
 
-            Storage::disk('public')->put($storedRelativePath, $binary);
-
             $product->images()->create([
-                'image_path' => '/storage/'.$storedRelativePath,
+                'image_path' => $storedPath,
                 'alt' => $product->name,
                 'label' => $product->name,
                 'is_primary' => ! $hasPrimary,

@@ -42,7 +42,8 @@ export function ProductForm({ product, options }: Props) {
         product?.images ?? []
     ).map((image) => ({
         id: image.id,
-        url: image.image_path,
+        url: image.url ?? image.image_path,
+        thumbnailUrl: image.thumbnail_url ?? image.url ?? image.image_path,
         alt: image.alt,
         label: image.label,
         name: image.label ?? image.alt ?? `Foto #${image.id}`,

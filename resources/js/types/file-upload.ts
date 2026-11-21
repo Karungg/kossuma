@@ -1,6 +1,7 @@
 export type ExistingFileItem = {
     id: string | number;
     url: string;
+    thumbnailUrl?: string | null;
     name?: string;
     alt?: string | null;
     label?: string | null;

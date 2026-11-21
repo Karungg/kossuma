@@ -20,6 +20,8 @@ export type ProductImageItem = {
     id: number;
     product_id: number;
     image_path: string;
+    url?: string | null;
+    thumbnail_url?: string | null;
     alt: string | null;
     label: string | null;
     is_primary: boolean;
