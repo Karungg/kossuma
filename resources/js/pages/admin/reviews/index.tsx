@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useDataTable } from '@/hooks/use-data-table';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { exportMethod, index } from '@/routes/admin/reviews';
 import { ReviewIndexToolbar } from './components/review-index-toolbar';
 import { ReviewStatCards } from './components/review-stat-cards';

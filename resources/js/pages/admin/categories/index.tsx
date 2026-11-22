@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useDataTable } from '@/hooks/use-data-table';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { exportMethod, index } from '@/routes/admin/categories';
 import { CategoryIndexToolbar } from './components/category-index-toolbar';
 import { CategoryStatCards } from './components/category-stat-cards';

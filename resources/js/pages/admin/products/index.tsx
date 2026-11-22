@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { useDataTable } from '@/hooks/use-data-table';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { exportMethod, index } from '@/routes/admin/products';
 import { ProductImportDialog } from './components/product-import-dialog';
 import { ProductIndexToolbar } from './components/product-index-toolbar';

@@ -21,7 +21,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { index as categoriesIndex } from '@/routes/admin/categories';
 import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as productsIndex } from '@/routes/admin/products';

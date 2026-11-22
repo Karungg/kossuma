@@ -26,7 +26,7 @@ test('authenticated user sees accurate unread notification count in shared inert
         notificationMessage: 'Pesanan #KSM-001 menunggu konfirmasi.',
         notificationCategory: NotificationCategory::Order,
         notificationLevel: NotificationLevel::Info,
-        notificationActionUrl: '/dashboard',
+        notificationActionUrl: route('admin.dashboard', absolute: false),
         notificationActionLabel: 'Lihat pesanan',
     ));
 
@@ -38,7 +38,7 @@ test('authenticated user sees accurate unread notification count in shared inert
     ));
 
     $this->actingAs($user)
-        ->get(route('dashboard'))
+        ->get(route('admin.dashboard'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('notifications.unread_count', 2));

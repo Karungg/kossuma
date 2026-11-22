@@ -17,7 +17,7 @@ class LoginResponse implements LoginResponseContract, TwoFactorLoginResponseCont
     protected function redirectPath(Request $request): string
     {
         if ($request->user()?->hasRole('Admin')) {
-            return route('dashboard', absolute: false);
+            return route('admin.dashboard', absolute: false);
         }
 
         return route('home', absolute: false);

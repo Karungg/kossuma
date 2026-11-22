@@ -1,7 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { LayoutDashboard, LogOut, Settings, ShoppingBag } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { dashboard, logout } from '@/routes';
+import { logout } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { index as customerOrdersIndex } from '@/routes/customer/orders';
 import { index as customerSettingsIndex } from '@/routes/customer/settings';
 

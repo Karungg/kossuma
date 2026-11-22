@@ -1,6 +1,6 @@
 import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { edit, index } from '@/routes/admin/categories';
 import { CategoryForm } from './components/category-form';
 import type { CategoryItem } from './types';

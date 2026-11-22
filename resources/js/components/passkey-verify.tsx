@@ -6,6 +6,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { dashboard } from '@/routes/admin';
 
 type Props = {
     routes?: {
@@ -31,7 +32,7 @@ export default function PasskeyVerify({
             },
         }),
         onSuccess: (response) => {
-            router.visit(response.redirect ?? '/dashboard');
+            router.visit(response.redirect ?? dashboard.url());
         },
     });
 
@@ -45,7 +46,7 @@ export default function PasskeyVerify({
                 <Button
                     type="button"
                     variant="outline"
-                    className="w-full cursor-pointer hover:bg-[#F0E6F5] hover:text-[#7D3394] border-gray-200"
+                    className="w-full cursor-pointer border-gray-200 hover:bg-[#F0E6F5] hover:text-[#7D3394]"
                     onClick={verify}
                     disabled={isLoading}
                 >
@@ -64,7 +65,7 @@ export default function PasskeyVerify({
                     <Separator className="w-full" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                    <span className="bg-white px-3 text-gray-400 font-medium">
+                    <span className="bg-white px-3 font-medium text-gray-400">
                         {separator ?? 'Atau lanjutkan dengan email'}
                     </span>
                 </div>

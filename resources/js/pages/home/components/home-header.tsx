@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Search, ShoppingCart, User } from 'lucide-react';
-import { cart, dashboard, home, login, register } from '@/routes';
+import { cart, home, login, register } from '@/routes';
+import { dashboard } from '@/routes/admin';
 
 interface HomeHeaderProps {
     cartCount?: number;

@@ -16,7 +16,8 @@ import { CustomerProfileDropdown } from '@/components/navigation/customer-profil
 import { NotificationBellSheet } from '@/components/notifications/notification-bell-sheet';
 import { useFlashToast } from '@/hooks/use-flash-toast';
 import { CartFooter } from '@/pages/customer/cart/components/cart-footer';
-import { cart, dashboard, home, login, logout, register } from '@/routes';
+import { cart, home, login, logout, register } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { index as customerOrdersIndex } from '@/routes/customer/orders';
 import { index as customerSettingsIndex } from '@/routes/customer/settings';
 import { INSTITUTIONAL_NAV_ITEMS } from './navigation';

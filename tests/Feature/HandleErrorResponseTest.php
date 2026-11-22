@@ -48,7 +48,7 @@ test('production mode renders friendly inertia error page for 404, 401, 403, and
     $customer->assignRole($customerRole);
 
     $this->actingAs($customer)
-        ->get(route('dashboard'))
+        ->get(route('admin.dashboard'))
         ->assertForbidden()
         ->assertInertia(fn (Assert $page) => $page
             ->component('errors/show')
