@@ -7,6 +7,21 @@ use App\Models\User;
 
 class OrderPolicy
 {
+    public function viewAny(User $user): bool
+    {
+        return $user->hasRole('Admin');
+    }
+
+    public function viewAdmin(User $user, Order $order): bool
+    {
+        return $user->hasRole('Admin');
+    }
+
+    public function manage(User $user, Order $order): bool
+    {
+        return $user->hasRole('Admin');
+    }
+
     public function view(User $user, Order $order): bool
     {
         return $order->user_id === $user->id;

@@ -133,4 +133,14 @@ class Order extends Model
             ->orderByDesc('occurred_at')
             ->orderByDesc('id');
     }
+
+    /**
+     * @return HasMany<OrderInternalNote, $this>
+     */
+    public function internalNotes(): HasMany
+    {
+        return $this->hasMany(OrderInternalNote::class)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
+    }
 }

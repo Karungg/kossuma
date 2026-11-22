@@ -139,7 +139,21 @@ class ProductService implements ProductServiceInterface
                 'category:id,name,slug',
                 'store:id,name,slug,location,is_verified',
                 'images:id,product_id,image_path,alt,label,is_primary,sort_order',
-                'reviews:id,product_id,author_name,author_location,rating,variant,comment,created_at',
+                'reviews' => fn ($reviewQuery) => $reviewQuery
+                    ->visible()
+                    ->select([
+                        'id',
+                        'product_id',
+                        'author_name',
+                        'author_location',
+                        'rating',
+                        'variant',
+                        'comment',
+                        'admin_reply',
+                        'admin_replied_at',
+                        'created_at',
+                    ])
+                    ->latest('created_at'),
             ])
             ->where('slug', $slug)
             ->where('is_active', true)
@@ -200,6 +214,8 @@ class ProductService implements ProductServiceInterface
                 'date' => $review->created_at?->locale('id')->diffForHumans() ?? 'Baru saja',
                 'variant' => $review->variant ?? ($product->unit_label ?? '1 Pack'),
                 'comment' => $review->comment,
+                'adminReply' => $review->admin_reply,
+                'adminRepliedAt' => $review->admin_replied_at?->locale('id')->diffForHumans(),
             ])->values()->all(),
             'relatedProducts' => $relatedProducts->map(fn (Product $related): array => [
                 'id' => (string) $related->id,

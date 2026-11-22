@@ -7,16 +7,20 @@ use App\Contracts\Category\CategoryServiceInterface;
 use App\Contracts\Customer\CustomerAddressServiceInterface;
 use App\Contracts\Customer\CustomerProfileServiceInterface;
 use App\Contracts\Notification\NotificationServiceInterface;
+use App\Contracts\Order\AdminOrderServiceInterface;
 use App\Contracts\Order\CustomerOrderServiceInterface;
 use App\Contracts\Product\ProductServiceInterface;
+use App\Contracts\Review\AdminReviewServiceInterface;
 use App\Listeners\Cart\MergeGuestCartOnLogin;
 use App\Services\Cart\CartService;
 use App\Services\Category\CategoryService;
 use App\Services\Customer\CustomerAddressService;
 use App\Services\Customer\CustomerProfileService;
 use App\Services\Notification\NotificationService;
+use App\Services\Order\AdminOrderService;
 use App\Services\Order\CustomerOrderService;
 use App\Services\Product\ProductService;
+use App\Services\Review\AdminReviewService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Date;
@@ -32,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(AdminOrderServiceInterface::class, AdminOrderService::class);
+        $this->app->bind(AdminReviewServiceInterface::class, AdminReviewService::class);
         $this->app->bind(CartServiceInterface::class, CartService::class);
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
         $this->app->bind(CustomerAddressServiceInterface::class, CustomerAddressService::class);
