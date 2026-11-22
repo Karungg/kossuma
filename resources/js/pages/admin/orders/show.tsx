@@ -9,7 +9,7 @@ import {
     Store,
     Truck,
 } from 'lucide-react';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { index, invoice } from '@/routes/admin/orders';
 import { index as reviewsIndex } from '@/routes/admin/reviews';
 import { show as showProduct } from '@/routes/products';

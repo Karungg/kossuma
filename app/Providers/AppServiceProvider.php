@@ -6,6 +6,7 @@ use App\Contracts\Cart\CartServiceInterface;
 use App\Contracts\Category\CategoryServiceInterface;
 use App\Contracts\Customer\CustomerAddressServiceInterface;
 use App\Contracts\Customer\CustomerProfileServiceInterface;
+use App\Contracts\Dashboard\AdminDashboardServiceInterface;
 use App\Contracts\Notification\NotificationServiceInterface;
 use App\Contracts\Order\AdminOrderServiceInterface;
 use App\Contracts\Order\CustomerOrderServiceInterface;
@@ -16,6 +17,7 @@ use App\Services\Cart\CartService;
 use App\Services\Category\CategoryService;
 use App\Services\Customer\CustomerAddressService;
 use App\Services\Customer\CustomerProfileService;
+use App\Services\Dashboard\AdminDashboardService;
 use App\Services\Notification\NotificationService;
 use App\Services\Order\AdminOrderService;
 use App\Services\Order\CustomerOrderService;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(AdminDashboardServiceInterface::class, AdminDashboardService::class);
         $this->app->bind(AdminOrderServiceInterface::class, AdminOrderService::class);
         $this->app->bind(AdminReviewServiceInterface::class, AdminReviewService::class);
         $this->app->bind(CartServiceInterface::class, CartService::class);

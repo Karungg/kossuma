@@ -22,7 +22,7 @@ test('admin users are redirected to dashboard after login', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('admin.dashboard', absolute: false));
 });
 
 test('customer users are redirected to home after login', function () {

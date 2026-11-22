@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import { create, index } from '@/routes/admin/products';
 import { ProductForm } from './components/product-form';
 import type { ProductFormOptions } from './types';
