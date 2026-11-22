@@ -20,6 +20,8 @@ export interface ProductReview {
     date: string;
     variant: string;
     comment: string;
+    adminReply?: string | null;
+    adminRepliedAt?: string | null;
 }
 
 export interface RelatedProduct {

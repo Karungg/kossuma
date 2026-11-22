@@ -2,6 +2,7 @@
 
 namespace App\Models\Order;
 
+use App\Models\User;
 use Database\Factories\Order\OrderStatusHistoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,8 @@ use Illuminate\Support\Carbon;
  * @property string $title
  * @property string|null $description
  * @property string|null $location
+ * @property string $actor_type
+ * @property string|null $actor_id
  * @property Carbon $occurred_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -26,6 +29,8 @@ use Illuminate\Support\Carbon;
     'title',
     'description',
     'location',
+    'actor_type',
+    'actor_id',
     'occurred_at',
 ])]
 class OrderStatusHistory extends Model
@@ -54,5 +59,13 @@ class OrderStatusHistory extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
     }
 }

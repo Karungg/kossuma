@@ -186,7 +186,7 @@ class CustomerOrderService implements CustomerOrderServiceInterface
             ]);
         }
 
-        return DB::transaction(function () use ($order, $reason): Order {
+        return DB::transaction(function () use ($user, $order, $reason): Order {
             $cleanReason = trim($reason);
             $now = now();
 
@@ -202,6 +202,8 @@ class CustomerOrderService implements CustomerOrderServiceInterface
                 'title' => 'Pesanan dibatalkan oleh pembeli',
                 'description' => 'Alasan: '.$cleanReason,
                 'location' => 'Sistem Kossuma Kota Bogor',
+                'actor_type' => 'customer',
+                'actor_id' => $user->id,
                 'occurred_at' => $now,
             ]);
 
@@ -217,7 +219,7 @@ class CustomerOrderService implements CustomerOrderServiceInterface
             ]);
         }
 
-        return DB::transaction(function () use ($order): Order {
+        return DB::transaction(function () use ($user, $order): Order {
             $now = now();
             $district = is_string($order->shipping_address_snapshot['district'] ?? null)
                 ? $order->shipping_address_snapshot['district']
@@ -233,6 +235,8 @@ class CustomerOrderService implements CustomerOrderServiceInterface
                 'title' => 'Pesanan dikonfirmasi diterima oleh pembeli',
                 'description' => 'Terima kasih sudah berbelanja produk UMKM binaan Kossuma Kota Bogor.',
                 'location' => $district,
+                'actor_type' => 'customer',
+                'actor_id' => $user->id,
                 'occurred_at' => $now,
             ]);
 
@@ -294,18 +298,7 @@ class CustomerOrderService implements CustomerOrderServiceInterface
                 'comment' => trim($comment),
             ]);
 
-            $stats = ProductReview::query()
-                ->where('product_id', $product->id)
-                ->selectRaw('COUNT(*) as aggregate_count, AVG(rating) as aggregate_avg')
-                ->first();
-
-            $count = (int) ($stats?->getAttribute('aggregate_count') ?? 0);
-            $avg = round((float) ($stats?->getAttribute('aggregate_avg') ?? 0), 2);
-
-            $product->forceFill([
-                'reviews_count' => $count,
-                'rating_avg' => $avg,
-            ])->save();
+            ProductReview::recalculateProductRating($product);
 
             return $review;
         });

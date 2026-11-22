@@ -42,6 +42,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     require __DIR__.'/category/category.php';
     require __DIR__.'/product/product.php';
+    require __DIR__.'/order/order.php';
+    require __DIR__.'/review/review.php';
 });
 
 require __DIR__.'/notification/notification.php';
