@@ -37,6 +37,7 @@ Route::inertia('blog', 'home/blog')->name('blog');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/dashboard/dashboard.php';
+    require __DIR__.'/report/report.php';
     require __DIR__.'/category/category.php';
     require __DIR__.'/product/product.php';
     require __DIR__.'/order/order.php';

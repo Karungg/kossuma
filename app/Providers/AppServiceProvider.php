@@ -11,6 +11,7 @@ use App\Contracts\Notification\NotificationServiceInterface;
 use App\Contracts\Order\AdminOrderServiceInterface;
 use App\Contracts\Order\CustomerOrderServiceInterface;
 use App\Contracts\Product\ProductServiceInterface;
+use App\Contracts\Report\AdminReportServiceInterface;
 use App\Contracts\Review\AdminReviewServiceInterface;
 use App\Listeners\Cart\MergeGuestCartOnLogin;
 use App\Services\Cart\CartService;
@@ -22,6 +23,7 @@ use App\Services\Notification\NotificationService;
 use App\Services\Order\AdminOrderService;
 use App\Services\Order\CustomerOrderService;
 use App\Services\Product\ProductService;
+use App\Services\Report\AdminReportService;
 use App\Services\Review\AdminReviewService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(AdminDashboardServiceInterface::class, AdminDashboardService::class);
         $this->app->bind(AdminOrderServiceInterface::class, AdminOrderService::class);
+        $this->app->bind(AdminReportServiceInterface::class, AdminReportService::class);
         $this->app->bind(AdminReviewServiceInterface::class, AdminReviewService::class);
         $this->app->bind(CartServiceInterface::class, CartService::class);
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
