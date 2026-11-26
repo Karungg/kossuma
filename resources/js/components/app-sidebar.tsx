@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     BookOpen,
+    FileBarChart2,
     FolderGit2,
     LayoutGrid,
     MessageSquareText,
@@ -25,6 +26,7 @@ import { dashboard } from '@/routes/admin';
 import { index as categoriesIndex } from '@/routes/admin/categories';
 import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as productsIndex } from '@/routes/admin/products';
+import { index as reportsIndex } from '@/routes/admin/reports';
 import { index as reviewsIndex } from '@/routes/admin/reviews';
 import type { NavItem } from '@/types';
 
@@ -53,6 +55,11 @@ const mainNavItems: NavItem[] = [
         title: 'Ulasan',
         href: reviewsIndex(),
         icon: MessageSquareText,
+    },
+    {
+        title: 'Laporan',
+        href: reportsIndex(),
+        icon: FileBarChart2,
     },
 ];
 
